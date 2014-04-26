@@ -6,9 +6,9 @@ import (
 	. "github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when calculating a SMA (simple moving average)", func() {
+var _ = Describe("when calculating a EMA (exponential moving average)", func() {
 	var (
-		sma             *SMA
+		ema             *EMA
 		period          int
 		results         []float64
 		expectedResults []float64
@@ -17,27 +17,27 @@ var _ = Describe("when calculating a SMA (simple moving average)", func() {
 
 	BeforeEach(func() {
 		// load the expected results data
-		expectedResults, _ = LoadCSVPriceDataFromFile("sma_10_expectedresult.data")
+		expectedResults, _ = LoadCSVPriceDataFromFile("ema_10_expectedresult.data")
 	})
 
 	Describe("using a lookback period of 10", func() {
 
 		BeforeEach(func() {
 			period = 10
-			sma, _ = NewSMA(period)
+			ema, _ = NewEMA(period)
 		})
 
 		Context("given the source data has length greater than the lookback period", func() {
 
 			BeforeEach(func() {
-				results, err = sma.Calculate(TestInputData)
+				results, err = ema.Calculate(TestInputData)
 			})
 
 			It("the result set should have a length equal to the source data length less the period + 1", func() {
-				Expect(len(results)).To(Equal(len(TestInputData) - sma.LookbackPeriod + 1))
+				Expect(len(results)).To(Equal(len(TestInputData) - ema.LookbackPeriod + 1))
 			})
 
-			It("it should have correctly calculated the SMA for each item in the result set accurate to two decimal places", func() {
+			It("it should have correctly calculated the EMA for each item in the result set accurate to two decimal places", func() {
 				for k := 0; k < len(results); k++ {
 					Expect(expectedResults[k]).To(BeNumerically("~", results[k], 0.01))
 				}
@@ -50,7 +50,7 @@ var _ = Describe("when calculating a SMA (simple moving average)", func() {
 
 		Context("given the source data is nil", func() {
 			BeforeEach(func() {
-				results, err = sma.Calculate(nil)
+				results, err = ema.Calculate(nil)
 			})
 
 			It("it should return the appropriate error: ErrSourceDataEmpty", func() {
@@ -60,7 +60,7 @@ var _ = Describe("when calculating a SMA (simple moving average)", func() {
 
 		Context("given the source data has length less than the lookback period", func() {
 			BeforeEach(func() {
-				results, err = sma.Calculate(TestInputData[:8])
+				results, err = ema.Calculate(TestInputData[:8])
 			})
 
 			It("it should return the appropriate error: ErrNotEnoughSourceDataForLookbackPeriod", func() {
@@ -71,11 +71,11 @@ var _ = Describe("when calculating a SMA (simple moving average)", func() {
 		Context("given the lookback period is less than or equal to zero", func() {
 			BeforeEach(func() {
 				period = -1
-				sma, _ = NewSMA(period)
+				ema, _ = NewEMA(period)
 			})
 
 			JustBeforeEach(func() {
-				results, err = sma.Calculate(TestInputData[:8])
+				results, err = ema.Calculate(TestInputData[:8])
 			})
 
 			It("it should return the appropriate error: ErrLookbackPeriodMustBeGreaterThanZero", func() {

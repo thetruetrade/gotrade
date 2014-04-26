@@ -3,14 +3,13 @@ package indicators
 
 // A Simple Moving Average Indicator
 type SMA struct {
-	usage          indicatorUsageType
 	LookbackPeriod int
 }
 
 // NewSMA returns a new Simple Moving Average (SMA) configured with the
 // specified lookbackPeriod
 func NewSMA(lookbackPeriod int) (indicator *SMA, err error) {
-	return &SMA{usage: SubChart, LookbackPeriod: lookbackPeriod}, nil
+	return &SMA{LookbackPeriod: lookbackPeriod}, nil
 }
 
 // Calculates the Simple Moving Average (SMA) for the specified source.
