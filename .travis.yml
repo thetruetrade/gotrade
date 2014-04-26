@@ -8,6 +8,7 @@ branches:
   - dev
   
 install:
+  - go get code.google.com/p/go.tools/cmd/cover
   - go get -v github.com/onsi/ginkgo
   - go get -v github.com/onsi/gomega
   - go install -v github.com/onsi/ginkgo/ginkgo
