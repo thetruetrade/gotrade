@@ -3,13 +3,14 @@ language: go
 go:
   - 1.1.2
 
+branches:
+  only:
+  - dev
+  
 install:
   - go get -v github.com/onsi/ginkgo
   - go get -v github.com/onsi/gomega
   - go install -v github.com/onsi/ginkgo/ginkgo
 
-branches:
-  only:
-  - dev
 
 script: $HOME/gopath/bin/ginkgo -r --randomizeAllSpecs --failOnPending --skipMeasurements --cover --trace --race
