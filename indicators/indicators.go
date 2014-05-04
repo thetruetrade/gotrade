@@ -2,9 +2,8 @@ package indicators
 
 import (
 	"errors"
+	"github.com/thetruetrade/gotrade"
 )
-
-type indicatorUsageType int
 
 var (
 	// Indicator errors
@@ -13,10 +12,31 @@ var (
 	ErrLookbackPeriodMustBeGreaterThanZero  = errors.New("Lookback period must be greater than 0")
 )
 
-const (
-	PriceChart indicatorUsageType = iota
-	SubChart
-)
+type Indicator struct {
+	validFromBar         int
+	validFromBarIndex    int
+	dataLength           int
+	valueAvailableAction ValueAvailableAction
+	transformData        gotrade.DataTransformationFunc
+	minValue             float64
+	maxValue             float64
+}
+
+func (ind *Indicator) ValidFromBar() int {
+	return ind.validFromBar
+}
+
+func (ind *Indicator) MinValue() float64 {
+	return ind.minValue
+}
+
+func (ind *Indicator) MaxValue() float64 {
+	return ind.maxValue
+}
+
+type ValueAvailableAction func(dataItem float64, streamBarIndex int)
+type ValueAvailableActionDOHLCV func(dataItem gotrade.DOHLCV, streamBarIndex int)
+type ValueAvailableActionBollinger func(dataItem BollingerBandEntry, streamBarIndex int)
 
 // **************************
 // Indicator helper functions

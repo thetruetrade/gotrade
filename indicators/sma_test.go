@@ -3,84 +3,156 @@ package indicators_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/thetruetrade/gotrade"
 	. "github.com/thetruetrade/gotrade/indicators"
+	"time"
 )
 
-var _ = Describe("when calculating a SMA (simple moving average)", func() {
+var _ = Describe("when calculating a simple moving average (sma)", func() {
 	var (
-		sma             *SMA
-		period          int
-		results         []float64
-		expectedResults []float64
-		err             error
+		period int = 3
 	)
 
-	BeforeEach(func() {
-		// load the expected results data
-		expectedResults, _ = LoadCSVPriceDataFromFile("sma_10_expectedresult.data")
-	})
-
-	Describe("using a lookback period of 10", func() {
+	Describe("given the sma target data structure is an array of floats ", func() {
+		var (
+			sma        *SMA
+			sourceData = []gotrade.DOHLCV{gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 5.0, 0.0),
+				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 6.0, 0.0),
+				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 7.0, 0.0),
+				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 8.0, 0.0),
+				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 9.0, 0.0)}
+		)
 
 		BeforeEach(func() {
-			period = 10
-			sma, _ = NewSMA(period)
+			sma, _ = NewSMA(period, gotrade.UseClosePrice)
 		})
 
-		Context("given the source data has length greater than the lookback period", func() {
+		Context("and the sma has received less ticks than the lookback period", func() {
 
 			BeforeEach(func() {
-				results, err = sma.Calculate(TestInputData)
-			})
-
-			It("the result set should have a length equal to the source data length less the period + 1", func() {
-				Expect(len(results)).To(Equal(len(TestInputData) - sma.LookbackPeriod + 1))
-			})
-
-			It("it should have correctly calculated the SMA for each item in the result set accurate to two decimal places", func() {
-				for k := 0; k < len(results); k++ {
-					Expect(expectedResults[k]).To(BeNumerically("~", results[k], 0.01))
+				for i := 0; i < period-1; i++ {
+					sma.RecieveOrderedTick(sourceData[i], i+1)
 				}
 			})
 
-			It("it should not return any errors", func() {
-				Expect(err).To(BeNil())
+			It("the sma should have no result data", func() {
+				Expect(len(sma.Data)).To(Equal(0))
 			})
 		})
 
-		Context("given the source data is nil", func() {
+		Context("and the sma has received ticks equal to the lookback period", func() {
+
 			BeforeEach(func() {
-				results, err = sma.Calculate(nil)
+				for i := 0; i <= period-1; i++ {
+					sma.RecieveOrderedTick(sourceData[i], i+1)
+				}
 			})
 
-			It("it should return the appropriate error: ErrSourceDataEmpty", func() {
-				Expect(err).To(Equal(ErrSourceDataEmpty))
+			It("the sma should have result data with a single entry", func() {
+				Expect(len(sma.Data)).To(Equal(1))
+			})
+
+			It("the sma should have a single result equal to the sum of the ticks divided by the lookback period", func() {
+				sumData := 0.0
+				for i := 0; i <= period-1; i++ {
+					sumData += gotrade.UseClosePrice(sourceData[i])
+				}
+				Expect(sma.Data[0]).To(Equal(sumData / float64(period)))
 			})
 		})
 
-		Context("given the source data has length less than the lookback period", func() {
+		Context("and the sma has received more ticks than the lookback period", func() {
+
 			BeforeEach(func() {
-				results, err = sma.Calculate(TestInputData[:8])
+				for i := range sourceData {
+					sma.RecieveOrderedTick(sourceData[i], i+1)
+				}
 			})
 
-			It("it should return the appropriate error: ErrNotEnoughSourceDataForLookbackPeriod", func() {
-				Expect(err).To(Equal(ErrNotEnoughSourceDataForLookbackPeriod))
-			})
-		})
-
-		Context("given the lookback period is less than or equal to zero", func() {
-			BeforeEach(func() {
-				period = -1
-				sma, _ = NewSMA(period)
+			It("the sma should have result data with entries equal to the number of ticks less the (lookback period - 1)", func() {
+				Expect(len(sma.Data)).To(Equal(len(sourceData) - (period - 1)))
 			})
 
-			JustBeforeEach(func() {
-				results, err = sma.Calculate(TestInputData[:8])
-			})
-
-			It("it should return the appropriate error: ErrLookbackPeriodMustBeGreaterThanZero", func() {
-				Expect(err).To(Equal(ErrLookbackPeriodMustBeGreaterThanZero))
+			It("the sma should have a result for each tick equal to the sum of the ticks divided by the lookback period", func() {
+				Expect(sma.Data[0]).To(Equal((5.0 + 6.0 + 7.0) / float64(period)))
+				Expect(sma.Data[1]).To(Equal((6.0 + 7.0 + 8.0) / float64(period)))
+				Expect(sma.Data[2]).To(Equal((7.0 + 8.0 + 9.0) / float64(period)))
 			})
 		})
 	})
+
+	Describe("given the sma target data structure is an array of bollinger band data items ", func() {
+		var (
+			sma        *SMAForAttachment
+			sourceData = []gotrade.DOHLCV{gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 5.0, 0.0),
+				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 6.0, 0.0),
+				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 7.0, 0.0),
+				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 8.0, 0.0),
+				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 9.0, 0.0)}
+			targetData []BollingerBandEntry
+		)
+
+		BeforeEach(func() {
+			targetData = []BollingerBandEntry{}
+			sma, _ = NewAttachedSMA(period, gotrade.UseClosePrice, func(dataItem float64, streamBarIndex int) {
+				targetData = append(targetData, BollingerBandEntry{MiddleBand: dataItem})
+			})
+		})
+
+		Context("and the sma has received less ticks than the lookback period", func() {
+
+			BeforeEach(func() {
+				for i := 0; i < period-1; i++ {
+					sma.RecieveOrderedTick(sourceData[i], i+1)
+				}
+			})
+
+			It("the sma should have no result data", func() {
+				Expect(len(targetData)).To(Equal(0))
+			})
+		})
+
+		Context("and the sma has received ticks equal to the lookback period", func() {
+
+			BeforeEach(func() {
+				for i := 0; i <= period-1; i++ {
+					sma.RecieveOrderedTick(sourceData[i], i+1)
+				}
+			})
+
+			It("the sma should have a single entry in the result data", func() {
+				Expect(len(targetData)).To(Equal(1))
+			})
+
+			It("the sma should have a single result equal to the sum of the ticks divided by the lookbac period", func() {
+				sumData := 0.0
+				for i := 0; i <= period-1; i++ {
+					sumData += gotrade.UseClosePrice(sourceData[i])
+				}
+				Expect(targetData[0].MiddleBand).To(Equal(sumData / float64(period)))
+			})
+		})
+
+		Context("and the sma has received more ticks than the lookback period", func() {
+
+			BeforeEach(func() {
+				targetData = []BollingerBandEntry{}
+				for i := 0; i < len(sourceData); i++ {
+					sma.RecieveOrderedTick(sourceData[i], i+1)
+				}
+			})
+
+			It("the sma should have result data with entries equal to the number of ticks less the (lookback period - 1)", func() {
+				Expect(len(targetData)).To(Equal(len(sourceData) - (period - 1)))
+			})
+
+			It("the sma should have a result for each tick equal to the sum of the ticks divided by the lookback period", func() {
+
+				Expect(targetData[0].MiddleBand).To(Equal((5.0 + 6.0 + 7.0) / float64(period)))
+				Expect(targetData[1].MiddleBand).To(Equal((6.0 + 7.0 + 8.0) / float64(period)))
+				Expect(targetData[2].MiddleBand).To(Equal((7.0 + 8.0 + 9.0) / float64(period)))
+			})
+		})
+	})
+
 })

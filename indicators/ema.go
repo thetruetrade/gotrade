@@ -1,61 +1,76 @@
 // Exponential Moving Average (EMA)
 package indicators
 
-// A Simple Moving Average Indicator
-type EMA struct {
+import (
+	"github.com/thetruetrade/gotrade"
+	"math"
+)
+
+type emaBase struct {
+	Indicator
+
+	// public variables
 	LookbackPeriod int
+
+	// private variables
+	periodTotal   float64
+	periodCounter int
+	multiplier    float64
+	previousEMA   float64
+}
+
+// An Exponential Moving Average Indicator
+type EMA struct {
+	emaBase
+
+	// public variables
+	Data []float64
 }
 
 // NewEMA returns a new Exponential Moving Average (EMA) configured with the
 // specified lookbackPeriod
-func NewEMA(lookbackPeriod int) (indicator *EMA, err error) {
-	return &EMA{LookbackPeriod: lookbackPeriod}, nil
+func NewEMA(lookbackPeriod int, transformData gotrade.DataTransformationFunc) (indicator *EMA, err error) {
+	newEMA := EMA{emaBase: emaBase{LookbackPeriod: lookbackPeriod,
+		periodCounter: lookbackPeriod * -1,
+		multiplier:    float64(2.0 / float64(lookbackPeriod+1.0)),
+		Indicator:     Indicator{validFromBar: -1, transformData: transformData, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}}}
+
+	newEMA.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+		newEMA.Data = append(newEMA.Data, dataItem)
+	}
+
+	return &newEMA, nil
 }
 
-// Calculates the Exponential Moving Average (EMA) for the specified source.
-// The source data must contain more items than the configured LookbackPeriod.
-func (ema *EMA) Calculate(source []float64) (results []float64, err error) {
-
-	// perform some sanity checks on the source data
-	err = checkSourceDataIsNotEmpty(source)
-	if err != nil {
-		return nil, err
-	}
-	// and again on the source data with regards to the lookback period
-	err = checkSourceValidForLookbackPeriod(source, ema.LookbackPeriod)
-	if err != nil {
-		return nil, err
-	}
-
-	// compute local variables for use in the loop
-	multiplier := float64(2.0 / float64(ema.LookbackPeriod+1.0))
-	sourceLength := len(source)
-	outputLength := sourceLength - ema.LookbackPeriod + 1
-
-	// initialise the output data array
-	results = make([]float64, outputLength)
-
-	// initialise the previousEMA to a SMA for the same period
-	previousEMA := initialiseEMAWithSMA(source, ema.LookbackPeriod)
-	results[0] = previousEMA
-	y := 1
-	for i := ema.LookbackPeriod; i < sourceLength; i++ {
-		results[y] = (source[i]-previousEMA)*multiplier + previousEMA
-		previousEMA = results[y]
-		y++
-	}
-
-	return results, nil
+func NewEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, transformData gotrade.DataTransformationFunc) (indicator *EMA, err error) {
+	newEma, err := NewEMA(lookbackPeriod, transformData)
+	priceStream.AddSubscription(newEma)
+	return newEma, err
 }
 
-func initialiseEMAWithSMA(source []float64, lookbackPeriod int) float64 {
-	periodTotal := float64(0.0)
-	y := (lookbackPeriod * -1)
-	i := 0
-	for y < 0 {
-		y += 1
-		periodTotal += source[i]
-		i += 1
+func (ema *emaBase) RecieveOrderedTick(dataItem gotrade.DOHLCV, streamBarIndex int) {
+	ema.periodCounter += 1
+	ema.dataLength += 1
+	var transformedData = ema.transformData(dataItem)
+
+	if transformedData > ema.maxValue {
+		ema.maxValue = transformedData
 	}
-	return periodTotal / float64(lookbackPeriod)
+
+	if transformedData < ema.minValue {
+		ema.minValue = transformedData
+	}
+
+	if ema.periodCounter < 0 {
+		ema.periodTotal += transformedData
+	} else if ema.periodCounter == 0 {
+		ema.periodTotal += transformedData
+		ema.previousEMA = ema.periodTotal / float64(ema.LookbackPeriod)
+		ema.valueAvailableAction(ema.previousEMA, streamBarIndex)
+
+	} else if ema.periodCounter > 0 {
+		result := (transformedData-ema.previousEMA)*ema.multiplier + ema.previousEMA
+		ema.previousEMA = result
+		ema.valueAvailableAction(ema.previousEMA, streamBarIndex)
+	}
 }
