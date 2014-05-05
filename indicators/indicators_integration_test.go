@@ -79,6 +79,41 @@ var _ = Describe("when executing the gotrade exponential moving average with a y
 	})
 })
 
+var _ = Describe("when executing the gotrade weighted moving average with a years data and known output", func() {
+	var (
+		wma             *indicators.WMA
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.DOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("wma_10_expectedresult.data")
+		priceStream = gotrade.NewDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 10", func() {
+
+		BeforeEach(func() {
+			period = 10
+			wma, err = indicators.NewWMA(period, gotrade.UseClosePrice)
+			priceStream.AddSubscription(wma)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the period + 1", func() {
+			Expect(len(wma.Data)).To(Equal(len(priceStream.Data) - wma.LookbackPeriod + 1))
+		})
+
+		It("it should have correctly calculated the weighted moving average for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", wma.Data[k], 0.01))
+			}
+		})
+	})
+})
 var _ = Describe("when executing the gotrade bollinger bands with a years data and known output", func() {
 	var (
 		bb              *indicators.BollingerBands
