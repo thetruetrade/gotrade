@@ -27,7 +27,7 @@ var _ = Describe("when executing the gotrade simple moving average with a years 
 		BeforeEach(func() {
 			period = 10
 			sma, err = indicators.NewSMA(period, gotrade.UseClosePrice)
-			priceStream.AddSubscription(sma)
+			priceStream.AddTickSubscription(sma)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
@@ -63,7 +63,7 @@ var _ = Describe("when executing the gotrade exponential moving average with a y
 		BeforeEach(func() {
 			period = 10
 			ema, err = indicators.NewEMA(period, gotrade.UseClosePrice)
-			priceStream.AddSubscription(ema)
+			priceStream.AddTickSubscription(ema)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
@@ -99,7 +99,7 @@ var _ = Describe("when executing the gotrade weighted moving average with a year
 		BeforeEach(func() {
 			period = 10
 			wma, err = indicators.NewWMA(period, gotrade.UseClosePrice)
-			priceStream.AddSubscription(wma)
+			priceStream.AddTickSubscription(wma)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
@@ -114,6 +114,43 @@ var _ = Describe("when executing the gotrade weighted moving average with a year
 		})
 	})
 })
+
+//var _ = Describe("when executing the gotrade double exponential moving average with a years data and known output", func() {
+//	var (
+//		dema            *indicators.DEMA
+//		period          int
+//		expectedResults []float64
+//		err             error
+//		priceStream     *gotrade.DOHLCVStream
+//	)
+
+//	BeforeEach(func() {
+//		// load the expected results data
+//		expectedResults, _ = LoadCSVPriceDataFromFile("dema_10_expectedresult.data")
+//		priceStream = gotrade.NewDOHLCVStream()
+//	})
+
+//	Describe("using a lookback period of 10", func() {
+
+//		BeforeEach(func() {
+//			period = 10
+//			dema, err = indicators.NewDEMA(period, gotrade.UseClosePrice)
+//			priceStream.AddTickSubscription(dema)
+//			csvFeed.FillDOHLCVStream(priceStream)
+//		})
+
+//		It("the result set should have a length equal to the source data length less the period + 1", func() {
+//			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - dema.LookbackPeriod + 1))
+//		})
+
+//		It("it should have correctly calculated the double exponential moving average for each item in the result set accurate to two decimal places", func() {
+//			for k := range expectedResults {
+//				Expect(expectedResults[k]).To(BeNumerically("~", dema.Data[k], 0.01))
+//			}
+//		})
+//	})
+//})
+
 var _ = Describe("when executing the gotrade bollinger bands with a years data and known output", func() {
 	var (
 		bb              *indicators.BollingerBands
@@ -134,7 +171,7 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 		BeforeEach(func() {
 			period = 10
 			bb, err = indicators.NewBollingerBands(period, gotrade.UseClosePrice)
-			priceStream.AddSubscription(bb)
+			priceStream.AddTickSubscription(bb)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 

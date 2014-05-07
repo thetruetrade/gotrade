@@ -1,6 +1,7 @@
 package gotrade
 
 import (
+	"math"
 	"sync"
 	"time"
 )
@@ -66,41 +67,93 @@ func (di *DOHLCVDataItem) V() float64 {
 	return di.volumePrice
 }
 
-type DOHLCVStreamSubscriber interface {
-	RecieveOrderedTick(dataItem DOHLCV, streamBarIndex int)
+// A function that selects which data property to use from a DOHLCV data structure
+type DataSelectionFunc func(dataItem DOHLCV) float64
+
+// Close price DOHLCV data selector
+func UseClosePrice(dataItem DOHLCV) float64 {
+	return dataItem.C()
+}
+
+// Open price DOHLCV data selector
+func UseOpenPrice(dataItem DOHLCV) float64 {
+	return dataItem.O()
+}
+
+// High price DOHLCV data selector
+func UseHighPrice(dataItem DOHLCV) float64 {
+	return dataItem.H()
+}
+
+// Low price DOHLCV data selector
+func UseLowPrice(dataItem DOHLCV) float64 {
+	return dataItem.L()
+}
+
+// Volume DOHLCV data selector
+func UseVolume(dataItem DOHLCV) float64 {
+	return dataItem.V()
+}
+
+type DOHLCVTickReceiver interface {
+	ReceiveDOHLCVTick(tickData DOHLCV, streamBarIndex int)
+}
+
+type TickReceiver interface {
+	ReceiveTick(tickData float64, streamBarIndex int)
+}
+
+type DataStreamHolder interface {
+	MinValue() float64
+	MaxValue() float64
+}
+
+type DateStreamHolder interface {
+	MinDate() time.Time
+	MaxDate() time.Time
 }
 
 type DOHLCVStream struct {
 	Data           []DOHLCV
-	subscribers    []DOHLCVStreamSubscriber
+	subscribers    []DOHLCVTickReceiver
 	streamBarIndex int
+	minValue       float64
+	maxValue       float64
 }
 
 func NewDOHLCVStream() *DOHLCVStream {
-	return &DOHLCVStream{streamBarIndex: 0}
+	s := DOHLCVStream{streamBarIndex: 0}
+	s.minValue = math.MaxFloat64
+	s.maxValue = math.SmallestNonzeroFloat64
+	return &s
 }
 
-func (p *DOHLCVStream) RecieveOrderedTick(tickData DOHLCV) {
+func (p *DOHLCVStream) RecieveTick(tickData DOHLCV) {
 	p.streamBarIndex++
 	p.Data = append(p.Data, tickData)
+
+	if p.minValue > tickData.L() {
+		p.minValue = tickData.L()
+	}
+
+	if p.maxValue < tickData.H() {
+		p.maxValue = tickData.H()
+	}
+
 	var waitGroup sync.WaitGroup
 
 	// notify all the subscribers and wait
 	for subscriberIndex := range p.subscribers {
 		waitGroup.Add(1)
-		var subscriber DOHLCVStreamSubscriber = p.subscribers[subscriberIndex]
-		go func(subscriber DOHLCVStreamSubscriber) {
+		var subscriber DOHLCVTickReceiver = p.subscribers[subscriberIndex]
+		go func(subscriber DOHLCVTickReceiver) {
 			defer waitGroup.Done()
-			subscriber.RecieveOrderedTick(tickData, p.streamBarIndex)
+			subscriber.ReceiveDOHLCVTick(tickData, p.streamBarIndex)
 
 		}(subscriber)
 	}
 
 	waitGroup.Wait()
-}
-
-func (p *DOHLCVStream) RecieveTick(tickData DOHLCV) {
-
 }
 
 func (p *DOHLCVStream) MinDate() time.Time {
@@ -113,10 +166,18 @@ func (p *DOHLCVStream) MaxDate() time.Time {
 	return p.Data[len(p.Data)-1].D()
 }
 
-func (p *DOHLCVStream) AddSubscription(subscriber DOHLCVStreamSubscriber) {
+func (p *DOHLCVStream) MinValue() float64 {
+	return p.minValue
+}
+
+func (p *DOHLCVStream) MaxValue() float64 {
+	return p.maxValue
+}
+
+func (p *DOHLCVStream) AddTickSubscription(subscriber DOHLCVTickReceiver) {
 	p.subscribers = append(p.subscribers, subscriber)
 }
 
-func (p *DOHLCVStream) RemoveSubscription(subscriber DOHLCVStreamSubscriber) {
+func (p *DOHLCVStream) RemoveTickSubscription(subscriber DOHLCVTickReceiver) {
 
 }

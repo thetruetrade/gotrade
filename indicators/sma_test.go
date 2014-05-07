@@ -31,7 +31,7 @@ var _ = Describe("when calculating a simple moving average (sma)", func() {
 
 			BeforeEach(func() {
 				for i := 0; i < period-1; i++ {
-					sma.RecieveOrderedTick(sourceData[i], i+1)
+					sma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 
@@ -44,7 +44,7 @@ var _ = Describe("when calculating a simple moving average (sma)", func() {
 
 			BeforeEach(func() {
 				for i := 0; i <= period-1; i++ {
-					sma.RecieveOrderedTick(sourceData[i], i+1)
+					sma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 
@@ -65,7 +65,7 @@ var _ = Describe("when calculating a simple moving average (sma)", func() {
 
 			BeforeEach(func() {
 				for i := range sourceData {
-					sma.RecieveOrderedTick(sourceData[i], i+1)
+					sma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 
@@ -83,7 +83,7 @@ var _ = Describe("when calculating a simple moving average (sma)", func() {
 
 	Describe("given the sma target data structure is an array of bollinger band data items ", func() {
 		var (
-			sma        *SMAForAttachment
+			sma        *SMAWithoutStorage
 			sourceData = []gotrade.DOHLCV{gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 5.0, 0.0),
 				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 6.0, 0.0),
 				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 7.0, 0.0),
@@ -94,7 +94,7 @@ var _ = Describe("when calculating a simple moving average (sma)", func() {
 
 		BeforeEach(func() {
 			targetData = []BollingerBandEntry{}
-			sma, _ = NewAttachedSMA(period, gotrade.UseClosePrice, func(dataItem float64, streamBarIndex int) {
+			sma, _ = NewSMAWithoutStorage(period, gotrade.UseClosePrice, func(dataItem float64, streamBarIndex int) {
 				targetData = append(targetData, BollingerBandEntry{MiddleBand: dataItem})
 			})
 		})
@@ -103,7 +103,7 @@ var _ = Describe("when calculating a simple moving average (sma)", func() {
 
 			BeforeEach(func() {
 				for i := 0; i < period-1; i++ {
-					sma.RecieveOrderedTick(sourceData[i], i+1)
+					sma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 
@@ -116,7 +116,7 @@ var _ = Describe("when calculating a simple moving average (sma)", func() {
 
 			BeforeEach(func() {
 				for i := 0; i <= period-1; i++ {
-					sma.RecieveOrderedTick(sourceData[i], i+1)
+					sma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 
@@ -138,7 +138,7 @@ var _ = Describe("when calculating a simple moving average (sma)", func() {
 			BeforeEach(func() {
 				targetData = []BollingerBandEntry{}
 				for i := 0; i < len(sourceData); i++ {
-					sma.RecieveOrderedTick(sourceData[i], i+1)
+					sma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 

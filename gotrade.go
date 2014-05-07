@@ -22,25 +22,3 @@ func init() {
 
 	StandardTickTimePeriods = &attps
 }
-
-type DataTransformationFunc func(dataItem DOHLCV) float64
-
-func UseClosePrice(dataItem DOHLCV) float64 {
-	return dataItem.C()
-}
-
-func UseOpenPrice(dataItem DOHLCV) float64 {
-	return dataItem.O()
-}
-
-func UseHighPrice(dataItem DOHLCV) float64 {
-	return dataItem.H()
-}
-
-func UseLowPrice(dataItem DOHLCV) float64 {
-	return dataItem.L()
-}
-
-func UseVolume(dataItem DOHLCV) float64 {
-	return dataItem.V()
-}

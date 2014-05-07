@@ -75,7 +75,7 @@ func (csvFPSF *CSVFileFeed) FillDOHLCVStream(priceStream *gotrade.DOHLCVStream) 
 			return err
 		}
 
-		dholcv, err := csvFPSF.ParseRecord(record, csvFPSF.dateColumnIndex,
+		dohlcv, err := csvFPSF.ParseRecord(record, csvFPSF.dateColumnIndex,
 			csvFPSF.openPriceColumnIndex,
 			csvFPSF.highPriceColumnIndex,
 			csvFPSF.lowPriceColumnIndex,
@@ -86,7 +86,7 @@ func (csvFPSF *CSVFileFeed) FillDOHLCVStream(priceStream *gotrade.DOHLCVStream) 
 		if err != nil {
 			return err
 		}
-		priceStream.RecieveOrderedTick(dholcv)
+		priceStream.RecieveTick(dohlcv)
 	}
 	return nil
 }

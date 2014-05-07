@@ -4,49 +4,50 @@ package indicators
 import (
 	"container/list"
 	"github.com/thetruetrade/gotrade"
-	"math"
 )
 
-type smaBase struct {
-	Indicator
-
-	// public variables
-	LookbackPeriod int
+type baseSMA struct {
+	*baseIndicatorWithLookback
 
 	// private variables
-	periodTotal   float64
-	periodHistory *list.List
-	periodCounter int
+	periodTotal          float64
+	periodHistory        *list.List
+	periodCounter        int
+	valueAvailableAction ValueAvailableAction
+}
+
+func newBaseSMA(lookbackPeriod int) *baseSMA {
+	newSMA := baseSMA{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
+		periodCounter: lookbackPeriod * -1,
+		periodHistory: list.New()}
+	return &newSMA
 }
 
 // A Simple Moving Average Indicator
 type SMA struct {
-	smaBase
+	*baseSMA
 
 	// public variables
 	Data []float64
 }
-type SMAForAttachment struct {
-	smaBase
+type SMAWithoutStorage struct {
+	*baseSMA
 }
 
 // NewSMA returns a new Simple Moving Average (SMA) configured with the
 // specified lookbackPeriod. The SMA results are stored in the DATA field.
-func NewSMA(lookbackPeriod int, transformData gotrade.DataTransformationFunc) (indicator *SMA, err error) {
-	newSMA := SMA{smaBase: smaBase{LookbackPeriod: lookbackPeriod,
-		periodCounter: lookbackPeriod * -1,
-		periodHistory: list.New(),
-		Indicator:     Indicator{validFromBar: -1, transformData: transformData, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}}}
-
+func NewSMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *SMA, err error) {
+	newSMA := SMA{baseSMA: newBaseSMA(lookbackPeriod)}
+	newSMA.selectData = selectData
 	newSMA.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newSMA.Data = append(newSMA.Data, dataItem)
 	}
 	return &newSMA, nil
 }
 
-func NewSMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, transformData gotrade.DataTransformationFunc) (indicator *SMA, err error) {
-	newSma, err := NewSMA(lookbackPeriod, transformData)
-	priceStream.AddSubscription(newSma)
+func NewSMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *SMA, err error) {
+	newSma, err := NewSMA(lookbackPeriod, selectData)
+	priceStream.AddTickSubscription(newSma)
 	return newSma, err
 }
 
@@ -54,31 +55,24 @@ func NewSMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, tran
 // specified lookbackPeriod, this version is intended for use by other indicators.
 // The SMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewAttachedSMA(lookbackPeriod int,
-	transformData gotrade.DataTransformationFunc,
-	valueAvailableAction ValueAvailableAction) (indicator *SMAForAttachment, err error) {
-	newSMA := SMAForAttachment{smaBase{LookbackPeriod: lookbackPeriod,
-		periodCounter: lookbackPeriod * -1,
-		periodHistory: list.New(),
-		Indicator:     Indicator{validFromBar: -1, transformData: transformData, valueAvailableAction: valueAvailableAction, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}}}
+func NewSMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *SMAWithoutStorage, err error) {
+	newSMA := SMAWithoutStorage{baseSMA: newBaseSMA(lookbackPeriod)}
+	newSMA.selectData = selectData
+	newSMA.valueAvailableAction = valueAvailableAction
 
 	return &newSMA, nil
 }
 
-func (sma *smaBase) RecieveOrderedTick(dataItem gotrade.DOHLCV, streamBarIndex int) {
+func (sma *baseSMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = sma.selectData(tickData)
+	sma.RecieveTick(selectedData, streamBarIndex)
+}
+
+func (sma *baseSMA) RecieveTick(tickData float64, streamBarIndex int) {
 	sma.periodCounter += 1
 	sma.dataLength += 1
-	var transformedData = sma.transformData(dataItem)
 
-	if transformedData > sma.maxValue {
-		sma.maxValue = transformedData
-	}
-
-	if transformedData < sma.minValue {
-		sma.minValue = transformedData
-	}
-
-	sma.periodHistory.PushBack(transformedData)
+	sma.periodHistory.PushBack(tickData)
 
 	if sma.periodCounter > 0 {
 		var valueToRemove = sma.periodHistory.Front()
@@ -88,12 +82,21 @@ func (sma *smaBase) RecieveOrderedTick(dataItem gotrade.DOHLCV, streamBarIndex i
 		var first = sma.periodHistory.Front()
 		sma.periodHistory.Remove(first)
 	}
-	sma.periodTotal += transformedData
+	sma.periodTotal += tickData
 	var result float64 = sma.periodTotal / float64(sma.LookbackPeriod)
 	if sma.periodCounter >= 0 {
 		if sma.validFromBar == -1 {
 			sma.validFromBar = streamBarIndex
 		}
+
+		if result > sma.maxValue {
+			sma.maxValue = result
+		}
+
+		if result < sma.minValue {
+			sma.minValue = result
+		}
+
 		sma.valueAvailableAction(result, streamBarIndex)
 	}
 }

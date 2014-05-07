@@ -29,7 +29,7 @@ var _ = Describe("when calculating bollinger bands", func() {
 
 		BeforeEach(func() {
 			for i := 0; i < period-1; i++ {
-				bb.RecieveOrderedTick(sourceData[i], i+1)
+				bb.ReceiveDOHLCVTick(sourceData[i], i+1)
 			}
 		})
 
@@ -42,7 +42,7 @@ var _ = Describe("when calculating bollinger bands", func() {
 
 		BeforeEach(func() {
 			for i := 0; i <= period-1; i++ {
-				bb.RecieveOrderedTick(sourceData[i], i+1)
+				bb.ReceiveDOHLCVTick(sourceData[i], i+1)
 			}
 		})
 
@@ -63,7 +63,7 @@ var _ = Describe("when calculating bollinger bands", func() {
 
 		BeforeEach(func() {
 			for i := range sourceData {
-				bb.RecieveOrderedTick(sourceData[i], i+1)
+				bb.ReceiveDOHLCVTick(sourceData[i], i+1)
 			}
 		})
 

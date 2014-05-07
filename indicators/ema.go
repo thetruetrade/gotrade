@@ -3,25 +3,30 @@ package indicators
 
 import (
 	"github.com/thetruetrade/gotrade"
-	"math"
 )
 
-type emaBase struct {
-	Indicator
-
-	// public variables
-	LookbackPeriod int
+type baseEMA struct {
+	*baseIndicatorWithLookback
 
 	// private variables
-	periodTotal   float64
-	periodCounter int
-	multiplier    float64
-	previousEMA   float64
+	periodTotal          float64
+	periodCounter        int
+	multiplier           float64
+	previousEMA          float64
+	valueAvailableAction ValueAvailableAction
+}
+
+func newBaseEMA(lookbackPeriod int) *baseEMA {
+	newEMA := baseEMA{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
+		periodCounter: lookbackPeriod * -1,
+		multiplier:    float64(2.0 / float64(lookbackPeriod+1.0))}
+
+	return &newEMA
 }
 
 // An Exponential Moving Average Indicator
 type EMA struct {
-	emaBase
+	*baseEMA
 
 	// public variables
 	Data []float64
@@ -29,12 +34,9 @@ type EMA struct {
 
 // NewEMA returns a new Exponential Moving Average (EMA) configured with the
 // specified lookbackPeriod
-func NewEMA(lookbackPeriod int, transformData gotrade.DataTransformationFunc) (indicator *EMA, err error) {
-	newEMA := EMA{emaBase: emaBase{LookbackPeriod: lookbackPeriod,
-		periodCounter: lookbackPeriod * -1,
-		multiplier:    float64(2.0 / float64(lookbackPeriod+1.0)),
-		Indicator:     Indicator{validFromBar: -1, transformData: transformData, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}}}
-
+func NewEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
+	newEMA := EMA{baseEMA: newBaseEMA(lookbackPeriod)}
+	newEMA.selectData = selectData
 	newEMA.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newEMA.Data = append(newEMA.Data, dataItem)
 	}
@@ -42,35 +44,40 @@ func NewEMA(lookbackPeriod int, transformData gotrade.DataTransformationFunc) (i
 	return &newEMA, nil
 }
 
-func NewEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, transformData gotrade.DataTransformationFunc) (indicator *EMA, err error) {
-	newEma, err := NewEMA(lookbackPeriod, transformData)
-	priceStream.AddSubscription(newEma)
+func NewEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
+	newEma, err := NewEMA(lookbackPeriod, selectData)
+	priceStream.AddTickSubscription(newEma)
 	return newEma, err
 }
 
-func (ema *emaBase) RecieveOrderedTick(dataItem gotrade.DOHLCV, streamBarIndex int) {
+func (ema *baseEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ema.selectData(tickData)
+	ema.RecieveTick(selectedData, streamBarIndex)
+}
+
+func (ema *baseEMA) RecieveTick(tickData float64, streamBarIndex int) {
 	ema.periodCounter += 1
 	ema.dataLength += 1
-	var transformedData = ema.transformData(dataItem)
-
-	if transformedData > ema.maxValue {
-		ema.maxValue = transformedData
-	}
-
-	if transformedData < ema.minValue {
-		ema.minValue = transformedData
-	}
 
 	if ema.periodCounter < 0 {
-		ema.periodTotal += transformedData
+		ema.periodTotal += tickData
 	} else if ema.periodCounter == 0 {
-		ema.periodTotal += transformedData
+		ema.periodTotal += tickData
 		ema.previousEMA = ema.periodTotal / float64(ema.LookbackPeriod)
 		ema.valueAvailableAction(ema.previousEMA, streamBarIndex)
 
 	} else if ema.periodCounter > 0 {
-		result := (transformedData-ema.previousEMA)*ema.multiplier + ema.previousEMA
+		result := (tickData-ema.previousEMA)*ema.multiplier + ema.previousEMA
 		ema.previousEMA = result
+
+		if result > ema.maxValue {
+			ema.maxValue = result
+		}
+
+		if result < ema.minValue {
+			ema.minValue = result
+		}
+
 		ema.valueAvailableAction(ema.previousEMA, streamBarIndex)
 	}
 }

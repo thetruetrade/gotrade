@@ -3,6 +3,7 @@ package indicators
 import (
 	"errors"
 	"github.com/thetruetrade/gotrade"
+	"math"
 )
 
 var (
@@ -12,57 +13,49 @@ var (
 	ErrLookbackPeriodMustBeGreaterThanZero  = errors.New("Lookback period must be greater than 0")
 )
 
-type Indicator struct {
-	validFromBar         int
-	validFromBarIndex    int
-	dataLength           int
-	valueAvailableAction ValueAvailableAction
-	transformData        gotrade.DataTransformationFunc
-	minValue             float64
-	maxValue             float64
+type Indicator interface {
+	ValidFromBar() int
+	Length() int
+	MinValue() float64
+	MaxValue() float64
 }
 
-func (ind *Indicator) ValidFromBar() int {
+type baseIndicator struct {
+	validFromBar int
+	dataLength   int
+	selectData   gotrade.DataSelectionFunc
+	minValue     float64
+	maxValue     float64
+}
+
+func newBaseIndicator() *baseIndicator {
+	ind := baseIndicator{validFromBar: -1, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}
+	return &ind
+}
+
+func (ind *baseIndicator) ValidFromBar() int {
 	return ind.validFromBar
 }
 
-func (ind *Indicator) MinValue() float64 {
+func (ind *baseIndicator) MinValue() float64 {
 	return ind.minValue
 }
 
-func (ind *Indicator) MaxValue() float64 {
+func (ind *baseIndicator) MaxValue() float64 {
 	return ind.maxValue
+}
+
+type baseIndicatorWithLookback struct {
+	*baseIndicator
+	LookbackPeriod int
+}
+
+func newBaseIndicatorWithLookback(lookbackPeriod int) *baseIndicatorWithLookback {
+	ind := baseIndicatorWithLookback{baseIndicator: newBaseIndicator(),
+		LookbackPeriod: lookbackPeriod}
+	return &ind
 }
 
 type ValueAvailableAction func(dataItem float64, streamBarIndex int)
 type ValueAvailableActionDOHLCV func(dataItem gotrade.DOHLCV, streamBarIndex int)
 type ValueAvailableActionBollinger func(dataItem BollingerBandEntry, streamBarIndex int)
-
-// **************************
-// Indicator helper functions
-// **************************
-
-// Ensures that the source data is not empty
-func checkSourceDataIsNotEmpty(sourceData []float64) error {
-	// ensure we have some data to start with
-	if sourceData == nil {
-		return ErrSourceDataEmpty
-	}
-
-	return nil
-}
-
-// Ensures that the source data is valid for the specified lookback period
-func checkSourceValidForLookbackPeriod(sourceData []float64, lookbackPeriod int) error {
-	// check that the lookbackPeriod is greater than 0
-	if lookbackPeriod <= 0 {
-		return ErrLookbackPeriodMustBeGreaterThanZero
-	}
-
-	// check the length of the source data is at least greater than the lookbackPeriod -1
-	if len(sourceData) < (lookbackPeriod - 1) {
-		return ErrNotEnoughSourceDataForLookbackPeriod
-	}
-
-	return nil
-}

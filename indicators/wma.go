@@ -4,55 +4,64 @@ package indicators
 import (
 	"container/list"
 	"github.com/thetruetrade/gotrade"
-	"math"
 )
 
-type wmaBase struct {
-	Indicator
-
-	// public variables
-	LookbackPeriod int
+type baseWMA struct {
+	*baseIndicatorWithLookback
 
 	// private variables
-	periodTotal       float64
-	periodHistory     *list.List
-	periodCounter     int
-	periodWeightTotal int
+	periodTotal          float64
+	periodHistory        *list.List
+	periodCounter        int
+	periodWeightTotal    int
+	valueAvailableAction ValueAvailableAction
 }
 
-// A Simple Moving Average Indicator
-type WMA struct {
-	wmaBase
-
-	// public variables
-	Data []float64
-}
-type WMAForAttachment struct {
-	wmaBase
-}
-
-// NewWMA returns a new Simple Moving Average (WMA) configured with the
-// specified lookbackPeriod. The WMA results are stored in the DATA field.
-func NewWMA(lookbackPeriod int, transformData gotrade.DataTransformationFunc) (indicator *WMA, err error) {
-	newWMA := WMA{wmaBase: wmaBase{LookbackPeriod: lookbackPeriod,
+func newBaseWMA(lookbackPeriod int) *baseWMA {
+	newWMA := baseWMA{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
 		periodCounter: lookbackPeriod * -1,
-		periodHistory: list.New(),
-		Indicator:     Indicator{validFromBar: -1, transformData: transformData, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}}}
+		periodHistory: list.New()}
 
 	var weightedTotal int = 0
 	for i := 1; i <= lookbackPeriod; i++ {
 		weightedTotal += i
 	}
 	newWMA.periodWeightTotal = weightedTotal
+	return &newWMA
+}
+
+// A Simple Moving Average Indicator
+type WMA struct {
+	*baseWMA
+
+	// public variables
+	Data []float64
+}
+type WMAWithoutStorage struct {
+	*baseWMA
+}
+
+// NewWMA returns a new Simple Moving Average (WMA) configured with the
+// specified lookbackPeriod. The WMA results are stored in the DATA field.
+func NewWMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
+	newWMA := WMA{baseWMA: newBaseWMA(lookbackPeriod)}
+
+	var weightedTotal int = 0
+	for i := 1; i <= lookbackPeriod; i++ {
+		weightedTotal += i
+	}
+	newWMA.periodWeightTotal = weightedTotal
+
+	newWMA.selectData = selectData
 	newWMA.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newWMA.Data = append(newWMA.Data, dataItem)
 	}
 	return &newWMA, nil
 }
 
-func NewWMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, transformData gotrade.DataTransformationFunc) (indicator *WMA, err error) {
-	newSma, err := NewWMA(lookbackPeriod, transformData)
-	priceStream.AddSubscription(newSma)
+func NewWMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
+	newSma, err := NewWMA(lookbackPeriod, selectData)
+	priceStream.AddTickSubscription(newSma)
 	return newSma, err
 }
 
@@ -60,41 +69,32 @@ func NewWMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, tran
 // specified lookbackPeriod, this version is intended for use by other indicators.
 // The WMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewAttachedWMA(lookbackPeriod int,
-	transformData gotrade.DataTransformationFunc,
-	valueAvailableAction ValueAvailableAction) (indicator *WMAForAttachment, err error) {
-	newWMA := WMAForAttachment{wmaBase{LookbackPeriod: lookbackPeriod,
-		periodCounter: lookbackPeriod * -1,
-		periodHistory: list.New(),
-		Indicator:     Indicator{validFromBar: -1, transformData: transformData, valueAvailableAction: valueAvailableAction, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}}}
+func NewWMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *WMAWithoutStorage, err error) {
+	newWMA := WMAWithoutStorage{baseWMA: newBaseWMA(lookbackPeriod)}
+	newWMA.selectData = selectData
+	newWMA.valueAvailableAction = valueAvailableAction
 
 	return &newWMA, nil
 }
 
-func (wma *wmaBase) RecieveOrderedTick(dataItem gotrade.DOHLCV, streamBarIndex int) {
+func (wma *baseWMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = wma.selectData(tickData)
+	wma.RecieveTick(selectedData, streamBarIndex)
+}
+
+func (wma *baseWMA) RecieveTick(tickData float64, streamBarIndex int) {
 	wma.periodCounter += 1
 	wma.dataLength += 1
-	var transformedData = wma.transformData(dataItem)
 
-	if transformedData > wma.maxValue {
-		wma.maxValue = transformedData
-	}
-
-	if transformedData < wma.minValue {
-		wma.minValue = transformedData
-	}
-
-	wma.periodHistory.PushBack(transformedData)
+	wma.periodHistory.PushBack(tickData)
 
 	if wma.periodCounter > 0 {
-		var valueToRemove = wma.periodHistory.Front()
-		wma.periodTotal -= valueToRemove.Value.(float64)
+
 	}
 	if wma.periodHistory.Len() > wma.LookbackPeriod {
 		var first = wma.periodHistory.Front()
 		wma.periodHistory.Remove(first)
 	}
-	wma.periodTotal += transformedData
 
 	if wma.periodCounter >= 0 {
 		if wma.validFromBar == -1 {
@@ -113,6 +113,15 @@ func (wma *wmaBase) RecieveOrderedTick(dataItem gotrade.DOHLCV, streamBarIndex i
 			iter++
 		}
 		var result float64 = sum / float64(wma.periodWeightTotal)
+
+		if result > wma.maxValue {
+			wma.maxValue = result
+		}
+
+		if result < wma.minValue {
+			wma.minValue = result
+		}
+
 		wma.valueAvailableAction(result, streamBarIndex)
 	}
 }

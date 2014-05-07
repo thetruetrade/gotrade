@@ -32,7 +32,7 @@ var _ = Describe("when calculating a weighted moving average (wma)", func() {
 
 			BeforeEach(func() {
 				for i := 0; i < period-1; i++ {
-					wma.RecieveOrderedTick(sourceData[i], i+1)
+					wma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 
@@ -45,7 +45,7 @@ var _ = Describe("when calculating a weighted moving average (wma)", func() {
 
 			BeforeEach(func() {
 				for i := 0; i <= period-1; i++ {
-					wma.RecieveOrderedTick(sourceData[i], i+1)
+					wma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 
@@ -66,7 +66,7 @@ var _ = Describe("when calculating a weighted moving average (wma)", func() {
 
 			BeforeEach(func() {
 				for i := range sourceData {
-					wma.RecieveOrderedTick(sourceData[i], i+1)
+					wma.ReceiveDOHLCVTick(sourceData[i], i+1)
 				}
 			})
 
