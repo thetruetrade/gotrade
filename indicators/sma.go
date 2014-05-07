@@ -65,10 +65,10 @@ func NewSMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFu
 
 func (sma *baseSMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = sma.selectData(tickData)
-	sma.RecieveTick(selectedData, streamBarIndex)
+	sma.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (sma *baseSMA) RecieveTick(tickData float64, streamBarIndex int) {
+func (sma *baseSMA) ReceiveTick(tickData float64, streamBarIndex int) {
 	sma.periodCounter += 1
 	sma.dataLength += 1
 
