@@ -30,6 +30,7 @@ type SMA struct {
 	// public variables
 	Data []float64
 }
+
 type SMAWithoutStorage struct {
 	*baseSMA
 }
@@ -70,8 +71,6 @@ func (sma *baseSMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex in
 
 func (sma *baseSMA) ReceiveTick(tickData float64, streamBarIndex int) {
 	sma.periodCounter += 1
-	sma.dataLength += 1
-
 	sma.periodHistory.PushBack(tickData)
 
 	if sma.periodCounter > 0 {
@@ -85,6 +84,8 @@ func (sma *baseSMA) ReceiveTick(tickData float64, streamBarIndex int) {
 	sma.periodTotal += tickData
 	var result float64 = sma.periodTotal / float64(sma.LookbackPeriod)
 	if sma.periodCounter >= 0 {
+		sma.dataLength += 1
+
 		if sma.validFromBar == -1 {
 			sma.validFromBar = streamBarIndex
 		}

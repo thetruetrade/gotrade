@@ -52,21 +52,37 @@ func NewEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, sele
 
 func (ema *baseEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ema.selectData(tickData)
-	ema.RecieveTick(selectedData, streamBarIndex)
+	ema.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (ema *baseEMA) RecieveTick(tickData float64, streamBarIndex int) {
+func (ema *baseEMA) ReceiveTick(tickData float64, streamBarIndex int) {
 	ema.periodCounter += 1
-	ema.dataLength += 1
-
 	if ema.periodCounter < 0 {
 		ema.periodTotal += tickData
 	} else if ema.periodCounter == 0 {
+		ema.dataLength += 1
+
+		if ema.validFromBar == -1 {
+			ema.validFromBar = streamBarIndex
+		}
+
 		ema.periodTotal += tickData
-		ema.previousEMA = ema.periodTotal / float64(ema.LookbackPeriod)
+		result := ema.periodTotal / float64(ema.LookbackPeriod)
+		ema.previousEMA = result
+
+		if result > ema.maxValue {
+			ema.maxValue = result
+		}
+
+		if result < ema.minValue {
+			ema.minValue = result
+		}
+
 		ema.valueAvailableAction(ema.previousEMA, streamBarIndex)
 
 	} else if ema.periodCounter > 0 {
+		ema.dataLength += 1
+
 		result := (tickData-ema.previousEMA)*ema.multiplier + ema.previousEMA
 		ema.previousEMA = result
 

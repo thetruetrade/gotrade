@@ -115,41 +115,149 @@ var _ = Describe("when executing the gotrade weighted moving average with a year
 	})
 })
 
-//var _ = Describe("when executing the gotrade double exponential moving average with a years data and known output", func() {
-//	var (
-//		dema            *indicators.DEMA
-//		period          int
-//		expectedResults []float64
-//		err             error
-//		priceStream     *gotrade.DOHLCVStream
-//	)
+var _ = Describe("when executing the gotrade double exponential moving average with a years data and known output", func() {
+	var (
+		dema            *indicators.DEMA
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.DOHLCVStream
+	)
 
-//	BeforeEach(func() {
-//		// load the expected results data
-//		expectedResults, _ = LoadCSVPriceDataFromFile("dema_10_expectedresult.data")
-//		priceStream = gotrade.NewDOHLCVStream()
-//	})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("dema_10_expectedresult.data")
+		priceStream = gotrade.NewDOHLCVStream()
+	})
 
-//	Describe("using a lookback period of 10", func() {
+	Describe("using a lookback period of 10", func() {
 
-//		BeforeEach(func() {
-//			period = 10
-//			dema, err = indicators.NewDEMA(period, gotrade.UseClosePrice)
-//			priceStream.AddTickSubscription(dema)
-//			csvFeed.FillDOHLCVStream(priceStream)
-//		})
+		BeforeEach(func() {
+			period = 10
+			dema, err = indicators.NewDEMA(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(dema)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
 
-//		It("the result set should have a length equal to the source data length less the period + 1", func() {
-//			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - dema.LookbackPeriod + 1))
-//		})
+		It("the result set should have a length equal to the source data length less twice the lookback period + 2", func() {
+			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - (dema.LookbackPeriod * 2) + 2))
+		})
 
-//		It("it should have correctly calculated the double exponential moving average for each item in the result set accurate to two decimal places", func() {
-//			for k := range expectedResults {
-//				Expect(expectedResults[k]).To(BeNumerically("~", dema.Data[k], 0.01))
-//			}
-//		})
-//	})
-//})
+		It("it should have correctly calculated the double exponential moving average for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", dema.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade triple exponential moving average with a years data and known output", func() {
+	var (
+		tema            *indicators.TEMA
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.DOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("tema_10_expectedresult.data")
+		priceStream = gotrade.NewDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 10", func() {
+
+		BeforeEach(func() {
+			period = 10
+			tema, err = indicators.NewTEMA(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(tema)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less triple the looback period + 3", func() {
+			Expect(len(tema.Data)).To(Equal(len(priceStream.Data) - (tema.LookbackPeriod * 3) + 3))
+		})
+
+		It("it should have correctly calculated the triple exponential moving average for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", tema.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade variance with a years data and known output", func() {
+	var (
+		variance        *indicators.Variance
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.DOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("variance_10_expectedresult.data")
+		priceStream = gotrade.NewDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 10", func() {
+
+		BeforeEach(func() {
+			period = 10
+			variance, err = indicators.NewVariance(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(variance)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the period + 1", func() {
+			Expect(len(variance.Data)).To(Equal(len(priceStream.Data) - variance.LookbackPeriod + 1))
+		})
+
+		It("it should have correctly calculated the variance for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", variance.Data[k], 0.1))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade standard deviation with a years data and known output", func() {
+	var (
+		stdDev          *indicators.StdDeviation
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.DOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("stddev_10_expectedresult.data")
+		priceStream = gotrade.NewDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 10", func() {
+
+		BeforeEach(func() {
+			period = 10
+			stdDev, err = indicators.NewStdDeviation(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(stdDev)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the period + 1", func() {
+			Expect(len(stdDev.Data)).To(Equal(len(priceStream.Data) - stdDev.LookbackPeriod + 1))
+		})
+
+		It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", stdDev.Data[k], 0.1))
+			}
+		})
+	})
+})
 
 var _ = Describe("when executing the gotrade bollinger bands with a years data and known output", func() {
 	var (

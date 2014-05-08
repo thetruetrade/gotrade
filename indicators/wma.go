@@ -60,9 +60,9 @@ func NewWMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator
 }
 
 func NewWMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
-	newSma, err := NewWMA(lookbackPeriod, selectData)
-	priceStream.AddTickSubscription(newSma)
-	return newSma, err
+	newWma, err := NewWMA(lookbackPeriod, selectData)
+	priceStream.AddTickSubscription(newWma)
+	return newWma, err
 }
 
 // NewAttachedWMA returns a new Simple Moving Average (WMA) configured with the
@@ -79,12 +79,11 @@ func NewWMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFu
 
 func (wma *baseWMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = wma.selectData(tickData)
-	wma.RecieveTick(selectedData, streamBarIndex)
+	wma.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (wma *baseWMA) RecieveTick(tickData float64, streamBarIndex int) {
+func (wma *baseWMA) ReceiveTick(tickData float64, streamBarIndex int) {
 	wma.periodCounter += 1
-	wma.dataLength += 1
 
 	wma.periodHistory.PushBack(tickData)
 
@@ -97,6 +96,7 @@ func (wma *baseWMA) RecieveTick(tickData float64, streamBarIndex int) {
 	}
 
 	if wma.periodCounter >= 0 {
+		wma.dataLength += 1
 		if wma.validFromBar == -1 {
 			wma.validFromBar = streamBarIndex
 		}

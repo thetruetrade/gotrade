@@ -10,13 +10,13 @@ import (
 
 var _ = Describe("when calculating a weighted moving average (wma)", func() {
 	var (
-		period     int = 3
-		weightsSum int = 3 + 2 + 1
+		period int = 3
 	)
 
 	Describe("given the wma target data structure is an array of floats ", func() {
 		var (
 			wma        *WMA
+			indicator  Indicator
 			sourceData = []gotrade.DOHLCV{gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 5.0, 0.0),
 				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 6.0, 0.0),
 				gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 7.0, 0.0),
@@ -26,6 +26,7 @@ var _ = Describe("when calculating a weighted moving average (wma)", func() {
 
 		BeforeEach(func() {
 			wma, _ = NewWMA(period, gotrade.UseClosePrice)
+			indicator = wma
 		})
 
 		Context("and the wma has received less ticks than the lookback period", func() {
@@ -38,6 +39,14 @@ var _ = Describe("when calculating a weighted moving average (wma)", func() {
 
 			It("the wma should have no result data", func() {
 				Expect(len(wma.Data)).To(Equal(0))
+			})
+
+			It("the indicator stream length should be zero", func() {
+				Expect(indicator.Length()).To(Equal(0))
+			})
+
+			It("the indicator stream should have no valid bars", func() {
+				Expect(indicator.ValidFromBar()).To(Equal(-1))
 			})
 		})
 
@@ -53,12 +62,16 @@ var _ = Describe("when calculating a weighted moving average (wma)", func() {
 				Expect(len(wma.Data)).To(Equal(1))
 			})
 
-			It("the wma should have a single result equal to the sum of the ticks multiplied by their weights divided by the sum of the weights", func() {
-				sumData := 0.0
-				for i := 0; i <= period-1; i++ {
-					sumData += gotrade.UseClosePrice(sourceData[i]) * float64(i+1)
-				}
-				Expect(wma.Data[0]).To(Equal(sumData / float64(weightsSum)))
+			It("the indicator stream length should be one", func() {
+				Expect(indicator.Length()).To(Equal(1))
+			})
+
+			It("the indicator stream min and max should be equal", func() {
+				Expect(indicator.MaxValue()).To(Equal(indicator.MinValue()))
+			})
+
+			It("the indicator stream should have valid bars from the lookback period", func() {
+				Expect(indicator.ValidFromBar()).To(Equal(period))
 			})
 		})
 
@@ -74,10 +87,12 @@ var _ = Describe("when calculating a weighted moving average (wma)", func() {
 				Expect(len(wma.Data)).To(Equal(len(sourceData) - (period - 1)))
 			})
 
-			It("the wma should have a result for each tick equal to the sum of the ticks multiplied by their weights divided by the sum of the weights", func() {
-				Expect(wma.Data[0]).To(Equal(((5.0 * 1) + (6.0 * 2) + (7.0 * 3)) / float64(weightsSum)))
-				Expect(wma.Data[1]).To(Equal(((6.0 * 1) + (7.0 * 2) + (8.0 * 3)) / float64(weightsSum)))
-				Expect(wma.Data[2]).To(Equal(((7.0 * 1) + (8.0 * 2) + (9.0 * 3)) / float64(weightsSum)))
+			It("the indicator stream min should equal the result data minimum", func() {
+				Expect(indicator.MinValue()).To(Equal(GetDataMin(wma.Data)))
+			})
+
+			It("the indicator stream max should equal the result data maximum", func() {
+				Expect(indicator.MaxValue()).To(Equal(GetDataMax(wma.Data)))
 			})
 		})
 	})

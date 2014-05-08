@@ -45,6 +45,10 @@ func (ind *baseIndicator) MaxValue() float64 {
 	return ind.maxValue
 }
 
+func (ind *baseIndicator) Length() int {
+	return ind.dataLength
+}
+
 type baseIndicatorWithLookback struct {
 	*baseIndicator
 	LookbackPeriod int

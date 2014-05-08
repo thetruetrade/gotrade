@@ -1,86 +1,94 @@
 package indicators_test
 
-//import (
-//	. "github.com/onsi/ginkgo"
-//	. "github.com/onsi/gomega"
-//	. "github.com/thetruetrade/gotrade/indicators"
-//)
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/thetruetrade/gotrade"
+	. "github.com/thetruetrade/gotrade/indicators"
+	"time"
+)
 
-//var _ = Describe("when calculating a EMA (exponential moving average)", func() {
-//	var (
-//		ema             *EMA
-//		period          int
-//		results         []float64
-//		expectedResults []float64
-//		err             error
-//	)
+var _ = Describe("when calculating an exponential moving average (ema)", func() {
+	var (
+		period     int = 3
+		ema        *EMA
+		indicator  Indicator
+		sourceData = []gotrade.DOHLCV{gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 5.0, 0.0),
+			gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 6.0, 0.0),
+			gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 7.0, 0.0),
+			gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 8.0, 0.0),
+			gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 9.0, 0.0)}
+	)
 
-//	BeforeEach(func() {
-//		// load the expected results data
-//		expectedResults, _ = LoadCSVPriceDataFromFile("ema_10_expectedresult.data")
-//	})
+	BeforeEach(func() {
+		ema, _ = NewEMA(period, gotrade.UseClosePrice)
+		indicator = ema
+	})
 
-//	Describe("using a lookback period of 10", func() {
+	Context("and the ema has received less ticks than the lookback period", func() {
 
-//		BeforeEach(func() {
-//			period = 10
-//			ema, _ = NewEMA(period)
-//		})
+		BeforeEach(func() {
+			for i := 0; i < period-1; i++ {
+				ema.ReceiveDOHLCVTick(sourceData[i], i+1)
+			}
+		})
 
-//		Context("given the source data has length greater than the lookback period", func() {
+		It("the ema should have no result data", func() {
+			Expect(len(ema.Data)).To(Equal(0))
+		})
 
-//			BeforeEach(func() {
-//				results, err = ema.Calculate(TestInputData)
-//			})
+		It("the indicator stream length should be zero", func() {
+			Expect(indicator.Length()).To(Equal(0))
+		})
 
-//			It("the result set should have a length equal to the source data length less the period + 1", func() {
-//				Expect(len(results)).To(Equal(len(TestInputData) - ema.LookbackPeriod + 1))
-//			})
+		It("the indicator stream should have no valid bars", func() {
+			Expect(indicator.ValidFromBar()).To(Equal(-1))
+		})
+	})
 
-//			It("it should have correctly calculated the EMA for each item in the result set accurate to two decimal places", func() {
-//				for k := 0; k < len(results); k++ {
-//					Expect(expectedResults[k]).To(BeNumerically("~", results[k], 0.01))
-//				}
-//			})
+	Context("and the ema has received ticks equal to the lookback period", func() {
 
-//			It("it should not return any errors", func() {
-//				Expect(err).To(BeNil())
-//			})
-//		})
+		BeforeEach(func() {
+			for i := 0; i <= period-1; i++ {
+				ema.ReceiveDOHLCVTick(sourceData[i], i+1)
+			}
+		})
 
-//		Context("given the source data is nil", func() {
-//			BeforeEach(func() {
-//				results, err = ema.Calculate(nil)
-//			})
+		It("the ema should have result data with a single entry", func() {
+			Expect(len(ema.Data)).To(Equal(1))
+		})
 
-//			It("it should return the appropriate error: ErrSourceDataEmpty", func() {
-//				Expect(err).To(Equal(ErrSourceDataEmpty))
-//			})
-//		})
+		It("the indicator stream length should be one", func() {
+			Expect(indicator.Length()).To(Equal(1))
+		})
 
-//		Context("given the source data has length less than the lookback period", func() {
-//			BeforeEach(func() {
-//				results, err = ema.Calculate(TestInputData[:8])
-//			})
+		It("the indicator stream min and max should be equal", func() {
+			Expect(indicator.MaxValue()).To(Equal(indicator.MinValue()))
+		})
 
-//			It("it should return the appropriate error: ErrNotEnoughSourceDataForLookbackPeriod", func() {
-//				Expect(err).To(Equal(ErrNotEnoughSourceDataForLookbackPeriod))
-//			})
-//		})
+		It("the indicator stream should have valid bars from the lookback period", func() {
+			Expect(indicator.ValidFromBar()).To(Equal(period))
+		})
+	})
 
-//		Context("given the lookback period is less than or equal to zero", func() {
-//			BeforeEach(func() {
-//				period = -1
-//				ema, _ = NewEMA(period)
-//			})
+	Context("and the ema has received more ticks than the lookback period", func() {
 
-//			JustBeforeEach(func() {
-//				results, err = ema.Calculate(TestInputData[:8])
-//			})
+		BeforeEach(func() {
+			for i := range sourceData {
+				ema.ReceiveDOHLCVTick(sourceData[i], i+1)
+			}
+		})
 
-//			It("it should return the appropriate error: ErrLookbackPeriodMustBeGreaterThanZero", func() {
-//				Expect(err).To(Equal(ErrLookbackPeriodMustBeGreaterThanZero))
-//			})
-//		})
-//	})
-//})
+		It("the ema should have result data with entries equal to the number of ticks less the (lookback period - 1)", func() {
+			Expect(len(ema.Data)).To(Equal(len(sourceData) - (period - 1)))
+		})
+
+		It("the indicator stream min should equal the result data minimum", func() {
+			Expect(indicator.MinValue()).To(Equal(GetDataMin(ema.Data)))
+		})
+
+		It("the indicator stream max should equal the result data maximum", func() {
+			Expect(indicator.MaxValue()).To(Equal(GetDataMax(ema.Data)))
+		})
+	})
+})
