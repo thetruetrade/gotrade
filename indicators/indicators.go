@@ -62,4 +62,4 @@ func newBaseIndicatorWithLookback(lookbackPeriod int) *baseIndicatorWithLookback
 
 type ValueAvailableAction func(dataItem float64, streamBarIndex int)
 type ValueAvailableActionDOHLCV func(dataItem gotrade.DOHLCV, streamBarIndex int)
-type ValueAvailableActionBollinger func(dataItem BollingerBandEntry, streamBarIndex int)
+type ValueAvailableActionBollinger func(dataItem BollingerBand, streamBarIndex int)

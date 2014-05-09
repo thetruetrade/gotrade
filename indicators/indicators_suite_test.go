@@ -51,7 +51,7 @@ func LoadCSVPriceDataFromFile(fileName string) (results []float64, err error) {
 	return results, nil
 }
 
-func LoadCSVBollingerPriceDataFromFile(fileName string) (results []indicators.BollingerBandEntry, err error) {
+func LoadCSVBollingerPriceDataFromFile(fileName string) (results []indicators.BollingerBand, err error) {
 	file, err := os.Open("../testdata/" + fileName)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -76,7 +76,7 @@ func LoadCSVBollingerPriceDataFromFile(fileName string) (results []indicators.Bo
 			fmt.Println("Error:", err)
 			return nil, err
 		}
-		results = append(results, indicators.BollingerBandEntry{UpperBand: upperBandValue, MiddleBand: middleBandValue, LowerBand: lowerBandValue})
+		results = append(results, indicators.NewBollingerBandDataItem(upperBandValue, middleBandValue, lowerBandValue))
 	}
 	return results, nil
 }
@@ -140,7 +140,7 @@ func GetDataMinDOHLCV(dohlcvArray []gotrade.DOHLCV, selectData gotrade.DataSelec
 	return min
 }
 
-func GetDataMaxBollinger(dohlcvArray []indicators.BollingerBandEntry, selectData indicators.BollingerDataSelectionFunc) float64 {
+func GetDataMaxBollinger(dohlcvArray []indicators.BollingerBand, selectData indicators.BollingerDataSelectionFunc) float64 {
 	max := math.SmallestNonzeroFloat64
 
 	for i := range dohlcvArray {
@@ -153,7 +153,7 @@ func GetDataMaxBollinger(dohlcvArray []indicators.BollingerBandEntry, selectData
 	return max
 }
 
-func GetDataMinBollinger(dohlcvArray []indicators.BollingerBandEntry, selectData indicators.BollingerDataSelectionFunc) float64 {
+func GetDataMinBollinger(dohlcvArray []indicators.BollingerBand, selectData indicators.BollingerDataSelectionFunc) float64 {
 	min := math.MaxFloat64
 
 	for i := range dohlcvArray {

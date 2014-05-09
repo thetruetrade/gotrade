@@ -4,10 +4,35 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type BollingerBandEntry struct {
-	UpperBand  float64
-	MiddleBand float64
-	LowerBand  float64
+type BollingerBand interface {
+	// Upper bollinger band
+	U() float64
+	// Middle bollinger band
+	M() float64
+	// Lower bollinger band
+	L() float64
+}
+
+type BollingerBandDataItem struct {
+	upperBand  float64
+	middleBand float64
+	lowerBand  float64
+}
+
+func (bb *BollingerBandDataItem) U() float64 {
+	return bb.upperBand
+}
+
+func (bb *BollingerBandDataItem) L() float64 {
+	return bb.lowerBand
+}
+
+func (bb *BollingerBandDataItem) M() float64 {
+	return bb.middleBand
+}
+
+func NewBollingerBandDataItem(upperBand float64, middleBand float64, lowerBand float64) *BollingerBandDataItem {
+	return &BollingerBandDataItem{upperBand: upperBand, middleBand: middleBand, lowerBand: lowerBand}
 }
 
 type baseBollingerBands struct {
@@ -28,13 +53,13 @@ func newBaseBollingerBands(lookbackPeriod int) *baseBollingerBands {
 type BollingerBands struct {
 	*baseBollingerBands
 
-	Data []BollingerBandEntry
+	Data []BollingerBand
 }
 
 func NewBollingerBands(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
 	newBB := BollingerBands{baseBollingerBands: newBaseBollingerBands(lookbackPeriod)}
 	newBB.selectData = selectData
-	newBB.valueAvailableAction = func(dataItem BollingerBandEntry, streamBarIndex int) {
+	newBB.valueAvailableAction = func(dataItem BollingerBand, streamBarIndex int) {
 		newBB.Data = append(newBB.Data, dataItem)
 	}
 	newBB.sma, _ = NewSMAWithoutStorage(lookbackPeriod, selectData, func(dataItem float64, streamBarIndex int) {
@@ -59,7 +84,7 @@ func NewBollingerBands(lookbackPeriod int, selectData gotrade.DataSelectionFunc)
 			newBB.minValue = lowerBand
 		}
 
-		newBB.valueAvailableAction(BollingerBandEntry{UpperBand: upperBand, MiddleBand: newBB.currentSMA, LowerBand: lowerBand}, streamBarIndex)
+		newBB.valueAvailableAction(&BollingerBandDataItem{upperBand: upperBand, middleBand: newBB.currentSMA, lowerBand: lowerBand}, streamBarIndex)
 	}
 
 	return &newBB, nil
@@ -82,16 +107,16 @@ func (bb *baseBollingerBands) RecieveTick(tickData float64, streamBarIndex int) 
 	bb.stdDev.ReceiveTick(tickData, streamBarIndex)
 }
 
-type BollingerDataSelectionFunc func(dataItem BollingerBandEntry) float64
+type BollingerDataSelectionFunc func(dataItem BollingerBand) float64
 
-func UseUpperBand(dataItem BollingerBandEntry) float64 {
-	return dataItem.UpperBand
+func UseUpperBand(dataItem BollingerBand) float64 {
+	return dataItem.U()
 }
 
-func UseMiddleBand(dataItem BollingerBandEntry) float64 {
-	return dataItem.MiddleBand
+func UseMiddleBand(dataItem BollingerBand) float64 {
+	return dataItem.M()
 }
 
-func UseLowerBand(dataItem BollingerBandEntry) float64 {
-	return dataItem.LowerBand
+func UseLowerBand(dataItem BollingerBand) float64 {
+	return dataItem.L()
 }

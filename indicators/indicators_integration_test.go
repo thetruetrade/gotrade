@@ -263,7 +263,7 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 	var (
 		bb              *indicators.BollingerBands
 		period          int
-		expectedResults []indicators.BollingerBandEntry
+		expectedResults []indicators.BollingerBand
 		err             error
 		priceStream     *gotrade.DOHLCVStream
 	)
@@ -289,9 +289,9 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 
 		It("it should have correctly calculated the bollinger upper, middle and lower bands for each item in the result set accurate to two decimal places", func() {
 			for k := range expectedResults {
-				Expect(expectedResults[k].UpperBand).To(BeNumerically("~", bb.Data[k].UpperBand, 0.01))
-				Expect(expectedResults[k].MiddleBand).To(BeNumerically("~", bb.Data[k].MiddleBand, 0.01))
-				Expect(expectedResults[k].LowerBand).To(BeNumerically("~", bb.Data[k].LowerBand, 0.01))
+				Expect(expectedResults[k].U()).To(BeNumerically("~", bb.Data[k].U(), 0.01))
+				Expect(expectedResults[k].M()).To(BeNumerically("~", bb.Data[k].M(), 0.01))
+				Expect(expectedResults[k].L()).To(BeNumerically("~", bb.Data[k].L(), 0.01))
 			}
 		})
 	})
