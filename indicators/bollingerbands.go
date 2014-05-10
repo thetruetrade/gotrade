@@ -4,37 +4,6 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type BollingerBand interface {
-	// Upper bollinger band
-	U() float64
-	// Middle bollinger band
-	M() float64
-	// Lower bollinger band
-	L() float64
-}
-
-type BollingerBandDataItem struct {
-	upperBand  float64
-	middleBand float64
-	lowerBand  float64
-}
-
-func (bb *BollingerBandDataItem) U() float64 {
-	return bb.upperBand
-}
-
-func (bb *BollingerBandDataItem) L() float64 {
-	return bb.lowerBand
-}
-
-func (bb *BollingerBandDataItem) M() float64 {
-	return bb.middleBand
-}
-
-func NewBollingerBandDataItem(upperBand float64, middleBand float64, lowerBand float64) *BollingerBandDataItem {
-	return &BollingerBandDataItem{upperBand: upperBand, middleBand: middleBand, lowerBand: lowerBand}
-}
-
 type baseBollingerBands struct {
 	*baseIndicatorWithLookback
 
