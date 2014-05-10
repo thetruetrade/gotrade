@@ -81,6 +81,36 @@ func LoadCSVBollingerPriceDataFromFile(fileName string) (results []indicators.Bo
 	return results, nil
 }
 
+func LoadCSVMACDPriceDataFromFile(fileName string) (results []indicators.MACDData, err error) {
+	file, err := os.Open("../testdata/" + fileName)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
+	}
+	defer file.Close()
+	reader := csv.NewReader(file)
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+
+		macd, err := strconv.ParseFloat(strings.TrimSpace(record[0]), 64)
+		signal, err := strconv.ParseFloat(strings.TrimSpace(record[1]), 64)
+		histogram, err := strconv.ParseFloat(strings.TrimSpace(record[2]), 64)
+
+		if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+		results = append(results, indicators.NewMACDDataItem(macd, signal, histogram))
+	}
+	return results, nil
+}
+
 var _ = BeforeSuite(func() {
 	csvFeed = feeds.NewCSVFileFeedWithDOHLCVFormat("../testdata/JSETOPI.2013.data",
 		feeds.DashedYearDayMonthDateParserForLocation(time.Local))
@@ -160,6 +190,50 @@ func GetDataMinBollinger(dohlcvArray []indicators.BollingerBand, selectData indi
 		var selectedData = selectData(dohlcvArray[i])
 		if min > selectedData {
 			min = selectedData
+		}
+	}
+
+	return min
+}
+
+func GetDataMaxMACD(dohlcvArray []indicators.MACDData) float64 {
+	max := math.SmallestNonzeroFloat64
+
+	for i := range dohlcvArray {
+		macd := dohlcvArray[i].M()
+		signal := dohlcvArray[i].S()
+		histogram := dohlcvArray[i].H()
+
+		if max < macd {
+			max = macd
+		}
+		if max < signal {
+			max = signal
+		}
+		if max < histogram {
+			max = histogram
+		}
+	}
+
+	return max
+}
+
+func GetDataMinMACD(dohlcvArray []indicators.MACDData) float64 {
+	min := math.MaxFloat64
+
+	for i := range dohlcvArray {
+		macd := dohlcvArray[i].M()
+		signal := dohlcvArray[i].S()
+		histogram := dohlcvArray[i].H()
+
+		if min > macd {
+			min = macd
+		}
+		if min > signal {
+			min = signal
+		}
+		if min > histogram {
+			min = histogram
 		}
 	}
 

@@ -296,3 +296,39 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 		})
 	})
 })
+
+var _ = Describe("when executing the gotrade macd with a years data and known output", func() {
+	var (
+		macd            *indicators.MACD
+		expectedResults []indicators.MACDData
+		err             error
+		priceStream     *gotrade.DOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVMACDPriceDataFromFile("macd_12_26_9_expectedresult.data")
+		priceStream = gotrade.NewDOHLCVStream()
+	})
+
+	Describe("using a lookback periods of 12, 26, 9", func() {
+
+		BeforeEach(func() {
+			macd, err = indicators.NewMACD(12, 26, 9, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(macd)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the period + 1", func() {
+			Expect(len(macd.Data)).To(Equal(len(priceStream.Data) - (26 + 8) + 1))
+		})
+
+		It("it should have correctly calculated the macd, signal and histogram for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k].M()).To(BeNumerically("~", macd.Data[k].M(), 0.01))
+				Expect(expectedResults[k].S()).To(BeNumerically("~", macd.Data[k].S(), 0.01))
+				Expect(expectedResults[k].H()).To(BeNumerically("~", macd.Data[k].H(), 0.01))
+			}
+		})
+	})
+})
