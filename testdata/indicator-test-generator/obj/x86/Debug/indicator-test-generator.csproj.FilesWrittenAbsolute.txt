@@ -1,0 +1,6 @@
+/home/eugened/Development/local/indicator-test-generator/indicator-test-generator/obj/x86/Debug/.NETFramework,Version=v4.0.AssemblyAttribute.cs
+/home/eugened/Development/local/indicator-test-generator/indicator-test-generator/bin/Debug/indicator-test-generator.exe.mdb
+/home/eugened/Development/local/indicator-test-generator/indicator-test-generator/bin/Debug/indicator-test-generator.exe
+/home/eugened/Development/local/indicator-test-generator/indicator-test-generator/obj/x86/Debug/indicator-test-generator.exe
+/home/eugened/Development/local/indicator-test-generator/indicator-test-generator/obj/x86/Debug/indicator-test-generator.exe.mdb
+/home/eugened/Development/local/indicator-test-generator/indicator-test-generator/bin/Debug/TA-Lib-Core.dll
