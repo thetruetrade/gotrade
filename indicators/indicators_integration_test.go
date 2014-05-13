@@ -139,8 +139,8 @@ var _ = Describe("when executing the gotrade double exponential moving average w
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less twice the lookback period + 2", func() {
-			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - (dema.LookbackPeriod * 2) + 2))
+		It("the result set should have a length equal to the source data length less twice the lookback period -1", func() {
+			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - (dema.LookbackPeriod - 1)))
 		})
 
 		It("it should have correctly calculated the double exponential moving average for each item in the result set accurate to two decimal places", func() {
@@ -175,8 +175,8 @@ var _ = Describe("when executing the gotrade triple exponential moving average w
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less triple the looback period + 3", func() {
-			Expect(len(tema.Data)).To(Equal(len(priceStream.Data) - (tema.LookbackPeriod * 3) + 3))
+		It("the result set should have a length equal to the source data length less triple the looback period -1", func() {
+			Expect(len(tema.Data)).To(Equal(len(priceStream.Data) - (tema.LookbackPeriod - 1)))
 		})
 
 		It("it should have correctly calculated the triple exponential moving average for each item in the result set accurate to two decimal places", func() {

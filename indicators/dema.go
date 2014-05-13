@@ -33,7 +33,7 @@ type DEMA struct {
 // NewDEMA returns a new Double Exponential Moving Average (DEMA) configured with the
 // specified lookbackPeriod. The DEMA results are stored in the DATA field.
 func NewDEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *DEMA, err error) {
-	newDEMA := DEMA{baseDEMA: newBaseDEMA(lookbackPeriod)}
+	newDEMA := DEMA{baseDEMA: newBaseDEMA(2*(lookbackPeriod) - 1)}
 	newDEMA.ema1, _ = NewEMA(lookbackPeriod, selectData)
 
 	newDEMA.ema1.valueAvailableAction = func(dataItem float64, streamBarIndex int) {

@@ -13,7 +13,7 @@ import (
 
 // A Moving Average Convergence-Divergence (MACD) Indicator
 type MACD struct {
-	*baseIndicator
+	*baseIndicatorWithLookback
 
 	// private variables
 	valueAvailableAction ValueAvailableActionMACD
@@ -35,7 +35,7 @@ type MACD struct {
 // NewMACD returns a new Moving Average Convergence-Divergence (MACD) Indicator configured with the
 // specified lookbackPeriods. The MACD results are stored in the DATA field.
 func NewMACD(fastLookbackPeriod int, slowLookbackPeriod int, signalLookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *MACD, err error) {
-	newMACD := MACD{baseIndicator: newBaseIndicator(),
+	newMACD := MACD{baseIndicatorWithLookback: newBaseIndicatorWithLookback(slowLookbackPeriod + signalLookbackPeriod - 1),
 		fastLookbackPeriod:   fastLookbackPeriod,
 		slowLookbackPeriod:   slowLookbackPeriod,
 		signalLookbackPeriod: signalLookbackPeriod}

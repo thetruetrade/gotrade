@@ -35,7 +35,7 @@ type TEMA struct {
 // NewTEMA returns a new Double Exponential Moving Average (TEMA) configured with the
 // specified lookbackPeriod. The TEMA results are stored in the DATA field.
 func NewTEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
-	newTEMA := TEMA{baseTEMA: newBaseTEMA(lookbackPeriod)}
+	newTEMA := TEMA{baseTEMA: newBaseTEMA(3*lookbackPeriod - 2)}
 	newTEMA.ema1, _ = NewEMA(lookbackPeriod, selectData)
 
 	newTEMA.ema1.valueAvailableAction = func(dataItem float64, streamBarIndex int) {

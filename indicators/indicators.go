@@ -11,6 +11,10 @@ var (
 	ErrSourceDataEmpty                      = errors.New("Source data is empty")
 	ErrNotEnoughSourceDataForLookbackPeriod = errors.New("Source data does not contain enough data for the specfied lookback period")
 	ErrLookbackPeriodMustBeGreaterThanZero  = errors.New("Lookback period must be greater than 0")
+
+	// lookback minimum
+	MinimumLookbackPeriod int = 2
+	MaximumLookbackPeriod int = 200
 )
 
 type Indicator interface {
@@ -18,6 +22,10 @@ type Indicator interface {
 	Length() int
 	MinValue() float64
 	MaxValue() float64
+}
+
+type IndicatorWithLookback interface {
+	GetLookbackPeriod() int
 }
 
 type baseIndicator struct {
@@ -58,6 +66,10 @@ func newBaseIndicatorWithLookback(lookbackPeriod int) *baseIndicatorWithLookback
 	ind := baseIndicatorWithLookback{baseIndicator: newBaseIndicator(),
 		LookbackPeriod: lookbackPeriod}
 	return &ind
+}
+
+func (ind *baseIndicatorWithLookback) GetLookbackPeriod() int {
+	return ind.LookbackPeriod
 }
 
 type ValueAvailableAction func(dataItem float64, streamBarIndex int)

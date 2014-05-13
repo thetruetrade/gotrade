@@ -17,11 +17,143 @@ import (
 	"time"
 )
 
-var csvFeed *feeds.CSVFileFeed
+var (
+	csvFeed          *feeds.CSVFileFeed
+	sourceData       []float64        = []float64{5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0}
+	sourceDOHLCVData []gotrade.DOHLCV = []gotrade.DOHLCV{gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 5.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 6.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 7.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 8.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 9.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 10.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 11.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 12.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 13.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 14.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 15.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 16.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 17.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 18.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 19.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 20.0, 0.0)}
+)
 
 func TestIndicators(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Indicators Suite")
+}
+
+var _ = BeforeSuite(func() {
+	csvFeed = feeds.NewCSVFileFeedWithDOHLCVFormat("../testdata/JSETOPI.2013.data",
+		feeds.DashedYearDayMonthDateParserForLocation(time.Local))
+})
+
+var _ = AfterSuite(func() {
+	csvFeed = nil
+})
+
+// ValidFromBar() int
+// Length() int
+// MinValue() float64
+// MaxValue() float64
+
+type IndicatorSharedSpecInputs struct {
+	IndicatorUnderTest indicators.Indicator
+}
+
+func ShouldBeAnInitialisedIndicator(inputs *IndicatorSharedSpecInputs) {
+	It("the indicator should not be valid from any bar yet", func() {
+		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(Equal(-1))
+	})
+
+	It("the indicator stream should have no results", func() {
+		Expect(inputs.IndicatorUnderTest.Length()).To(BeZero())
+	})
+
+	It("the indicator should have no minimum value set", func() {
+		Expect(inputs.IndicatorUnderTest.MinValue()).To(Equal(math.MaxFloat64))
+	})
+
+	It("the indicator should have no maximum value set", func() {
+		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
+	})
+}
+
+type IndicatorWithLookbackSharedSpecInputs struct {
+	IndicatorUnderTest indicators.IndicatorWithLookback
+	GetMaximum         GetMaximumFunc
+	GetMinimum         GetMinimumFunc
+	SourceDataLength   int
+}
+
+func ShouldBeAnInitialisedIndicatorWithLookback(inputs *IndicatorWithLookbackSharedSpecInputs) {
+	It("the indicator should not be valid from any bar yet", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).ValidFromBar()).To(Equal(-1))
+	})
+
+	It("the indicator stream should have no results", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(BeZero())
+	})
+
+	It("the indicator should have no minimum value set", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()).To(Equal(math.MaxFloat64))
+	})
+
+	It("the indicator should have no maximum value set", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
+	})
+
+	It("the indicator should have a valid lookback period", func() {
+		Expect(inputs.IndicatorUnderTest.GetLookbackPeriod()).Should(BeNumerically(">=", indicators.MinimumLookbackPeriod))
+		Expect(inputs.IndicatorUnderTest.GetLookbackPeriod()).Should(BeNumerically("<=", indicators.MaximumLookbackPeriod))
+	})
+}
+
+func ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(inputs *IndicatorWithLookbackSharedSpecInputs) {
+
+	It("the indicator should not be valid from any bar yet", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).ValidFromBar()).To(Equal(-1))
+	})
+
+	It("the indicator stream should have no results", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(BeZero())
+	})
+
+	It("the indicator should have no minimum value set", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()).To(Equal(math.MaxFloat64))
+	})
+
+	It("the indicator should have no maximum value set", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
+	})
+}
+
+func ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(inputs *IndicatorWithLookbackSharedSpecInputs) {
+	It("the indicator stream should have a single entry", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(Equal(1))
+	})
+
+	//It("the indicator min and max should be equal", func() {
+	//	Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()))
+	//})
+
+	It("the indicator should be valid from the lookback period", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).ValidFromBar()).To(Equal(inputs.IndicatorUnderTest.GetLookbackPeriod()))
+	})
+}
+
+func ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(inputs *IndicatorWithLookbackSharedSpecInputs) {
+	It("the indicator stream should have entries equal to the number of ticks less the lookback period", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(Equal(inputs.SourceDataLength - (inputs.IndicatorUnderTest.GetLookbackPeriod() - 1)))
+	})
+
+	It("the indicator min should equal the result stream minimum", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()).To(Equal(inputs.GetMinimum()))
+	})
+
+	It("the indicator max should equal the result stream maximum", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(inputs.GetMaximum()))
+	})
 }
 
 func LoadCSVPriceDataFromFile(fileName string) (results []float64, err error) {
@@ -111,14 +243,9 @@ func LoadCSVMACDPriceDataFromFile(fileName string) (results []indicators.MACDDat
 	return results, nil
 }
 
-var _ = BeforeSuite(func() {
-	csvFeed = feeds.NewCSVFileFeedWithDOHLCVFormat("../testdata/JSETOPI.2013.data",
-		feeds.DashedYearDayMonthDateParserForLocation(time.Local))
-})
+type GetMaximumFunc func() float64
 
-var _ = AfterSuite(func() {
-	csvFeed = nil
-})
+type GetMinimumFunc func() float64
 
 func GetDataMax(dohlcvArray []float64) float64 {
 	max := math.SmallestNonzeroFloat64
