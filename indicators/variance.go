@@ -5,7 +5,7 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type baseVariance struct {
+type VarianceWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
@@ -16,29 +16,34 @@ type baseVariance struct {
 	valueAvailableAction ValueAvailableAction
 }
 
-func newBaseVariance(lookbackPeriod int) *baseVariance {
-	ind := baseVariance{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
+func NewVarianceWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *VarianceWithoutStorage, err error) {
+	newVar := VarianceWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
 		periodCounter: 0,
 		periodHistory: list.New(),
 		mean:          0.0,
 		variance:      0.0}
-	return &ind
+
+	newVar.selectData = selectData
+	newVar.valueAvailableAction = valueAvailableAction
+
+	return &newVar, nil
 }
 
 type Variance struct {
-	*baseVariance
+	*VarianceWithoutStorage
 
 	// public variables
 	Data []float64
 }
 
 func NewVariance(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *Variance, err error) {
-	newVar := Variance{baseVariance: newBaseVariance(lookbackPeriod)}
-	newVar.selectData = selectData
-	newVar.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newVar.Data = append(newVar.Data, dataItem)
-	}
-	return &newVar, nil
+	newVar := Variance{}
+	newVar.VarianceWithoutStorage, err = NewVarianceWithoutStorage(lookbackPeriod, selectData,
+		func(dataItem float64, streamBarIndex int) {
+			newVar.Data = append(newVar.Data, dataItem)
+		})
+
+	return &newVar, err
 }
 
 func NewVarianceForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *Variance, err error) {
@@ -47,13 +52,13 @@ func NewVarianceForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int,
 	return newVar, err
 }
 
-func (ind *baseVariance) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *VarianceWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }
 
 // http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance - Knuth
-func (ind *baseVariance) ReceiveTick(tickData float64, streamBarIndex int) {
+func (ind *VarianceWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	ind.periodHistory.PushBack(tickData)
 	firstValue := ind.periodHistory.Front().Value.(float64)
 

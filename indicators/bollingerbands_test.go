@@ -18,10 +18,10 @@ var _ = Describe("when calculating bollinger bands with DOHLCV source data", fun
 		indicatorWithLookbackInputs = IndicatorWithLookbackSharedSpecInputs{IndicatorUnderTest: indicator,
 			SourceDataLength: len(sourceDOHLCVData),
 			GetMaximum: func() float64 {
-				return GetDataMaxBollinger(indicator.Data, UseUpperBand)
+				return GetDataMax(indicator.UpperBand)
 			},
 			GetMinimum: func() float64 {
-				return GetDataMinBollinger(indicator.Data, UseLowerBand)
+				return GetDataMin(indicator.LowerBand)
 			}}
 
 	})

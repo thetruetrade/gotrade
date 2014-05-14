@@ -5,7 +5,8 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type baseEMA struct {
+// An Exponential Moving Average Indicator
+type EMAWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
@@ -16,32 +17,34 @@ type baseEMA struct {
 	valueAvailableAction ValueAvailableAction
 }
 
-func newBaseEMA(lookbackPeriod int) *baseEMA {
-	newEMA := baseEMA{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
+func NewEMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *EMAWithoutStorage, err error) {
+	newEMA := EMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
 		periodCounter: lookbackPeriod * -1,
 		multiplier:    float64(2.0 / float64(lookbackPeriod+1.0))}
+	newEMA.selectData = selectData
+	newEMA.valueAvailableAction = valueAvailableAction
 
-	return &newEMA
+	return &newEMA, err
 }
 
 // An Exponential Moving Average Indicator
 type EMA struct {
-	*baseEMA
+	*EMAWithoutStorage
 
 	// public variables
 	Data []float64
 }
 
 // NewEMA returns a new Exponential Moving Average (EMA) configured with the
-// specified lookbackPeriod
+// specified lookbackPeriod. The EMA results are stored in the Data field.
 func NewEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
-	newEMA := EMA{baseEMA: newBaseEMA(lookbackPeriod)}
-	newEMA.selectData = selectData
-	newEMA.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newEMA.Data = append(newEMA.Data, dataItem)
-	}
+	newEMA := EMA{}
+	newEMA.EMAWithoutStorage, err = NewEMAWithoutStorage(lookbackPeriod, selectData,
+		func(dataItem float64, streamBarIndex int) {
+			newEMA.Data = append(newEMA.Data, dataItem)
+		})
 
-	return &newEMA, nil
+	return &newEMA, err
 }
 
 func NewEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
@@ -50,12 +53,12 @@ func NewEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, sele
 	return newEma, err
 }
 
-func (ema *baseEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ema *EMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ema.selectData(tickData)
 	ema.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (ema *baseEMA) ReceiveTick(tickData float64, streamBarIndex int) {
+func (ema *EMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	ema.periodCounter += 1
 	if ema.periodCounter < 0 {
 		ema.periodTotal += tickData

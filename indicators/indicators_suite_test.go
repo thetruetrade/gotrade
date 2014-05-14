@@ -183,7 +183,7 @@ func LoadCSVPriceDataFromFile(fileName string) (results []float64, err error) {
 	return results, nil
 }
 
-func LoadCSVBollingerPriceDataFromFile(fileName string) (results []indicators.BollingerBand, err error) {
+func LoadCSVBollingerPriceDataFromFile(fileName string) (results []BollingerBand, err error) {
 	file, err := os.Open("../testdata/" + fileName)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -208,12 +208,12 @@ func LoadCSVBollingerPriceDataFromFile(fileName string) (results []indicators.Bo
 			fmt.Println("Error:", err)
 			return nil, err
 		}
-		results = append(results, indicators.NewBollingerBandDataItem(upperBandValue, middleBandValue, lowerBandValue))
+		results = append(results, NewBollingerBandDataItem(upperBandValue, middleBandValue, lowerBandValue))
 	}
 	return results, nil
 }
 
-func LoadCSVMACDPriceDataFromFile(fileName string) (results []indicators.MACDData, err error) {
+func LoadCSVMACDPriceDataFromFile(fileName string) (results []MACDData, err error) {
 	file, err := os.Open("../testdata/" + fileName)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -238,7 +238,7 @@ func LoadCSVMACDPriceDataFromFile(fileName string) (results []indicators.MACDDat
 			fmt.Println("Error:", err)
 			return nil, err
 		}
-		results = append(results, indicators.NewMACDDataItem(macd, signal, histogram))
+		results = append(results, NewMACDDataItem(macd, signal, histogram))
 	}
 	return results, nil
 }
@@ -297,39 +297,13 @@ func GetDataMinDOHLCV(dohlcvArray []gotrade.DOHLCV, selectData gotrade.DataSelec
 	return min
 }
 
-func GetDataMaxBollinger(dohlcvArray []indicators.BollingerBand, selectData indicators.BollingerDataSelectionFunc) float64 {
+func GetDataMaxMACD(macd []float64, signal []float64, histogram []float64) float64 {
 	max := math.SmallestNonzeroFloat64
 
-	for i := range dohlcvArray {
-		var selectedData = selectData(dohlcvArray[i])
-		if max < selectedData {
-			max = selectedData
-		}
-	}
-
-	return max
-}
-
-func GetDataMinBollinger(dohlcvArray []indicators.BollingerBand, selectData indicators.BollingerDataSelectionFunc) float64 {
-	min := math.MaxFloat64
-
-	for i := range dohlcvArray {
-		var selectedData = selectData(dohlcvArray[i])
-		if min > selectedData {
-			min = selectedData
-		}
-	}
-
-	return min
-}
-
-func GetDataMaxMACD(dohlcvArray []indicators.MACDData) float64 {
-	max := math.SmallestNonzeroFloat64
-
-	for i := range dohlcvArray {
-		macd := dohlcvArray[i].M()
-		signal := dohlcvArray[i].S()
-		histogram := dohlcvArray[i].H()
+	for i := range macd {
+		macd := macd[i]
+		signal := signal[i]
+		histogram := histogram[i]
 
 		if max < macd {
 			max = macd
@@ -345,13 +319,13 @@ func GetDataMaxMACD(dohlcvArray []indicators.MACDData) float64 {
 	return max
 }
 
-func GetDataMinMACD(dohlcvArray []indicators.MACDData) float64 {
+func GetDataMinMACD(macd []float64, signal []float64, histogram []float64) float64 {
 	min := math.MaxFloat64
 
-	for i := range dohlcvArray {
-		macd := dohlcvArray[i].M()
-		signal := dohlcvArray[i].S()
-		histogram := dohlcvArray[i].H()
+	for i := range macd {
+		macd := macd[i]
+		signal := signal[i]
+		histogram := histogram[i]
 
 		if min > macd {
 			min = macd
@@ -365,4 +339,66 @@ func GetDataMinMACD(dohlcvArray []indicators.MACDData) float64 {
 	}
 
 	return min
+}
+
+type MACDData interface {
+	// MACD
+	M() float64
+	// Signal
+	S() float64
+	// Histogram
+	H() float64
+}
+
+type MACDDataItem struct {
+	macd      float64
+	signal    float64
+	histogram float64
+}
+
+func (data *MACDDataItem) M() float64 {
+	return data.macd
+}
+
+func (data *MACDDataItem) S() float64 {
+	return data.signal
+}
+
+func (data *MACDDataItem) H() float64 {
+	return data.histogram
+}
+
+func NewMACDDataItem(macd float64, signal float64, histogram float64) *MACDDataItem {
+	return &MACDDataItem{macd: macd, signal: signal, histogram: histogram}
+}
+
+type BollingerBand interface {
+	// Upper bollinger band
+	U() float64
+	// Middle bollinger band
+	M() float64
+	// Lower bollinger band
+	L() float64
+}
+
+type BollingerBandDataItem struct {
+	upperBand  float64
+	middleBand float64
+	lowerBand  float64
+}
+
+func (bb *BollingerBandDataItem) U() float64 {
+	return bb.upperBand
+}
+
+func (bb *BollingerBandDataItem) L() float64 {
+	return bb.lowerBand
+}
+
+func (bb *BollingerBandDataItem) M() float64 {
+	return bb.middleBand
+}
+
+func NewBollingerBandDataItem(upperBand float64, middleBand float64, lowerBand float64) *BollingerBandDataItem {
+	return &BollingerBandDataItem{upperBand: upperBand, middleBand: middleBand, lowerBand: lowerBand}
 }

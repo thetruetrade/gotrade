@@ -7,7 +7,7 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type baseTEMA struct {
+type TEMAWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
@@ -19,24 +19,12 @@ type baseTEMA struct {
 	currentEMA2          float64
 }
 
-func newBaseTEMA(lookbackPeriod int) *baseTEMA {
-	newTEMA := baseTEMA{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod)}
-	return &newTEMA
-}
+func NewTEMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *TEMAWithoutStorage, err error) {
+	newTEMA := TEMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(3*lookbackPeriod - 2)}
+	newTEMA.selectData = selectData
+	newTEMA.valueAvailableAction = valueAvailableAction
 
-// A Double Exponential Moving Average Indicator
-type TEMA struct {
-	*baseTEMA
-
-	// public variables
-	Data []float64
-}
-
-// NewTEMA returns a new Double Exponential Moving Average (TEMA) configured with the
-// specified lookbackPeriod. The TEMA results are stored in the DATA field.
-func NewTEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
-	newTEMA := TEMA{baseTEMA: newBaseTEMA(3*lookbackPeriod - 2)}
-	newTEMA.ema1, _ = NewEMA(lookbackPeriod, selectData)
+	newTEMA.ema1, err = NewEMA(lookbackPeriod, selectData)
 
 	newTEMA.ema1.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newTEMA.currentEMA = dataItem
@@ -71,11 +59,26 @@ func NewTEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicato
 		newTEMA.valueAvailableAction(tema, streamBarIndex)
 	}
 
-	newTEMA.selectData = selectData
-	newTEMA.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newTEMA.Data = append(newTEMA.Data, dataItem)
-	}
-	return &newTEMA, nil
+	return &newTEMA, err
+}
+
+// A Double Exponential Moving Average Indicator
+type TEMA struct {
+	*TEMAWithoutStorage
+
+	// public variables
+	Data []float64
+}
+
+// NewTEMA returns a new Double Exponential Moving Average (TEMA) configured with the
+// specified lookbackPeriod. The TEMA results are stored in the DATA field.
+func NewTEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
+	newTEMA := TEMA{}
+	newTEMA.TEMAWithoutStorage, err = NewTEMAWithoutStorage(lookbackPeriod, selectData,
+		func(dataItem float64, streamBarIndex int) {
+			newTEMA.Data = append(newTEMA.Data, dataItem)
+		})
+	return &newTEMA, err
 }
 
 func NewTEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
@@ -84,11 +87,11 @@ func NewTEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, sel
 	return newTEMA, err
 }
 
-func (tema *baseTEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (tema *TEMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = tema.selectData(tickData)
 	tema.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (tema *baseTEMA) ReceiveTick(tickData float64, streamBarIndex int) {
+func (tema *TEMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	tema.ema1.ReceiveTick(tickData, streamBarIndex)
 }

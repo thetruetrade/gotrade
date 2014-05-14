@@ -20,10 +20,10 @@ var _ = Describe("when calculating a moving average convergence divergence (macd
 		indicatorWithLookbackInputs = IndicatorWithLookbackSharedSpecInputs{IndicatorUnderTest: indicator,
 			SourceDataLength: len(sourceDOHLCVData),
 			GetMaximum: func() float64 {
-				return GetDataMaxMACD(indicator.Data)
+				return GetDataMaxMACD(indicator.MACD, indicator.Signal, indicator.Histogram)
 			},
 			GetMinimum: func() float64 {
-				return GetDataMinMACD(indicator.Data)
+				return GetDataMinMACD(indicator.MACD, indicator.Signal, indicator.Histogram)
 			}}
 	})
 

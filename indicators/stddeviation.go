@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-type baseStdDeviation struct {
+type StdDeviationWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
@@ -13,24 +13,13 @@ type baseStdDeviation struct {
 	variance             *Variance
 }
 
-func newBaseStdDeviation(lookbackPeriod int) *baseStdDeviation {
-	newStdDev := baseStdDeviation{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod)}
-	return &newStdDev
-}
+func NewStdDeviationWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *StdDeviationWithoutStorage, err error) {
+	newStdDev := StdDeviationWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod)}
 
-// A Standard Deviation Indicator
-type StdDeviation struct {
-	*baseStdDeviation
+	newStdDev.selectData = selectData
+	newStdDev.valueAvailableAction = valueAvailableAction
 
-	// public variables
-	Data []float64
-}
-
-// NewStdDeviation returns a new Standard Deviation (STDEV) configured with the
-// specified lookbackPeriod. The STDEV results are stored in the DATA field.
-func NewStdDeviation(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
-	newStdDev := StdDeviation{baseStdDeviation: newBaseStdDeviation(lookbackPeriod)}
-	newStdDev.variance, _ = NewVariance(lookbackPeriod, selectData)
+	newStdDev.variance, err = NewVariance(lookbackPeriod, selectData)
 
 	newStdDev.variance.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newStdDev.dataLength += 1
@@ -51,24 +40,43 @@ func NewStdDeviation(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (
 		newStdDev.valueAvailableAction(standardDeviation, streamBarIndex)
 	}
 
-	newStdDev.selectData = selectData
+	return &newStdDev, err
+}
+
+// A Standard Deviation Indicator
+type StdDeviation struct {
+	*StdDeviationWithoutStorage
+
+	// public variables
+	Data []float64
+}
+
+// NewStdDeviation returns a new Standard Deviation (STDEV) configured with the
+// specified lookbackPeriod. The STDEV results are stored in the DATA field.
+func NewStdDeviation(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
+	newStdDev := StdDeviation{}
+	newStdDev.StdDeviationWithoutStorage, err = NewStdDeviationWithoutStorage(lookbackPeriod, selectData,
+		func(dataItem float64, streamBarIndex int) {
+			newStdDev.Data = append(newStdDev.Data, dataItem)
+		})
+
 	newStdDev.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newStdDev.Data = append(newStdDev.Data, dataItem)
 	}
-	return &newStdDev, nil
+	return &newStdDev, err
 }
 
-func NewStdDeviationForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
-	newStdDev, err := NewWMA(lookbackPeriod, selectData)
+func NewStdDeviationForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
+	newStdDev, err := NewStdDeviation(lookbackPeriod, selectData)
 	priceStream.AddTickSubscription(newStdDev)
 	return newStdDev, err
 }
 
-func (stdDev *baseStdDeviation) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (stdDev *StdDeviationWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = stdDev.selectData(tickData)
 	stdDev.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (stdDev *baseStdDeviation) ReceiveTick(tickData float64, streamBarIndex int) {
+func (stdDev *StdDeviationWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	stdDev.variance.ReceiveTick(tickData, streamBarIndex)
 }

@@ -74,5 +74,5 @@ func (ind *baseIndicatorWithLookback) GetLookbackPeriod() int {
 
 type ValueAvailableAction func(dataItem float64, streamBarIndex int)
 type ValueAvailableActionDOHLCV func(dataItem gotrade.DOHLCV, streamBarIndex int)
-type ValueAvailableActionBollinger func(dataItem BollingerBand, streamBarIndex int)
-type ValueAvailableActionMACD func(dataItem MACDData, streamBarIndex int)
+type ValueAvailableActionBollinger func(dataItemUpperBand float64, dataItemMiddleBand float64, dataItemLowerBand float64, streamBarIndex int)
+type ValueAvailableActionMACD func(dataItemMACD float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int)

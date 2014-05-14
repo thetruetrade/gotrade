@@ -6,7 +6,7 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type baseWMA struct {
+type WMAWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
@@ -17,8 +17,12 @@ type baseWMA struct {
 	valueAvailableAction ValueAvailableAction
 }
 
-func newBaseWMA(lookbackPeriod int) *baseWMA {
-	newWMA := baseWMA{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
+// NewAttachedWMA returns a new Simple Moving Average (WMA) configured with the
+// specified lookbackPeriod, this version is intended for use by other indicators.
+// The WMA results are not stored in a local field but made available though the
+// configured valueAvailableAction for storage by the parent indicator.
+func NewWMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *WMAWithoutStorage, err error) {
+	newWMA := WMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
 		periodCounter: lookbackPeriod * -1,
 		periodHistory: list.New()}
 
@@ -27,36 +31,29 @@ func newBaseWMA(lookbackPeriod int) *baseWMA {
 		weightedTotal += i
 	}
 	newWMA.periodWeightTotal = weightedTotal
-	return &newWMA
+
+	newWMA.selectData = selectData
+	newWMA.valueAvailableAction = valueAvailableAction
+	return &newWMA, nil
 }
 
 // A Simple Moving Average Indicator
 type WMA struct {
-	*baseWMA
+	*WMAWithoutStorage
 
 	// public variables
 	Data []float64
-}
-type WMAWithoutStorage struct {
-	*baseWMA
 }
 
 // NewWMA returns a new Simple Moving Average (WMA) configured with the
 // specified lookbackPeriod. The WMA results are stored in the DATA field.
 func NewWMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
-	newWMA := WMA{baseWMA: newBaseWMA(lookbackPeriod)}
-
-	var weightedTotal int = 0
-	for i := 1; i <= lookbackPeriod; i++ {
-		weightedTotal += i
-	}
-	newWMA.periodWeightTotal = weightedTotal
-
-	newWMA.selectData = selectData
-	newWMA.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newWMA.Data = append(newWMA.Data, dataItem)
-	}
-	return &newWMA, nil
+	newWMA := WMA{}
+	newWMA.WMAWithoutStorage, err = NewWMAWithoutStorage(lookbackPeriod, selectData,
+		func(dataItem float64, streamBarIndex int) {
+			newWMA.Data = append(newWMA.Data, dataItem)
+		})
+	return &newWMA, err
 }
 
 func NewWMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
@@ -65,24 +62,12 @@ func NewWMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, sele
 	return newWma, err
 }
 
-// NewAttachedWMA returns a new Simple Moving Average (WMA) configured with the
-// specified lookbackPeriod, this version is intended for use by other indicators.
-// The WMA results are not stored in a local field but made available though the
-// configured valueAvailableAction for storage by the parent indicator.
-func NewWMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *WMAWithoutStorage, err error) {
-	newWMA := WMAWithoutStorage{baseWMA: newBaseWMA(lookbackPeriod)}
-	newWMA.selectData = selectData
-	newWMA.valueAvailableAction = valueAvailableAction
-
-	return &newWMA, nil
-}
-
-func (wma *baseWMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (wma *WMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = wma.selectData(tickData)
 	wma.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (wma *baseWMA) ReceiveTick(tickData float64, streamBarIndex int) {
+func (wma *WMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	wma.periodCounter += 1
 
 	wma.periodHistory.PushBack(tickData)

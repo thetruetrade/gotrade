@@ -7,7 +7,7 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type baseDEMA struct {
+type DEMAWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
@@ -17,23 +17,11 @@ type baseDEMA struct {
 	currentEMA           float64
 }
 
-func newBaseDEMA(lookbackPeriod int) *baseDEMA {
-	newDEMA := baseDEMA{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod)}
-	return &newDEMA
-}
+func NewDEMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *DEMAWithoutStorage, err error) {
+	newDEMA := DEMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(2*(lookbackPeriod) - 1)}
+	newDEMA.selectData = selectData
+	newDEMA.valueAvailableAction = valueAvailableAction
 
-// A Double Exponential Moving Average Indicator
-type DEMA struct {
-	*baseDEMA
-
-	// public variables
-	Data []float64
-}
-
-// NewDEMA returns a new Double Exponential Moving Average (DEMA) configured with the
-// specified lookbackPeriod. The DEMA results are stored in the DATA field.
-func NewDEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *DEMA, err error) {
-	newDEMA := DEMA{baseDEMA: newBaseDEMA(2*(lookbackPeriod) - 1)}
 	newDEMA.ema1, _ = NewEMA(lookbackPeriod, selectData)
 
 	newDEMA.ema1.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
@@ -63,11 +51,28 @@ func NewDEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicato
 		newDEMA.valueAvailableAction(dema, streamBarIndex)
 	}
 
-	newDEMA.selectData = selectData
-	newDEMA.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newDEMA.Data = append(newDEMA.Data, dataItem)
-	}
 	return &newDEMA, nil
+}
+
+// A Double Exponential Moving Average Indicator
+type DEMA struct {
+	*DEMAWithoutStorage
+
+	// public variables
+	Data []float64
+}
+
+// NewDEMA returns a new Double Exponential Moving Average (DEMA) configured with the
+// specified lookbackPeriod. The DEMA results are stored in the DATA field.
+func NewDEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *DEMA, err error) {
+
+	newDEMA := DEMA{}
+	newDEMA.DEMAWithoutStorage, err = NewDEMAWithoutStorage(lookbackPeriod, selectData,
+		func(dataItem float64, streamBarIndex int) {
+			newDEMA.Data = append(newDEMA.Data, dataItem)
+		})
+
+	return &newDEMA, err
 }
 
 func NewDEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *DEMA, err error) {
@@ -76,11 +81,11 @@ func NewDEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, sel
 	return newDEMA, err
 }
 
-func (dema *baseDEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (dema *DEMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = dema.selectData(tickData)
 	dema.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (dema *baseDEMA) ReceiveTick(tickData float64, streamBarIndex int) {
+func (dema *DEMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	dema.ema1.ReceiveTick(tickData, streamBarIndex)
 }

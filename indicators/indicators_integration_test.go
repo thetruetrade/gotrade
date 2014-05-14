@@ -263,7 +263,7 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 	var (
 		bb              *indicators.BollingerBands
 		period          int
-		expectedResults []indicators.BollingerBand
+		expectedResults []BollingerBand
 		err             error
 		priceStream     *gotrade.DOHLCVStream
 	)
@@ -284,14 +284,14 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 		})
 
 		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(bb.Data)).To(Equal(len(priceStream.Data) - bb.LookbackPeriod + 1))
+			Expect(bb.Length()).To(Equal(len(priceStream.Data) - bb.LookbackPeriod + 1))
 		})
 
 		It("it should have correctly calculated the bollinger upper, middle and lower bands for each item in the result set accurate to two decimal places", func() {
 			for k := range expectedResults {
-				Expect(expectedResults[k].U()).To(BeNumerically("~", bb.Data[k].U(), 0.01))
-				Expect(expectedResults[k].M()).To(BeNumerically("~", bb.Data[k].M(), 0.01))
-				Expect(expectedResults[k].L()).To(BeNumerically("~", bb.Data[k].L(), 0.01))
+				Expect(expectedResults[k].U()).To(BeNumerically("~", bb.UpperBand[k], 0.01))
+				Expect(expectedResults[k].M()).To(BeNumerically("~", bb.MiddleBand[k], 0.01))
+				Expect(expectedResults[k].L()).To(BeNumerically("~", bb.LowerBand[k], 0.01))
 			}
 		})
 	})
@@ -300,7 +300,7 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 var _ = Describe("when executing the gotrade macd with a years data and known output", func() {
 	var (
 		macd            *indicators.MACD
-		expectedResults []indicators.MACDData
+		expectedResults []MACDData
 		err             error
 		priceStream     *gotrade.DOHLCVStream
 	)
@@ -320,14 +320,14 @@ var _ = Describe("when executing the gotrade macd with a years data and known ou
 		})
 
 		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(macd.Data)).To(Equal(len(priceStream.Data) - (26 + 8) + 1))
+			Expect(macd.Length()).To(Equal(len(priceStream.Data) - (26 + 8) + 1))
 		})
 
 		It("it should have correctly calculated the macd, signal and histogram for each item in the result set accurate to two decimal places", func() {
 			for k := range expectedResults {
-				Expect(expectedResults[k].M()).To(BeNumerically("~", macd.Data[k].M(), 0.01))
-				Expect(expectedResults[k].S()).To(BeNumerically("~", macd.Data[k].S(), 0.01))
-				Expect(expectedResults[k].H()).To(BeNumerically("~", macd.Data[k].H(), 0.01))
+				Expect(expectedResults[k].M()).To(BeNumerically("~", macd.MACD[k], 0.01))
+				Expect(expectedResults[k].S()).To(BeNumerically("~", macd.Signal[k], 0.01))
+				Expect(expectedResults[k].H()).To(BeNumerically("~", macd.Histogram[k], 0.01))
 			}
 		})
 	})

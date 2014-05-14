@@ -4,7 +4,7 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type baseBollingerBands struct {
+type BollingerBands struct {
 	*baseIndicatorWithLookback
 
 	// private variables
@@ -12,24 +12,20 @@ type baseBollingerBands struct {
 	sma                  *SMAWithoutStorage
 	stdDev               *StdDeviation
 	currentSMA           float64
-}
 
-func newBaseBollingerBands(lookbackPeriod int) *baseBollingerBands {
-	ind := baseBollingerBands{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod), currentSMA: 0.0}
-	return &ind
-}
-
-type BollingerBands struct {
-	*baseBollingerBands
-
-	Data []BollingerBand
+	UpperBand  []float64
+	MiddleBand []float64
+	LowerBand  []float64
 }
 
 func NewBollingerBands(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
-	newBB := BollingerBands{baseBollingerBands: newBaseBollingerBands(lookbackPeriod)}
+	newBB := BollingerBands{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod)}
+	newBB.currentSMA = 0.0
 	newBB.selectData = selectData
-	newBB.valueAvailableAction = func(dataItem BollingerBand, streamBarIndex int) {
-		newBB.Data = append(newBB.Data, dataItem)
+	newBB.valueAvailableAction = func(dataItemUpperBand float64, dataItemMiddleBand float64, dataItemLowerBand float64, streamBarIndex int) {
+		newBB.UpperBand = append(newBB.UpperBand, dataItemUpperBand)
+		newBB.MiddleBand = append(newBB.MiddleBand, dataItemMiddleBand)
+		newBB.LowerBand = append(newBB.LowerBand, dataItemLowerBand)
 	}
 	newBB.sma, _ = NewSMAWithoutStorage(lookbackPeriod, selectData, func(dataItem float64, streamBarIndex int) {
 		newBB.currentSMA = dataItem
@@ -53,7 +49,7 @@ func NewBollingerBands(lookbackPeriod int, selectData gotrade.DataSelectionFunc)
 			newBB.minValue = lowerBand
 		}
 
-		newBB.valueAvailableAction(&BollingerBandDataItem{upperBand: upperBand, middleBand: newBB.currentSMA, lowerBand: lowerBand}, streamBarIndex)
+		newBB.valueAvailableAction(upperBand, newBB.currentSMA, lowerBand, streamBarIndex)
 	}
 
 	return &newBB, nil
@@ -65,27 +61,13 @@ func NewBollingerBandsForStream(priceStream *gotrade.DOHLCVStream, lookbackPerio
 	return bb, err
 }
 
-func (bb *baseBollingerBands) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (bb *BollingerBands) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData float64 = bb.selectData(tickData)
 	bb.RecieveTick(selectedData, streamBarIndex)
 }
 
 // http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance - Knuth
-func (bb *baseBollingerBands) RecieveTick(tickData float64, streamBarIndex int) {
+func (bb *BollingerBands) RecieveTick(tickData float64, streamBarIndex int) {
 	bb.sma.ReceiveTick(tickData, streamBarIndex)
 	bb.stdDev.ReceiveTick(tickData, streamBarIndex)
-}
-
-type BollingerDataSelectionFunc func(dataItem BollingerBand) float64
-
-func UseUpperBand(dataItem BollingerBand) float64 {
-	return dataItem.U()
-}
-
-func UseMiddleBand(dataItem BollingerBand) float64 {
-	return dataItem.M()
-}
-
-func UseLowerBand(dataItem BollingerBand) float64 {
-	return dataItem.L()
 }

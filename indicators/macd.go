@@ -29,7 +29,9 @@ type MACD struct {
 	emaSlowSkip          int
 
 	// public variables
-	Data []MACDData
+	MACD      []float64
+	Signal    []float64
+	Histogram []float64
 }
 
 // NewMACD returns a new Moving Average Convergence-Divergence (MACD) Indicator configured with the
@@ -103,12 +105,14 @@ func NewMACD(fastLookbackPeriod int, slowLookbackPeriod int, signalLookbackPerio
 		if histogram < newMACD.minValue {
 			newMACD.minValue = histogram
 		}
-		newMACD.valueAvailableAction(NewMACDDataItem(macd, signal, histogram), streamBarIndex)
+		newMACD.valueAvailableAction(macd, signal, histogram, streamBarIndex)
 	}
 
 	newMACD.selectData = selectData
-	newMACD.valueAvailableAction = func(dataItem MACDData, streamBarIndex int) {
-		newMACD.Data = append(newMACD.Data, dataItem)
+	newMACD.valueAvailableAction = func(dataItemMACD float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int) {
+		newMACD.MACD = append(newMACD.MACD, dataItemMACD)
+		newMACD.Signal = append(newMACD.Signal, dataItemSignal)
+		newMACD.Histogram = append(newMACD.Histogram, dataItemHistogram)
 	}
 	return &newMACD, nil
 }
