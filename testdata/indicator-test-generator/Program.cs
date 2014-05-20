@@ -13,6 +13,8 @@ namespace indicatortestgenerator
 		public static void Main (string[] args)
 		{
 			List<double> closingPrices = new List<double>();
+			List<double> highPrices = new List<double>();
+			List<double> lowPrices = new List<double>();
 			// read the source data into an array to use for all the indicators
 			using (var reader = new StreamReader (@"/home/eugened/Development/local/indicator-test-generator/indicator-test-generator/JSETOPI.2013.data")) 
 			{
@@ -22,7 +24,9 @@ namespace indicatortestgenerator
 					string[] parts = line.Split (new char[]{ ',' });
 					// format is date, O, H, L, C, V
 					// we will use close prices for all these tests
+					highPrices.Add (Convert.ToDouble (parts [2].Replace (".", ",")));
 					closingPrices.Add (Convert.ToDouble (parts [4].Replace(".", ",")));
+					lowPrices.Add (Convert.ToDouble (parts [3].Replace (".", ",")));
 				}
 			}
 
@@ -206,6 +210,46 @@ namespace indicatortestgenerator
 				}
 				writer.Flush ();
 			}
+
+			// Aroon
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/aroon_25_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.AroonLookback (25);
+				int dataLength = closingPrices.Count - 1;
+				double[] outAroonDown = new double[dataLength - lookback + 1];
+				double[] outAroonUp = new double[dataLength - lookback + 1];
+				talib.Core.RetCode retCode =talib.Core.Aroon(0, dataLength, highPrices.ToArray(), lowPrices.ToArray(), 25, out outBeginIndex, out outNBElement, outAroonDown, outAroonUp);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					for (int i= 0; i< outAroonUp.Length;i++) 
+					{
+						writer.WriteLine ("{0}, {1}", outAroonUp[i].ToString(CultureInfo.InvariantCulture), outAroonDown[i].ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
+
+			// AroonOsc
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/aroonosc_25_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.AroonOscLookback (25);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback + 1];
+				talib.Core.RetCode retCode =talib.Core.AroonOsc(0, dataLength, highPrices.ToArray(), lowPrices.ToArray(), 25, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					for (int i= 0; i< outData.Length;i++) 
+					{
+						writer.WriteLine ("{0}", outData[i].ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
+
 		}
 	}
 }

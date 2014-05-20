@@ -332,3 +332,77 @@ var _ = Describe("when executing the gotrade macd with a years data and known ou
 		})
 	})
 })
+
+var _ = Describe("when executing the gotrade aroon with a years data and known output", func() {
+	var (
+		aroon           *indicators.Aroon
+		expectedResults []AroonData
+		err             error
+		priceStream     *gotrade.DOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVAroonPriceDataFromFile("aroon_25_expectedresult.data")
+		priceStream = gotrade.NewDOHLCVStream()
+	})
+
+	Describe("using a lookback periods of 25", func() {
+
+		BeforeEach(func() {
+			aroon, err = indicators.NewAroon(25)
+			priceStream.AddTickSubscription(aroon)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the period + 1", func() {
+			Expect(aroon.Length()).To(Equal(len(priceStream.Data) - 25))
+		})
+
+		It("it should have correctly calculated the aroon up for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k].U()).To(BeNumerically("~", aroon.Up[k], 0.01))
+			}
+		})
+
+		It("it should have correctly calculated the aroon down for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k].D()).To(BeNumerically("~", aroon.Down[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade aroonosc with a years data and known output", func() {
+	var (
+		aroon           *indicators.AroonOsc
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.DOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("aroonosc_25_expectedresult.data")
+		priceStream = gotrade.NewDOHLCVStream()
+	})
+
+	Describe("using a lookback periods of 25", func() {
+
+		BeforeEach(func() {
+			aroon, err = indicators.NewAroonOsc(25)
+			priceStream.AddTickSubscription(aroon)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the period + 1", func() {
+			Expect(aroon.Length()).To(Equal(len(priceStream.Data) - 25))
+		})
+
+		It("it should have correctly calculated the aroon oscillator for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", aroon.Data[k], 0.01))
+			}
+		})
+	})
+})

@@ -243,6 +243,35 @@ func LoadCSVMACDPriceDataFromFile(fileName string) (results []MACDData, err erro
 	return results, nil
 }
 
+func LoadCSVAroonPriceDataFromFile(fileName string) (results []AroonData, err error) {
+	file, err := os.Open("../testdata/" + fileName)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
+	}
+	defer file.Close()
+	reader := csv.NewReader(file)
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+
+		up, err := strconv.ParseFloat(strings.TrimSpace(record[0]), 64)
+		dwn, err := strconv.ParseFloat(strings.TrimSpace(record[1]), 64)
+
+		if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+		results = append(results, NewAroonDataItem(up, dwn))
+	}
+	return results, nil
+}
+
 type GetMaximumFunc func() float64
 
 type GetMinimumFunc func() float64
@@ -401,4 +430,26 @@ func (bb *BollingerBandDataItem) M() float64 {
 
 func NewBollingerBandDataItem(upperBand float64, middleBand float64, lowerBand float64) *BollingerBandDataItem {
 	return &BollingerBandDataItem{upperBand: upperBand, middleBand: middleBand, lowerBand: lowerBand}
+}
+
+type AroonData interface {
+	U() float64
+	D() float64
+}
+
+type AroonDataItem struct {
+	up  float64
+	dwn float64
+}
+
+func NewAroonDataItem(up float64, dwn float64) *AroonDataItem {
+	return &AroonDataItem{up: up, dwn: dwn}
+}
+
+func (adi *AroonDataItem) U() float64 {
+	return adi.up
+}
+
+func (adi *AroonDataItem) D() float64 {
+	return adi.dwn
 }
