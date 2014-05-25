@@ -75,7 +75,7 @@ func (wma *WMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 	if wma.periodCounter > 0 {
 
 	}
-	if wma.periodHistory.Len() > wma.LookbackPeriod {
+	if wma.periodHistory.Len() > wma.lookbackPeriod {
 		var first = wma.periodHistory.Front()
 		wma.periodHistory.Remove(first)
 	}

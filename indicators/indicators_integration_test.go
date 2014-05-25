@@ -32,7 +32,7 @@ var _ = Describe("when executing the gotrade simple moving average with a years 
 		})
 
 		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(sma.Data)).To(Equal(len(priceStream.Data) - sma.LookbackPeriod + 1))
+			Expect(len(sma.Data)).To(Equal(len(priceStream.Data) - sma.GetLookbackPeriod() + 1))
 		})
 
 		It("it should have correctly calculated the simple moving average for each item in the result set accurate to two decimal places", func() {
@@ -68,7 +68,7 @@ var _ = Describe("when executing the gotrade exponential moving average with a y
 		})
 
 		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(ema.Data)).To(Equal(len(priceStream.Data) - ema.LookbackPeriod + 1))
+			Expect(len(ema.Data)).To(Equal(len(priceStream.Data) - ema.GetLookbackPeriod() + 1))
 		})
 
 		It("it should have correctly calculated the exponential moving average for each item in the result set accurate to two decimal places", func() {
@@ -104,7 +104,7 @@ var _ = Describe("when executing the gotrade weighted moving average with a year
 		})
 
 		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(wma.Data)).To(Equal(len(priceStream.Data) - wma.LookbackPeriod + 1))
+			Expect(len(wma.Data)).To(Equal(len(priceStream.Data) - wma.GetLookbackPeriod() + 1))
 		})
 
 		It("it should have correctly calculated the weighted moving average for each item in the result set accurate to two decimal places", func() {
@@ -140,7 +140,7 @@ var _ = Describe("when executing the gotrade double exponential moving average w
 		})
 
 		It("the result set should have a length equal to the source data length less twice the lookback period -1", func() {
-			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - (dema.LookbackPeriod - 1)))
+			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - (dema.GetLookbackPeriod() - 1)))
 		})
 
 		It("it should have correctly calculated the double exponential moving average for each item in the result set accurate to two decimal places", func() {
@@ -176,7 +176,7 @@ var _ = Describe("when executing the gotrade triple exponential moving average w
 		})
 
 		It("the result set should have a length equal to the source data length less triple the looback period -1", func() {
-			Expect(len(tema.Data)).To(Equal(len(priceStream.Data) - (tema.LookbackPeriod - 1)))
+			Expect(len(tema.Data)).To(Equal(len(priceStream.Data) - (tema.GetLookbackPeriod() - 1)))
 		})
 
 		It("it should have correctly calculated the triple exponential moving average for each item in the result set accurate to two decimal places", func() {
@@ -212,7 +212,7 @@ var _ = Describe("when executing the gotrade variance with a years data and know
 		})
 
 		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(variance.Data)).To(Equal(len(priceStream.Data) - variance.LookbackPeriod + 1))
+			Expect(len(variance.Data)).To(Equal(len(priceStream.Data) - variance.GetLookbackPeriod() + 1))
 		})
 
 		It("it should have correctly calculated the variance for each item in the result set accurate to two decimal places", func() {
@@ -248,7 +248,7 @@ var _ = Describe("when executing the gotrade standard deviation with a years dat
 		})
 
 		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(stdDev.Data)).To(Equal(len(priceStream.Data) - stdDev.LookbackPeriod + 1))
+			Expect(len(stdDev.Data)).To(Equal(len(priceStream.Data) - stdDev.GetLookbackPeriod() + 1))
 		})
 
 		It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
@@ -284,7 +284,7 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 		})
 
 		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(bb.Length()).To(Equal(len(priceStream.Data) - bb.LookbackPeriod + 1))
+			Expect(bb.Length()).To(Equal(len(priceStream.Data) - bb.GetLookbackPeriod() + 1))
 		})
 
 		It("it should have correctly calculated the bollinger upper, middle and lower bands for each item in the result set accurate to two decimal places", func() {

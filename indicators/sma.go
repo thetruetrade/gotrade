@@ -69,12 +69,12 @@ func (sma *SMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 		var valueToRemove = sma.periodHistory.Front()
 		sma.periodTotal -= valueToRemove.Value.(float64)
 	}
-	if sma.periodHistory.Len() > sma.LookbackPeriod {
+	if sma.periodHistory.Len() > sma.lookbackPeriod {
 		var first = sma.periodHistory.Front()
 		sma.periodHistory.Remove(first)
 	}
 	sma.periodTotal += tickData
-	var result float64 = sma.periodTotal / float64(sma.LookbackPeriod)
+	var result float64 = sma.periodTotal / float64(sma.lookbackPeriod)
 	if sma.periodCounter >= 0 {
 		sma.dataLength += 1
 

@@ -59,17 +59,17 @@ func (ind *baseIndicator) Length() int {
 
 type baseIndicatorWithLookback struct {
 	*baseIndicator
-	LookbackPeriod int
+	lookbackPeriod int
 }
 
 func newBaseIndicatorWithLookback(lookbackPeriod int) *baseIndicatorWithLookback {
 	ind := baseIndicatorWithLookback{baseIndicator: newBaseIndicator(),
-		LookbackPeriod: lookbackPeriod}
+		lookbackPeriod: lookbackPeriod}
 	return &ind
 }
 
 func (ind *baseIndicatorWithLookback) GetLookbackPeriod() int {
-	return ind.LookbackPeriod
+	return ind.lookbackPeriod
 }
 
 type ValueAvailableAction func(dataItem float64, streamBarIndex int)

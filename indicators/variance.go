@@ -65,7 +65,7 @@ func (ind *VarianceWithoutStorage) ReceiveTick(tickData float64, streamBarIndex 
 	previousMean := ind.mean
 	previousVariance := ind.variance
 
-	if ind.periodCounter < ind.LookbackPeriod {
+	if ind.periodCounter < ind.lookbackPeriod {
 		ind.periodCounter += 1
 		delta := tickData - previousMean
 		ind.mean = previousMean + delta/float64(ind.periodCounter)
@@ -79,18 +79,18 @@ func (ind *VarianceWithoutStorage) ReceiveTick(tickData float64, streamBarIndex 
 		ind.variance = previousVariance + (dOld+dNew)*(delta)
 	}
 
-	if ind.periodHistory.Len() > ind.LookbackPeriod {
+	if ind.periodHistory.Len() > ind.lookbackPeriod {
 		first := ind.periodHistory.Front()
 		ind.periodHistory.Remove(first)
 	}
 
-	if ind.periodCounter >= ind.LookbackPeriod {
+	if ind.periodCounter >= ind.lookbackPeriod {
 		ind.dataLength += 1
 		if ind.validFromBar == -1 {
 			ind.validFromBar = streamBarIndex
 		}
 
-		result := ind.variance / float64(ind.LookbackPeriod)
+		result := ind.variance / float64(ind.lookbackPeriod)
 
 		if result > ind.maxValue {
 			ind.maxValue = result

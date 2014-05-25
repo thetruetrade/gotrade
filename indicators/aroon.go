@@ -58,7 +58,7 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 	ind.periodHighHistory.PushBack(tickData.H())
 	ind.periodLowHistory.PushBack(tickData.L())
 
-	if ind.periodHighHistory.Len() > ind.LookbackPeriod {
+	if ind.periodHighHistory.Len() > ind.lookbackPeriod {
 		var first = ind.periodHighHistory.Front()
 		ind.periodHighHistory.Remove(first)
 		first = ind.periodLowHistory.Front()
@@ -77,7 +77,7 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 
 		var highValue float64 = math.SmallestNonzeroFloat64
 		var highIdx int = -1
-		var i int = ind.LookbackPeriod
+		var i int = ind.lookbackPeriod
 		for e := ind.periodHighHistory.Front(); e != nil; e = e.Next() {
 			i--
 			var value float64 = e.Value.(float64)
@@ -90,7 +90,7 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 
 		var lowValue float64 = math.MaxFloat64
 		var lowIdx int = -1
-		i = ind.LookbackPeriod
+		i = ind.lookbackPeriod
 		for e := ind.periodLowHistory.Front(); e != nil; e = e.Next() {
 			i--
 			var value float64 = e.Value.(float64)
@@ -102,8 +102,8 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 		}
 		var daysSinceLow = lowIdx
 
-		aroonUp = ind.aroonFactor * float64(ind.LookbackPeriod-1-daysSinceHigh)
-		aroonDwn = ind.aroonFactor * float64(ind.LookbackPeriod-1-daysSinceLow)
+		aroonUp = ind.aroonFactor * float64(ind.lookbackPeriod-1-daysSinceHigh)
+		aroonDwn = ind.aroonFactor * float64(ind.lookbackPeriod-1-daysSinceLow)
 		if aroonUp > ind.maxValue {
 			ind.maxValue = aroonUp
 		}

@@ -70,7 +70,7 @@ func (ema *EMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 		}
 
 		ema.periodTotal += tickData
-		result := ema.periodTotal / float64(ema.LookbackPeriod)
+		result := ema.periodTotal / float64(ema.lookbackPeriod)
 		ema.previousEMA = result
 
 		if result > ema.maxValue {
