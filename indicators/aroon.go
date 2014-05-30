@@ -12,6 +12,7 @@ type AroonWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
+	timePeriod           int
 	periodCounter        int
 	periodHighHistory    *list.List
 	periodLowHistory     *list.List
@@ -19,13 +20,14 @@ type AroonWithoutStorage struct {
 	aroonFactor          float64
 }
 
-func NewAroonWithoutStorage(lookbackPeriod int, valueAvailableAction ValueAvailableActionAroon) (indicator *AroonWithoutStorage, err error) {
-	ind := AroonWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod + 1),
-		periodCounter:     (lookbackPeriod + 1) * -1,
+func NewAroonWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionAroon) (indicator *AroonWithoutStorage, err error) {
+	ind := AroonWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod),
+		timePeriod:        timePeriod,
+		periodCounter:     (timePeriod + 1) * -1,
 		periodHighHistory: list.New(),
 		periodLowHistory:  list.New()}
 	ind.valueAvailableAction = valueAvailableAction
-	ind.aroonFactor = 100.0 / float64(lookbackPeriod)
+	ind.aroonFactor = 100.0 / float64(timePeriod)
 
 	return &ind, nil
 }
@@ -37,9 +39,9 @@ type Aroon struct {
 	Down []float64
 }
 
-func NewAroon(lookbackPeriod int) (indicator *Aroon, err error) {
+func NewAroon(timePeriod int) (indicator *Aroon, err error) {
 	newAroon := Aroon{}
-	newAroon.AroonWithoutStorage, err = NewAroonWithoutStorage(lookbackPeriod,
+	newAroon.AroonWithoutStorage, err = NewAroonWithoutStorage(timePeriod,
 		func(dataItemAroonUp float64, dataItemAroonDown float64, streamBarIndex int) {
 			newAroon.Up = append(newAroon.Up, dataItemAroonUp)
 			newAroon.Down = append(newAroon.Down, dataItemAroonDown)
@@ -47,8 +49,8 @@ func NewAroon(lookbackPeriod int) (indicator *Aroon, err error) {
 	return &newAroon, err
 }
 
-func NewAroonForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int) (indicator *Aroon, err error) {
-	ind, err := NewAroon(lookbackPeriod)
+func NewAroonForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Aroon, err error) {
+	ind, err := NewAroon(timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
@@ -58,7 +60,7 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 	ind.periodHighHistory.PushBack(tickData.H())
 	ind.periodLowHistory.PushBack(tickData.L())
 
-	if ind.periodHighHistory.Len() > ind.lookbackPeriod {
+	if ind.periodHighHistory.Len() > (1 + ind.GetLookbackPeriod()) {
 		var first = ind.periodHighHistory.Front()
 		ind.periodHighHistory.Remove(first)
 		first = ind.periodLowHistory.Front()
@@ -77,7 +79,7 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 
 		var highValue float64 = math.SmallestNonzeroFloat64
 		var highIdx int = -1
-		var i int = ind.lookbackPeriod
+		var i int = (1 + ind.GetLookbackPeriod())
 		for e := ind.periodHighHistory.Front(); e != nil; e = e.Next() {
 			i--
 			var value float64 = e.Value.(float64)
@@ -90,7 +92,7 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 
 		var lowValue float64 = math.MaxFloat64
 		var lowIdx int = -1
-		i = ind.lookbackPeriod
+		i = (1 + ind.GetLookbackPeriod())
 		for e := ind.periodLowHistory.Front(); e != nil; e = e.Next() {
 			i--
 			var value float64 = e.Value.(float64)
@@ -102,8 +104,8 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 		}
 		var daysSinceLow = lowIdx
 
-		aroonUp = ind.aroonFactor * float64(ind.lookbackPeriod-1-daysSinceHigh)
-		aroonDwn = ind.aroonFactor * float64(ind.lookbackPeriod-1-daysSinceLow)
+		aroonUp = ind.aroonFactor * float64(ind.GetLookbackPeriod()-daysSinceHigh)
+		aroonDwn = ind.aroonFactor * float64(ind.GetLookbackPeriod()-daysSinceLow)
 		if aroonUp > ind.maxValue {
 			ind.maxValue = aroonUp
 		}

@@ -31,8 +31,8 @@ var _ = Describe("when executing the gotrade simple moving average with a years 
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(sma.Data)).To(Equal(len(priceStream.Data) - sma.GetLookbackPeriod() + 1))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(sma.Data)).To(Equal(len(priceStream.Data) - sma.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the simple moving average for each item in the result set accurate to two decimal places", func() {
@@ -67,8 +67,8 @@ var _ = Describe("when executing the gotrade exponential moving average with a y
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(ema.Data)).To(Equal(len(priceStream.Data) - ema.GetLookbackPeriod() + 1))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(ema.Data)).To(Equal(len(priceStream.Data) - ema.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the exponential moving average for each item in the result set accurate to two decimal places", func() {
@@ -103,8 +103,8 @@ var _ = Describe("when executing the gotrade weighted moving average with a year
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(wma.Data)).To(Equal(len(priceStream.Data) - wma.GetLookbackPeriod() + 1))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(wma.Data)).To(Equal(len(priceStream.Data) - wma.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the weighted moving average for each item in the result set accurate to two decimal places", func() {
@@ -139,8 +139,8 @@ var _ = Describe("when executing the gotrade double exponential moving average w
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less twice the lookback period -1", func() {
-			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - (dema.GetLookbackPeriod() - 1)))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(dema.Data)).To(Equal(len(priceStream.Data) - (dema.GetLookbackPeriod())))
 		})
 
 		It("it should have correctly calculated the double exponential moving average for each item in the result set accurate to two decimal places", func() {
@@ -175,8 +175,8 @@ var _ = Describe("when executing the gotrade triple exponential moving average w
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less triple the looback period -1", func() {
-			Expect(len(tema.Data)).To(Equal(len(priceStream.Data) - (tema.GetLookbackPeriod() - 1)))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(tema.Data)).To(Equal(len(priceStream.Data) - (tema.GetLookbackPeriod())))
 		})
 
 		It("it should have correctly calculated the triple exponential moving average for each item in the result set accurate to two decimal places", func() {
@@ -211,8 +211,8 @@ var _ = Describe("when executing the gotrade variance with a years data and know
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(variance.Data)).To(Equal(len(priceStream.Data) - variance.GetLookbackPeriod() + 1))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(variance.Data)).To(Equal(len(priceStream.Data) - variance.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the variance for each item in the result set accurate to two decimal places", func() {
@@ -247,8 +247,8 @@ var _ = Describe("when executing the gotrade standard deviation with a years dat
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(len(stdDev.Data)).To(Equal(len(priceStream.Data) - stdDev.GetLookbackPeriod() + 1))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(stdDev.Data)).To(Equal(len(priceStream.Data) - stdDev.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
@@ -283,8 +283,8 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(bb.Length()).To(Equal(len(priceStream.Data) - bb.GetLookbackPeriod() + 1))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(bb.Length()).To(Equal(len(priceStream.Data) - bb.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the bollinger upper, middle and lower bands for each item in the result set accurate to two decimal places", func() {
@@ -319,8 +319,8 @@ var _ = Describe("when executing the gotrade macd with a years data and known ou
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(macd.Length()).To(Equal(len(priceStream.Data) - (26 + 8) + 1))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(macd.Length()).To(Equal(len(priceStream.Data) - macd.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the macd, signal and histogram for each item in the result set accurate to two decimal places", func() {
@@ -355,8 +355,8 @@ var _ = Describe("when executing the gotrade aroon with a years data and known o
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(aroon.Length()).To(Equal(len(priceStream.Data) - 25))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(aroon.Length()).To(Equal(len(priceStream.Data) - aroon.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the aroon up for each item in the result set accurate to two decimal places", func() {
@@ -395,8 +395,8 @@ var _ = Describe("when executing the gotrade aroonosc with a years data and know
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		It("the result set should have a length equal to the source data length less the period + 1", func() {
-			Expect(aroon.Length()).To(Equal(len(priceStream.Data) - 25))
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(aroon.Length()).To(Equal(len(priceStream.Data) - aroon.GetLookbackPeriod()))
 		})
 
 		It("it should have correctly calculated the aroon oscillator for each item in the result set accurate to two decimal places", func() {

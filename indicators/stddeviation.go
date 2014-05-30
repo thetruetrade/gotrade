@@ -9,17 +9,19 @@ type StdDeviationWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
+	timePeriod           int
 	valueAvailableAction ValueAvailableAction
 	variance             *Variance
 }
 
-func NewStdDeviationWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *StdDeviationWithoutStorage, err error) {
-	newStdDev := StdDeviationWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod)}
+func NewStdDeviationWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *StdDeviationWithoutStorage, err error) {
+	newStdDev := StdDeviationWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
+		timePeriod: timePeriod}
 
 	newStdDev.selectData = selectData
 	newStdDev.valueAvailableAction = valueAvailableAction
 
-	newStdDev.variance, err = NewVariance(lookbackPeriod, selectData)
+	newStdDev.variance, err = NewVariance(timePeriod, selectData)
 
 	newStdDev.variance.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newStdDev.dataLength += 1
@@ -52,10 +54,10 @@ type StdDeviation struct {
 }
 
 // NewStdDeviation returns a new Standard Deviation (STDEV) configured with the
-// specified lookbackPeriod. The STDEV results are stored in the DATA field.
-func NewStdDeviation(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
+// specified timePeriod. The STDEV results are stored in the DATA field.
+func NewStdDeviation(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
 	newStdDev := StdDeviation{}
-	newStdDev.StdDeviationWithoutStorage, err = NewStdDeviationWithoutStorage(lookbackPeriod, selectData,
+	newStdDev.StdDeviationWithoutStorage, err = NewStdDeviationWithoutStorage(timePeriod, selectData,
 		func(dataItem float64, streamBarIndex int) {
 			newStdDev.Data = append(newStdDev.Data, dataItem)
 		})
@@ -66,8 +68,8 @@ func NewStdDeviation(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (
 	return &newStdDev, err
 }
 
-func NewStdDeviationForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
-	newStdDev, err := NewStdDeviation(lookbackPeriod, selectData)
+func NewStdDeviationForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
+	newStdDev, err := NewStdDeviation(timePeriod, selectData)
 	priceStream.AddTickSubscription(newStdDev)
 	return newStdDev, err
 }

@@ -17,9 +17,9 @@ type MACD struct {
 
 	// private variables
 	valueAvailableAction ValueAvailableActionMACD
-	fastLookbackPeriod   int
-	slowLookbackPeriod   int
-	signalLookbackPeriod int
+	fastTimePeriod       int
+	slowTimePeriod       int
+	signalTimePeriod     int
 	emaFast              *EMA
 	emaSlow              *EMA
 	emaSignal            *EMA
@@ -35,22 +35,22 @@ type MACD struct {
 }
 
 // NewMACD returns a new Moving Average Convergence-Divergence (MACD) Indicator configured with the
-// specified lookbackPeriods. The MACD results are stored in the DATA field.
-func NewMACD(fastLookbackPeriod int, slowLookbackPeriod int, signalLookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *MACD, err error) {
-	newMACD := MACD{baseIndicatorWithLookback: newBaseIndicatorWithLookback(slowLookbackPeriod + signalLookbackPeriod - 1),
-		fastLookbackPeriod:   fastLookbackPeriod,
-		slowLookbackPeriod:   slowLookbackPeriod,
-		signalLookbackPeriod: signalLookbackPeriod}
+// specified timePeriod. The MACD results are stored in the DATA field.
+func NewMACD(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *MACD, err error) {
+	newMACD := MACD{baseIndicatorWithLookback: newBaseIndicatorWithLookback(slowTimePeriod + signalTimePeriod - 2),
+		fastTimePeriod:   fastTimePeriod,
+		slowTimePeriod:   slowTimePeriod,
+		signalTimePeriod: signalTimePeriod}
 
 	// shift the fast ema up so that it has valid data at the same time as the slow emas
-	newMACD.emaSlowSkip = slowLookbackPeriod - fastLookbackPeriod
-	newMACD.emaFast, _ = NewEMA(fastLookbackPeriod, selectData)
+	newMACD.emaSlowSkip = slowTimePeriod - fastTimePeriod
+	newMACD.emaFast, _ = NewEMA(fastTimePeriod, selectData)
 
 	newMACD.emaFast.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newMACD.currentFastEMA = dataItem
 	}
 
-	newMACD.emaSlow, _ = NewEMA(slowLookbackPeriod, selectData)
+	newMACD.emaSlow, _ = NewEMA(slowTimePeriod, selectData)
 
 	newMACD.emaSlow.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newMACD.currentSlowEMA = dataItem
@@ -60,7 +60,7 @@ func NewMACD(fastLookbackPeriod int, slowLookbackPeriod int, signalLookbackPerio
 		newMACD.emaSignal.ReceiveTick(newMACD.currentMACD, streamBarIndex)
 	}
 
-	newMACD.emaSignal, _ = NewEMA(signalLookbackPeriod, selectData)
+	newMACD.emaSignal, _ = NewEMA(signalTimePeriod, selectData)
 
 	newMACD.emaSignal.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newMACD.dataLength += 1
@@ -117,8 +117,8 @@ func NewMACD(fastLookbackPeriod int, slowLookbackPeriod int, signalLookbackPerio
 	return &newMACD, nil
 }
 
-func NewMACDForStream(priceStream *gotrade.DOHLCVStream, fastLookbackPeriod int, slowLookbackPeriod int, signalLookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *MACD, err error) {
-	newMACD, err := NewMACD(fastLookbackPeriod, slowLookbackPeriod, signalLookbackPeriod, selectData)
+func NewMACDForStream(priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *MACD, err error) {
+	newMACD, err := NewMACD(fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
 	priceStream.AddTickSubscription(newMACD)
 	return newMACD, err
 }

@@ -10,6 +10,7 @@ type EMAWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
+	timePeriod           int
 	periodTotal          float64
 	periodCounter        int
 	multiplier           float64
@@ -17,10 +18,11 @@ type EMAWithoutStorage struct {
 	valueAvailableAction ValueAvailableAction
 }
 
-func NewEMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *EMAWithoutStorage, err error) {
-	newEMA := EMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
-		periodCounter: lookbackPeriod * -1,
-		multiplier:    float64(2.0 / float64(lookbackPeriod+1.0))}
+func NewEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *EMAWithoutStorage, err error) {
+	newEMA := EMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
+		periodCounter: timePeriod * -1,
+		timePeriod:    timePeriod,
+		multiplier:    float64(2.0 / float64(timePeriod+1.0))}
 	newEMA.selectData = selectData
 	newEMA.valueAvailableAction = valueAvailableAction
 
@@ -36,10 +38,10 @@ type EMA struct {
 }
 
 // NewEMA returns a new Exponential Moving Average (EMA) configured with the
-// specified lookbackPeriod. The EMA results are stored in the Data field.
-func NewEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
+// specified timePeriod. The EMA results are stored in the Data field.
+func NewEMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
 	newEMA := EMA{}
-	newEMA.EMAWithoutStorage, err = NewEMAWithoutStorage(lookbackPeriod, selectData,
+	newEMA.EMAWithoutStorage, err = NewEMAWithoutStorage(timePeriod, selectData,
 		func(dataItem float64, streamBarIndex int) {
 			newEMA.Data = append(newEMA.Data, dataItem)
 		})
@@ -47,8 +49,8 @@ func NewEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator
 	return &newEMA, err
 }
 
-func NewEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
-	newEma, err := NewEMA(lookbackPeriod, selectData)
+func NewEMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
+	newEma, err := NewEMA(timePeriod, selectData)
 	priceStream.AddTickSubscription(newEma)
 	return newEma, err
 }
@@ -70,7 +72,7 @@ func (ema *EMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 		}
 
 		ema.periodTotal += tickData
-		result := ema.periodTotal / float64(ema.lookbackPeriod)
+		result := ema.periodTotal / float64(ema.timePeriod)
 		ema.previousEMA = result
 
 		if result > ema.maxValue {

@@ -15,19 +15,21 @@ type WMAWithoutStorage struct {
 	periodCounter        int
 	periodWeightTotal    int
 	valueAvailableAction ValueAvailableAction
+	timePeriod           int
 }
 
 // NewAttachedWMA returns a new Simple Moving Average (WMA) configured with the
-// specified lookbackPeriod, this version is intended for use by other indicators.
+// specified timePeriod, this version is intended for use by other indicators.
 // The WMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewWMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *WMAWithoutStorage, err error) {
-	newWMA := WMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
-		periodCounter: lookbackPeriod * -1,
+func NewWMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *WMAWithoutStorage, err error) {
+	newWMA := WMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
+		timePeriod:    timePeriod,
+		periodCounter: timePeriod * -1,
 		periodHistory: list.New()}
 
 	var weightedTotal int = 0
-	for i := 1; i <= lookbackPeriod; i++ {
+	for i := 1; i <= timePeriod; i++ {
 		weightedTotal += i
 	}
 	newWMA.periodWeightTotal = weightedTotal
@@ -46,18 +48,18 @@ type WMA struct {
 }
 
 // NewWMA returns a new Simple Moving Average (WMA) configured with the
-// specified lookbackPeriod. The WMA results are stored in the DATA field.
-func NewWMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
+// specified timePeriod. The WMA results are stored in the DATA field.
+func NewWMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
 	newWMA := WMA{}
-	newWMA.WMAWithoutStorage, err = NewWMAWithoutStorage(lookbackPeriod, selectData,
+	newWMA.WMAWithoutStorage, err = NewWMAWithoutStorage(timePeriod, selectData,
 		func(dataItem float64, streamBarIndex int) {
 			newWMA.Data = append(newWMA.Data, dataItem)
 		})
 	return &newWMA, err
 }
 
-func NewWMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
-	newWma, err := NewWMA(lookbackPeriod, selectData)
+func NewWMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
+	newWma, err := NewWMA(timePeriod, selectData)
 	priceStream.AddTickSubscription(newWma)
 	return newWma, err
 }
@@ -75,7 +77,7 @@ func (wma *WMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 	if wma.periodCounter > 0 {
 
 	}
-	if wma.periodHistory.Len() > wma.lookbackPeriod {
+	if wma.periodHistory.Len() > wma.timePeriod {
 		var first = wma.periodHistory.Front()
 		wma.periodHistory.Remove(first)
 	}

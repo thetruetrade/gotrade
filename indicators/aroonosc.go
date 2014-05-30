@@ -12,10 +12,10 @@ type AroonOsc struct {
 	Data  []float64
 }
 
-func NewAroonOsc(lookbackPeriod int) (indicator *AroonOsc, err error) {
-	ind := AroonOsc{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod + 1)}
+func NewAroonOsc(timePeriod int) (indicator *AroonOsc, err error) {
+	ind := AroonOsc{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod)}
 
-	ind.aroon, err = NewAroonWithoutStorage(lookbackPeriod,
+	ind.aroon, err = NewAroonWithoutStorage(timePeriod,
 		func(dataItemAroonUp float64, dataItemAroonDown float64, streamBarIndex int) {
 			ind.dataLength++
 

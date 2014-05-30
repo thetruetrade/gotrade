@@ -12,14 +12,16 @@ type BollingerBands struct {
 	sma                  *SMAWithoutStorage
 	stdDev               *StdDeviation
 	currentSMA           float64
+	timePeriod           int
 
 	UpperBand  []float64
 	MiddleBand []float64
 	LowerBand  []float64
 }
 
-func NewBollingerBands(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
-	newBB := BollingerBands{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod)}
+func NewBollingerBands(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+	newBB := BollingerBands{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
+		timePeriod: timePeriod}
 	newBB.currentSMA = 0.0
 	newBB.selectData = selectData
 	newBB.valueAvailableAction = func(dataItemUpperBand float64, dataItemMiddleBand float64, dataItemLowerBand float64, streamBarIndex int) {
@@ -27,11 +29,11 @@ func NewBollingerBands(lookbackPeriod int, selectData gotrade.DataSelectionFunc)
 		newBB.MiddleBand = append(newBB.MiddleBand, dataItemMiddleBand)
 		newBB.LowerBand = append(newBB.LowerBand, dataItemLowerBand)
 	}
-	newBB.sma, _ = NewSMAWithoutStorage(lookbackPeriod, selectData, func(dataItem float64, streamBarIndex int) {
+	newBB.sma, _ = NewSMAWithoutStorage(timePeriod, selectData, func(dataItem float64, streamBarIndex int) {
 		newBB.currentSMA = dataItem
 	})
 
-	newBB.stdDev, _ = NewStdDeviation(lookbackPeriod, selectData)
+	newBB.stdDev, _ = NewStdDeviation(timePeriod, selectData)
 	newBB.stdDev.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newBB.dataLength += 1
 		if newBB.validFromBar == -1 {
@@ -55,8 +57,8 @@ func NewBollingerBands(lookbackPeriod int, selectData gotrade.DataSelectionFunc)
 	return &newBB, nil
 }
 
-func NewBollingerBandsForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
-	bb, err := NewBollingerBands(lookbackPeriod, selectData)
+func NewBollingerBandsForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+	bb, err := NewBollingerBands(timePeriod, selectData)
 	priceStream.AddTickSubscription(bb)
 	return bb, err
 }

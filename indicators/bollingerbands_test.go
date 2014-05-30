@@ -33,7 +33,7 @@ var _ = Describe("when calculating bollinger bands with DOHLCV source data", fun
 	Context("and the indicator has received less ticks than the lookback period", func() {
 
 		BeforeEach(func() {
-			for i := 0; i < indicator.GetLookbackPeriod()-1; i++ {
+			for i := 0; i < indicator.GetLookbackPeriod(); i++ {
 				indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
 			}
 		})
@@ -44,7 +44,7 @@ var _ = Describe("when calculating bollinger bands with DOHLCV source data", fun
 	Context("and the indicator has received ticks equal to the lookback period", func() {
 
 		BeforeEach(func() {
-			for i := 0; i <= indicator.GetLookbackPeriod()-1; i++ {
+			for i := 0; i <= indicator.GetLookbackPeriod(); i++ {
 				indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
 			}
 		})

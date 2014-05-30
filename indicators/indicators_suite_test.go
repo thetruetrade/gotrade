@@ -138,13 +138,13 @@ func ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(inputs *Ind
 	//})
 
 	It("the indicator should be valid from the lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).ValidFromBar()).To(Equal(inputs.IndicatorUnderTest.GetLookbackPeriod()))
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).ValidFromBar()).To(Equal(inputs.IndicatorUnderTest.GetLookbackPeriod() + 1))
 	})
 }
 
 func ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(inputs *IndicatorWithLookbackSharedSpecInputs) {
 	It("the indicator stream should have entries equal to the number of ticks less the lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(Equal(inputs.SourceDataLength - (inputs.IndicatorUnderTest.GetLookbackPeriod() - 1)))
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(Equal(inputs.SourceDataLength - (inputs.IndicatorUnderTest.GetLookbackPeriod())))
 	})
 
 	It("the indicator min should equal the result stream minimum", func() {

@@ -9,6 +9,7 @@ type VarianceWithoutStorage struct {
 	*baseIndicatorWithLookback
 
 	// private variables
+	timePeriod           int
 	periodCounter        int
 	periodHistory        *list.List
 	mean                 float64
@@ -16,8 +17,9 @@ type VarianceWithoutStorage struct {
 	valueAvailableAction ValueAvailableAction
 }
 
-func NewVarianceWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *VarianceWithoutStorage, err error) {
-	newVar := VarianceWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(lookbackPeriod),
+func NewVarianceWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *VarianceWithoutStorage, err error) {
+	newVar := VarianceWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
+		timePeriod:    timePeriod,
 		periodCounter: 0,
 		periodHistory: list.New(),
 		mean:          0.0,
@@ -36,9 +38,9 @@ type Variance struct {
 	Data []float64
 }
 
-func NewVariance(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *Variance, err error) {
+func NewVariance(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Variance, err error) {
 	newVar := Variance{}
-	newVar.VarianceWithoutStorage, err = NewVarianceWithoutStorage(lookbackPeriod, selectData,
+	newVar.VarianceWithoutStorage, err = NewVarianceWithoutStorage(timePeriod, selectData,
 		func(dataItem float64, streamBarIndex int) {
 			newVar.Data = append(newVar.Data, dataItem)
 		})
@@ -46,8 +48,8 @@ func NewVariance(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indi
 	return &newVar, err
 }
 
-func NewVarianceForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *Variance, err error) {
-	newVar, err := NewVariance(lookbackPeriod, selectData)
+func NewVarianceForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Variance, err error) {
+	newVar, err := NewVariance(timePeriod, selectData)
 	priceStream.AddTickSubscription(newVar)
 	return newVar, err
 }
@@ -65,7 +67,7 @@ func (ind *VarianceWithoutStorage) ReceiveTick(tickData float64, streamBarIndex 
 	previousMean := ind.mean
 	previousVariance := ind.variance
 
-	if ind.periodCounter < ind.lookbackPeriod {
+	if ind.periodCounter < ind.timePeriod {
 		ind.periodCounter += 1
 		delta := tickData - previousMean
 		ind.mean = previousMean + delta/float64(ind.periodCounter)
@@ -79,18 +81,18 @@ func (ind *VarianceWithoutStorage) ReceiveTick(tickData float64, streamBarIndex 
 		ind.variance = previousVariance + (dOld+dNew)*(delta)
 	}
 
-	if ind.periodHistory.Len() > ind.lookbackPeriod {
+	if ind.periodHistory.Len() > ind.timePeriod {
 		first := ind.periodHistory.Front()
 		ind.periodHistory.Remove(first)
 	}
 
-	if ind.periodCounter >= ind.lookbackPeriod {
+	if ind.periodCounter >= ind.timePeriod {
 		ind.dataLength += 1
 		if ind.validFromBar == -1 {
 			ind.validFromBar = streamBarIndex
 		}
 
-		result := ind.variance / float64(ind.lookbackPeriod)
+		result := ind.variance / float64(ind.timePeriod)
 
 		if result > ind.maxValue {
 			ind.maxValue = result

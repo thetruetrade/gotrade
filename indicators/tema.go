@@ -17,27 +17,29 @@ type TEMAWithoutStorage struct {
 	ema3                 *EMA
 	currentEMA           float64
 	currentEMA2          float64
+	timePeriod           int
 }
 
-func NewTEMAWithoutStorage(lookbackPeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *TEMAWithoutStorage, err error) {
-	newTEMA := TEMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(3*lookbackPeriod - 2)}
+func NewTEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *TEMAWithoutStorage, err error) {
+	newTEMA := TEMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(3 * (timePeriod - 1)),
+		timePeriod: timePeriod}
 	newTEMA.selectData = selectData
 	newTEMA.valueAvailableAction = valueAvailableAction
 
-	newTEMA.ema1, err = NewEMA(lookbackPeriod, selectData)
+	newTEMA.ema1, err = NewEMA(timePeriod, selectData)
 
 	newTEMA.ema1.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newTEMA.currentEMA = dataItem
 		newTEMA.ema2.ReceiveTick(dataItem, streamBarIndex)
 	}
 
-	newTEMA.ema2, _ = NewEMA(lookbackPeriod, selectData)
+	newTEMA.ema2, _ = NewEMA(timePeriod, selectData)
 	newTEMA.ema2.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newTEMA.currentEMA2 = dataItem
 		newTEMA.ema3.ReceiveTick(dataItem, streamBarIndex)
 	}
 
-	newTEMA.ema3, _ = NewEMA(lookbackPeriod, selectData)
+	newTEMA.ema3, _ = NewEMA(timePeriod, selectData)
 
 	newTEMA.ema3.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
 		newTEMA.dataLength += 1
@@ -71,18 +73,18 @@ type TEMA struct {
 }
 
 // NewTEMA returns a new Double Exponential Moving Average (TEMA) configured with the
-// specified lookbackPeriod. The TEMA results are stored in the DATA field.
-func NewTEMA(lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
+// specified timePeriod. The TEMA results are stored in the DATA field.
+func NewTEMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
 	newTEMA := TEMA{}
-	newTEMA.TEMAWithoutStorage, err = NewTEMAWithoutStorage(lookbackPeriod, selectData,
+	newTEMA.TEMAWithoutStorage, err = NewTEMAWithoutStorage(timePeriod, selectData,
 		func(dataItem float64, streamBarIndex int) {
 			newTEMA.Data = append(newTEMA.Data, dataItem)
 		})
 	return &newTEMA, err
 }
 
-func NewTEMAForStream(priceStream *gotrade.DOHLCVStream, lookbackPeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
-	newTEMA, err := NewTEMA(lookbackPeriod, selectData)
+func NewTEMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
+	newTEMA, err := NewTEMA(timePeriod, selectData)
 	priceStream.AddTickSubscription(newTEMA)
 	return newTEMA, err
 }
