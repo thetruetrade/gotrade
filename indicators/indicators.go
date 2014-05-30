@@ -13,7 +13,7 @@ var (
 	ErrLookbackPeriodMustBeGreaterThanZero  = errors.New("Lookback period must be greater than 0")
 
 	// lookback minimum
-	MinimumLookbackPeriod int = 2
+	MinimumLookbackPeriod int = 1
 	MaximumLookbackPeriod int = 200
 )
 

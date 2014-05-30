@@ -6,6 +6,8 @@
 # Folders
 _obj
 _test
+bin
+obj
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -21,5 +23,7 @@ _testmain.go
 
 *.exe
 *.test
+*.mdb
+*.exe.mdb
 
 *.coverprofile
