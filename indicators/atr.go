@@ -96,9 +96,9 @@ func NewATR(timePeriod int) (indicator *ATR, err error) {
 }
 
 func NewATRForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *ATR, err error) {
-	newSma, err := NewATR(timePeriod)
-	priceStream.AddTickSubscription(newSma)
-	return newSma, err
+	newATR, err := NewATR(timePeriod)
+	priceStream.AddTickSubscription(newATR)
+	return newATR, err
 }
 
 func (ind *ATRWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {

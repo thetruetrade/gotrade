@@ -59,6 +59,9 @@ var _ = AfterSuite(func() {
 
 type IndicatorSharedSpecInputs struct {
 	IndicatorUnderTest indicators.Indicator
+	GetMaximum         GetMaximumFunc
+	GetMinimum         GetMinimumFunc
+	SourceDataLength   int
 }
 
 func ShouldBeAnInitialisedIndicator(inputs *IndicatorSharedSpecInputs) {
@@ -76,6 +79,24 @@ func ShouldBeAnInitialisedIndicator(inputs *IndicatorSharedSpecInputs) {
 
 	It("the indicator should have no maximum value set", func() {
 		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
+	})
+}
+
+func ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(inputs *IndicatorSharedSpecInputs) {
+	It("the indicator should be valid from some bar >= 1", func() {
+		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(BeNumerically(">=", 1))
+	})
+
+	It("the indicator stream should have entries equal to the number of ticks", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(Equal(inputs.SourceDataLength))
+	})
+
+	It("the indicator min should equal the result stream minimum", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()).To(Equal(inputs.GetMinimum()))
+	})
+
+	It("the indicator max should equal the result stream maximum", func() {
+		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(inputs.GetMaximum()))
 	})
 }
 

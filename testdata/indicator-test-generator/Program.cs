@@ -15,6 +15,7 @@ namespace indicatortestgenerator
 			List<double> closingPrices = new List<double>();
 			List<double> highPrices = new List<double>();
 			List<double> lowPrices = new List<double>();
+			List<double> volume = new List<double>();
 			// read the source data into an array to use for all the indicators
 			using (var reader = new StreamReader (@"/home/eugened/Development/local/indicator-test-generator/indicator-test-generator/JSETOPI.2013.data")) 
 			{
@@ -27,6 +28,7 @@ namespace indicatortestgenerator
 					highPrices.Add (Convert.ToDouble (parts [2].Replace (".", ",")));
 					closingPrices.Add (Convert.ToDouble (parts [4].Replace(".", ",")));
 					lowPrices.Add (Convert.ToDouble (parts [3].Replace (".", ",")));
+					volume.Add(Convert.ToDouble(parts[5].Replace (".", ",")));
 				}
 			}
 
@@ -278,6 +280,25 @@ namespace indicatortestgenerator
 				int dataLength = closingPrices.Count - 1;
 				double[] outData = new double[dataLength - lookback + 1];
 				talib.Core.RetCode retCode =talib.Core.Atr(0, dataLength, highPrices.ToArray(), lowPrices.ToArray(), closingPrices.ToArray(), 14, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
+
+			// Accumulation / Distribution line 
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/adl_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.AdLookback();
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback + 1];
+				talib.Core.RetCode retCode =talib.Core.Ad(0, dataLength, highPrices.ToArray(), lowPrices.ToArray(), closingPrices.ToArray(), volume.ToArray(), out outBeginIndex, out outNBElement, outData);
 				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
 				{
 					foreach (var item in outData) 

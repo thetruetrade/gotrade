@@ -463,12 +463,46 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			})
 
 			It("the result set should have a length equal to the source data length less the lookback period", func() {
-				Expect(trueRange.Length()).To(Equal(len(priceStream.Data) - trueRange.GetLookbackPeriod()))
+				Expect(avgTrueRange.Length()).To(Equal(len(priceStream.Data) - avgTrueRange.GetLookbackPeriod()))
 			})
 
 			It("it should have correctly calculated the truerangefor each item in the result set accurate to two decimal places", func() {
 				for k := range expectedResults {
 					Expect(expectedResults[k]).To(BeNumerically("~", avgTrueRange.Data[k], 0.01))
+				}
+			})
+		})
+	})
+
+	var _ = Describe("when executing the gotrade accumulation distribution line with a years data and known output", func() {
+		var (
+			adl             *indicators.ADL
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("adl_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using no lookback", func() {
+
+			BeforeEach(func() {
+				adl, err = indicators.NewADL()
+				priceStream.AddTickSubscription(adl)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(adl.Length()).To(Equal(len(priceStream.Data)))
+			})
+
+			It("it should have correctly calculated the truerangefor each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", adl.Data[k], 0.01))
 				}
 			})
 		})
