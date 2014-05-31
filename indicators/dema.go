@@ -8,10 +8,11 @@ import (
 )
 
 type DEMAWithoutStorage struct {
+	*baseIndicator
 	*baseIndicatorWithLookback
+	*baseIndicatorWithTimePeriod
 
 	// private variables
-	timePeriod           int
 	valueAvailableAction ValueAvailableAction
 	ema1                 *EMA
 	ema2                 *EMA
@@ -19,8 +20,9 @@ type DEMAWithoutStorage struct {
 }
 
 func NewDEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *DEMAWithoutStorage, err error) {
-	newDEMA := DEMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(2 * (timePeriod - 1)),
-		timePeriod: timePeriod}
+	newDEMA := DEMAWithoutStorage{baseIndicator: newBaseIndicator(),
+		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(2 * (timePeriod - 1)),
+		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 	newDEMA.selectData = selectData
 	newDEMA.valueAvailableAction = valueAvailableAction
 

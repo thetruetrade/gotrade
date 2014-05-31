@@ -5,14 +5,15 @@ import (
 )
 
 type BollingerBands struct {
+	*baseIndicator
 	*baseIndicatorWithLookback
+	*baseIndicatorWithTimePeriod
 
 	// private variables
 	valueAvailableAction ValueAvailableActionBollinger
 	sma                  *SMAWithoutStorage
 	stdDev               *StdDeviation
 	currentSMA           float64
-	timePeriod           int
 
 	UpperBand  []float64
 	MiddleBand []float64
@@ -20,8 +21,9 @@ type BollingerBands struct {
 }
 
 func NewBollingerBands(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
-	newBB := BollingerBands{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
-		timePeriod: timePeriod}
+	newBB := BollingerBands{baseIndicator: newBaseIndicator(),
+		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 	newBB.currentSMA = 0.0
 	newBB.selectData = selectData
 	newBB.valueAvailableAction = func(dataItemUpperBand float64, dataItemMiddleBand float64, dataItemLowerBand float64, streamBarIndex int) {

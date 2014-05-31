@@ -6,10 +6,11 @@ import (
 )
 
 type VarianceWithoutStorage struct {
+	*baseIndicator
 	*baseIndicatorWithLookback
+	*baseIndicatorWithTimePeriod
 
 	// private variables
-	timePeriod           int
 	periodCounter        int
 	periodHistory        *list.List
 	mean                 float64
@@ -18,12 +19,13 @@ type VarianceWithoutStorage struct {
 }
 
 func NewVarianceWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *VarianceWithoutStorage, err error) {
-	newVar := VarianceWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
-		timePeriod:    timePeriod,
-		periodCounter: 0,
-		periodHistory: list.New(),
-		mean:          0.0,
-		variance:      0.0}
+	newVar := VarianceWithoutStorage{baseIndicator: newBaseIndicator(),
+		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
+		periodCounter:               0,
+		periodHistory:               list.New(),
+		mean:                        0.0,
+		variance:                    0.0}
 
 	newVar.selectData = selectData
 	newVar.valueAvailableAction = valueAvailableAction
@@ -67,7 +69,7 @@ func (ind *VarianceWithoutStorage) ReceiveTick(tickData float64, streamBarIndex 
 	previousMean := ind.mean
 	previousVariance := ind.variance
 
-	if ind.periodCounter < ind.timePeriod {
+	if ind.periodCounter < ind.GetTimePeriod() {
 		ind.periodCounter += 1
 		delta := tickData - previousMean
 		ind.mean = previousMean + delta/float64(ind.periodCounter)
@@ -81,18 +83,18 @@ func (ind *VarianceWithoutStorage) ReceiveTick(tickData float64, streamBarIndex 
 		ind.variance = previousVariance + (dOld+dNew)*(delta)
 	}
 
-	if ind.periodHistory.Len() > ind.timePeriod {
+	if ind.periodHistory.Len() > ind.GetTimePeriod() {
 		first := ind.periodHistory.Front()
 		ind.periodHistory.Remove(first)
 	}
 
-	if ind.periodCounter >= ind.timePeriod {
+	if ind.periodCounter >= ind.GetTimePeriod() {
 		ind.dataLength += 1
 		if ind.validFromBar == -1 {
 			ind.validFromBar = streamBarIndex
 		}
 
-		result := ind.variance / float64(ind.timePeriod)
+		result := ind.variance / float64(ind.GetTimePeriod())
 
 		if result > ind.maxValue {
 			ind.maxValue = result

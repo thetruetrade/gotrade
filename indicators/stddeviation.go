@@ -6,17 +6,19 @@ import (
 )
 
 type StdDeviationWithoutStorage struct {
+	*baseIndicator
 	*baseIndicatorWithLookback
+	*baseIndicatorWithTimePeriod
 
 	// private variables
-	timePeriod           int
 	valueAvailableAction ValueAvailableAction
 	variance             *Variance
 }
 
 func NewStdDeviationWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *StdDeviationWithoutStorage, err error) {
-	newStdDev := StdDeviationWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
-		timePeriod: timePeriod}
+	newStdDev := StdDeviationWithoutStorage{baseIndicator: newBaseIndicator(),
+		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 
 	newStdDev.selectData = selectData
 	newStdDev.valueAvailableAction = valueAvailableAction

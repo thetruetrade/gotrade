@@ -7,7 +7,9 @@ import (
 )
 
 type WMAWithoutStorage struct {
+	*baseIndicator
 	*baseIndicatorWithLookback
+	*baseIndicatorWithTimePeriod
 
 	// private variables
 	periodTotal          float64
@@ -15,7 +17,6 @@ type WMAWithoutStorage struct {
 	periodCounter        int
 	periodWeightTotal    int
 	valueAvailableAction ValueAvailableAction
-	timePeriod           int
 }
 
 // NewAttachedWMA returns a new Simple Moving Average (WMA) configured with the
@@ -23,10 +24,11 @@ type WMAWithoutStorage struct {
 // The WMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewWMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *WMAWithoutStorage, err error) {
-	newWMA := WMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
-		timePeriod:    timePeriod,
-		periodCounter: timePeriod * -1,
-		periodHistory: list.New()}
+	newWMA := WMAWithoutStorage{baseIndicator: newBaseIndicator(),
+		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
+		periodCounter:               timePeriod * -1,
+		periodHistory:               list.New()}
 
 	var weightedTotal int = 0
 	for i := 1; i <= timePeriod; i++ {
@@ -77,7 +79,7 @@ func (wma *WMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 	if wma.periodCounter > 0 {
 
 	}
-	if wma.periodHistory.Len() > wma.timePeriod {
+	if wma.periodHistory.Len() > wma.GetTimePeriod() {
 		var first = wma.periodHistory.Front()
 		wma.periodHistory.Remove(first)
 	}

@@ -8,10 +8,11 @@ import (
 
 // A Simple Moving Average Indicator
 type SMAWithoutStorage struct {
+	*baseIndicator
 	*baseIndicatorWithLookback
+	*baseIndicatorWithTimePeriod
 
 	// private variables
-	timePeriod           int
 	periodTotal          float64
 	periodHistory        *list.List
 	periodCounter        int
@@ -23,10 +24,11 @@ type SMAWithoutStorage struct {
 // The SMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewSMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *SMAWithoutStorage, err error) {
-	newSMA := SMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
-		timePeriod:    timePeriod,
-		periodCounter: timePeriod * -1,
-		periodHistory: list.New()}
+	newSMA := SMAWithoutStorage{baseIndicator: newBaseIndicator(),
+		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
+		periodCounter:               timePeriod * -1,
+		periodHistory:               list.New()}
 	newSMA.selectData = selectData
 	newSMA.valueAvailableAction = valueAvailableAction
 
@@ -71,12 +73,12 @@ func (sma *SMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 		var valueToRemove = sma.periodHistory.Front()
 		sma.periodTotal -= valueToRemove.Value.(float64)
 	}
-	if sma.periodHistory.Len() > sma.timePeriod {
+	if sma.periodHistory.Len() > sma.GetTimePeriod() {
 		var first = sma.periodHistory.Front()
 		sma.periodHistory.Remove(first)
 	}
 	sma.periodTotal += tickData
-	var result float64 = sma.periodTotal / float64(sma.timePeriod)
+	var result float64 = sma.periodTotal / float64(sma.GetTimePeriod())
 	if sma.periodCounter >= 0 {
 		sma.dataLength += 1
 

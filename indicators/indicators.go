@@ -28,6 +28,10 @@ type IndicatorWithLookback interface {
 	GetLookbackPeriod() int
 }
 
+type IndicatorWithTimePeriod interface {
+	GetTimePeriod() int
+}
+
 type baseIndicator struct {
 	validFromBar int
 	dataLength   int
@@ -58,18 +62,29 @@ func (ind *baseIndicator) Length() int {
 }
 
 type baseIndicatorWithLookback struct {
-	*baseIndicator
 	lookbackPeriod int
 }
 
 func newBaseIndicatorWithLookback(lookbackPeriod int) *baseIndicatorWithLookback {
-	ind := baseIndicatorWithLookback{baseIndicator: newBaseIndicator(),
-		lookbackPeriod: lookbackPeriod}
+	ind := baseIndicatorWithLookback{lookbackPeriod: lookbackPeriod}
 	return &ind
 }
 
 func (ind *baseIndicatorWithLookback) GetLookbackPeriod() int {
 	return ind.lookbackPeriod
+}
+
+type baseIndicatorWithTimePeriod struct {
+	timePeriod int
+}
+
+func newBaseIndicatorWithTimePeriod(timePeriod int) *baseIndicatorWithTimePeriod {
+	ind := baseIndicatorWithTimePeriod{timePeriod: timePeriod}
+	return &ind
+}
+
+func (ind *baseIndicatorWithTimePeriod) GetTimePeriod() int {
+	return ind.timePeriod
 }
 
 type ValueAvailableAction func(dataItem float64, streamBarIndex int)

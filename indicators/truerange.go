@@ -10,6 +10,7 @@ import (
 // TrueRange = TrueHigh = TrueLow
 
 type TrueRangeWithoutStorage struct {
+	*baseIndicator
 	*baseIndicatorWithLookback
 
 	// private variables
@@ -19,9 +20,10 @@ type TrueRangeWithoutStorage struct {
 }
 
 func NewTrueRangeWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *TrueRangeWithoutStorage, err error) {
-	ind := TrueRangeWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(1),
-		periodCounter: -1,
-		previousClose: 0.0}
+	ind := TrueRangeWithoutStorage{baseIndicator: newBaseIndicator(),
+		baseIndicatorWithLookback: newBaseIndicatorWithLookback(1),
+		periodCounter:             -1,
+		previousClose:             0.0}
 	ind.valueAvailableAction = valueAvailableAction
 	return &ind, nil
 }

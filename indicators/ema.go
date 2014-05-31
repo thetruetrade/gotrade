@@ -7,10 +7,11 @@ import (
 
 // An Exponential Moving Average Indicator
 type EMAWithoutStorage struct {
+	*baseIndicator
 	*baseIndicatorWithLookback
+	*baseIndicatorWithTimePeriod
 
 	// private variables
-	timePeriod           int
 	periodTotal          float64
 	periodCounter        int
 	multiplier           float64
@@ -19,10 +20,11 @@ type EMAWithoutStorage struct {
 }
 
 func NewEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *EMAWithoutStorage, err error) {
-	newEMA := EMAWithoutStorage{baseIndicatorWithLookback: newBaseIndicatorWithLookback(timePeriod - 1),
-		periodCounter: timePeriod * -1,
-		timePeriod:    timePeriod,
-		multiplier:    float64(2.0 / float64(timePeriod+1.0))}
+	newEMA := EMAWithoutStorage{baseIndicator: newBaseIndicator(),
+		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
+		periodCounter:               timePeriod * -1,
+		multiplier:                  float64(2.0 / float64(timePeriod+1.0))}
 	newEMA.selectData = selectData
 	newEMA.valueAvailableAction = valueAvailableAction
 
@@ -72,7 +74,7 @@ func (ema *EMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 		}
 
 		ema.periodTotal += tickData
-		result := ema.periodTotal / float64(ema.timePeriod)
+		result := ema.periodTotal / float64(ema.GetTimePeriod())
 		ema.previousEMA = result
 
 		if result > ema.maxValue {
