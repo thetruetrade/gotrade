@@ -439,4 +439,38 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			}
 		})
 	})
+
+	var _ = Describe("when executing the gotrade average truerange with a years data and known output", func() {
+		var (
+			avgTrueRange    *indicators.ATR
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("atr_14_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using an implicit lookback period of 14", func() {
+
+			BeforeEach(func() {
+				avgTrueRange, err = indicators.NewATR(14)
+				priceStream.AddTickSubscription(avgTrueRange)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length less the lookback period", func() {
+				Expect(trueRange.Length()).To(Equal(len(priceStream.Data) - trueRange.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the truerangefor each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", avgTrueRange.Data[k], 0.01))
+				}
+			})
+		})
+	})
 })

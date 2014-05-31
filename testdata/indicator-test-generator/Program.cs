@@ -268,6 +268,25 @@ namespace indicatortestgenerator
 				}
 				writer.Flush ();
 			}
+
+			// Average True Range
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/atr_14_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.AtrLookback (14);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback + 1];
+				talib.Core.RetCode retCode =talib.Core.Atr(0, dataLength, highPrices.ToArray(), lowPrices.ToArray(), closingPrices.ToArray(), 14, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
 		}
 	}
 }
