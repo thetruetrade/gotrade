@@ -5,14 +5,14 @@ import (
 	"github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when calculating an accumulation distribution line (adl) with DOHLCV source data", func() {
+var _ = Describe("when calculating an on balance volume (obv) with DOHLCV source data", func() {
 	var (
-		indicator       *indicators.ADL
+		indicator       *indicators.OBV
 		indicatorInputs IndicatorSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewADL()
+		indicator, _ = indicators.NewOBV()
 		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
 			SourceDataLength: len(sourceDOHLCVData),
 			GetMaximum: func() float64 {
