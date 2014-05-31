@@ -12,6 +12,7 @@ namespace indicatortestgenerator
 	{
 		public static void Main (string[] args)
 		{
+			List<double> openPrices = new List<double>();
 			List<double> closingPrices = new List<double>();
 			List<double> highPrices = new List<double>();
 			List<double> lowPrices = new List<double>();
@@ -25,9 +26,10 @@ namespace indicatortestgenerator
 					string[] parts = line.Split (new char[]{ ',' });
 					// format is date, O, H, L, C, V
 					// we will use close prices for all these tests
+					openPrices.Add (Convert.ToDouble (parts [1].Replace (".", ",")));
 					highPrices.Add (Convert.ToDouble (parts [2].Replace (".", ",")));
-					closingPrices.Add (Convert.ToDouble (parts [4].Replace(".", ",")));
 					lowPrices.Add (Convert.ToDouble (parts [3].Replace (".", ",")));
+					closingPrices.Add (Convert.ToDouble (parts [4].Replace(".", ",")));
 					volume.Add(Convert.ToDouble(parts[5].Replace (".", ",")));
 				}
 			}
@@ -337,6 +339,25 @@ namespace indicatortestgenerator
 				int dataLength = closingPrices.Count - 1;
 				double[] outData = new double[dataLength - lookback + 1];
 				talib.Core.RetCode retCode =talib.Core.Obv(0, dataLength, closingPrices.ToArray(), volume.ToArray(), out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
+
+			// AvgPrice
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/avgprice_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.AvgPriceLookback();
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback + 1];
+				talib.Core.RetCode retCode =talib.Core.AvgPrice(0, dataLength, openPrices.ToArray(), highPrices.ToArray(), lowPrices.ToArray(), closingPrices.ToArray(), out outBeginIndex, out outNBElement, outData);
 				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
 				{
 					foreach (var item in outData) 
