@@ -507,4 +507,42 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			})
 		})
 	})
+
+	var _ = Describe("when executing the gotrade chaikin oscilator with a years data and known output", func() {
+		var (
+			chaikinOsc      *indicators.ChainkinOsc
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+			fastPeriod      int
+			slowPeriod      int
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("chaikinosc_3_10_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+			fastPeriod = 3
+			slowPeriod = 10
+		})
+
+		Describe("using no a fast Time Period of 3 and a slow Time Period of 10", func() {
+
+			BeforeEach(func() {
+				chaikinOsc, err = indicators.NewChainkinOsc(3, 10)
+				priceStream.AddTickSubscription(chaikinOsc)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length - the lookback Period", func() {
+				Expect(chaikinOsc.Length()).To(Equal(len(priceStream.Data) - chaikinOsc.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the chaikin oscillator for each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", chaikinOsc.Data[k], 0.01))
+				}
+			})
+		})
+	})
 })
