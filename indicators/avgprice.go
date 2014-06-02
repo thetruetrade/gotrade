@@ -12,7 +12,7 @@ type AvgPriceWithoutStorage struct {
 }
 
 func NewAvgPriceWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *AvgPriceWithoutStorage, err error) {
-	newVar := AvgPriceWithoutStorage{baseIndicator: newBaseIndicator()}
+	newVar := AvgPriceWithoutStorage{baseIndicator: newBaseIndicator(0)}
 
 	newVar.valueAvailableAction = valueAvailableAction
 

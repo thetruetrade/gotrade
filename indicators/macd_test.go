@@ -8,16 +8,16 @@ import (
 
 var _ = Describe("when calculating a moving average convergence divergence (macd) with DOHLCV source data", func() {
 	var (
-		shortPeriod                 int = 3
-		longPeriod                  int = 6
-		signalPeriod                int = 2
-		indicator                   *MACD
-		indicatorWithLookbackInputs IndicatorWithLookbackSharedSpecInputs
+		shortPeriod     int = 3
+		longPeriod      int = 6
+		signalPeriod    int = 2
+		indicator       *MACD
+		indicatorInputs IndicatorSharedSpecInputs
 	)
 
 	BeforeEach(func() {
 		indicator, _ = NewMACD(shortPeriod, longPeriod, signalPeriod, gotrade.UseClosePrice)
-		indicatorWithLookbackInputs = IndicatorWithLookbackSharedSpecInputs{IndicatorUnderTest: indicator,
+		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
 			SourceDataLength: len(sourceDOHLCVData),
 			GetMaximum: func() float64 {
 				return GetDataMaxMACD(indicator.MACD, indicator.Signal, indicator.Histogram)
@@ -28,7 +28,7 @@ var _ = Describe("when calculating a moving average convergence divergence (macd
 	})
 
 	Context("and the indicator has not yet received any ticks", func() {
-		ShouldBeAnInitialisedIndicatorWithLookback(&indicatorWithLookbackInputs)
+		ShouldBeAnInitialisedIndicator(&indicatorInputs)
 	})
 
 	Context("and the indicator has received less ticks than the lookback period", func() {
@@ -39,7 +39,7 @@ var _ = Describe("when calculating a moving average convergence divergence (macd
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&indicatorInputs)
 	})
 
 	Context("and the indicator has received ticks equal to the lookback period", func() {
@@ -50,7 +50,7 @@ var _ = Describe("when calculating a moving average convergence divergence (macd
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&indicatorInputs)
 	})
 
 	Context("and the indicator has received more ticks than the lookback period", func() {
@@ -61,6 +61,16 @@ var _ = Describe("when calculating a moving average convergence divergence (macd
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&indicatorInputs)
+	})
+
+	Context("and the indicator has recieved all of its ticks", func() {
+		BeforeEach(func() {
+			for i := 0; i < len(sourceDOHLCVData); i++ {
+				indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+			}
+		})
+
+		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
 	})
 })

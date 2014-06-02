@@ -10,7 +10,6 @@ import (
 
 type ChainkinOscWithoutStorage struct {
 	*baseIndicator
-	*baseIndicatorWithLookback
 
 	// private variables
 	fastTimePeriod       int
@@ -26,14 +25,13 @@ type ChainkinOscWithoutStorage struct {
 }
 
 func NewChainkinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueAvailableAction ValueAvailableAction) (indicator *ChainkinOscWithoutStorage, err error) {
-	newChainkinOsc := ChainkinOscWithoutStorage{baseIndicator: newBaseIndicator(),
-		baseIndicatorWithLookback: newBaseIndicatorWithLookback(slowTimePeriod - 1),
-		slowTimePeriod:            slowTimePeriod,
-		fastTimePeriod:            fastTimePeriod,
-		emaFastMultiplier:         float64(2.0 / float64(fastTimePeriod+1.0)),
-		emaSlowMultiplier:         float64(2.0 / float64(slowTimePeriod+1.0)),
-		periodCounter:             slowTimePeriod * -1,
-		isInitialised:             false}
+	newChainkinOsc := ChainkinOscWithoutStorage{baseIndicator: newBaseIndicator(slowTimePeriod - 1),
+		slowTimePeriod:    slowTimePeriod,
+		fastTimePeriod:    fastTimePeriod,
+		emaFastMultiplier: float64(2.0 / float64(fastTimePeriod+1.0)),
+		emaSlowMultiplier: float64(2.0 / float64(slowTimePeriod+1.0)),
+		periodCounter:     slowTimePeriod * -1,
+		isInitialised:     false}
 
 	newChainkinOsc.valueAvailableAction = valueAvailableAction
 

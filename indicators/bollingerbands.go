@@ -6,7 +6,6 @@ import (
 
 type BollingerBands struct {
 	*baseIndicator
-	*baseIndicatorWithLookback
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -21,8 +20,7 @@ type BollingerBands struct {
 }
 
 func NewBollingerBands(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
-	newBB := BollingerBands{baseIndicator: newBaseIndicator(),
-		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+	newBB := BollingerBands{baseIndicator: newBaseIndicator(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 	newBB.currentSMA = 0.0
 	newBB.selectData = selectData

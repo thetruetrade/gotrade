@@ -7,14 +7,14 @@ import (
 
 var _ = Describe("when calculating an aroonosc with DOHLCV source data", func() {
 	var (
-		period                      int = 5
-		indicator                   *indicators.AroonOsc
-		indicatorWithLookbackInputs IndicatorWithLookbackSharedSpecInputs
+		period          int = 5
+		indicator       *indicators.AroonOsc
+		indicatorInputs IndicatorSharedSpecInputs
 	)
 
 	BeforeEach(func() {
 		indicator, _ = indicators.NewAroonOsc(period)
-		indicatorWithLookbackInputs = IndicatorWithLookbackSharedSpecInputs{IndicatorUnderTest: indicator,
+		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
 			SourceDataLength: len(sourceDOHLCVData),
 			GetMaximum: func() float64 {
 				return GetDataMax(indicator.Data)
@@ -25,7 +25,7 @@ var _ = Describe("when calculating an aroonosc with DOHLCV source data", func() 
 	})
 
 	Context("and the indicator has not yet received any ticks", func() {
-		ShouldBeAnInitialisedIndicatorWithLookback(&indicatorWithLookbackInputs)
+		ShouldBeAnInitialisedIndicator(&indicatorInputs)
 	})
 
 	Context("and the indicator has received less ticks than the lookback period", func() {
@@ -36,7 +36,7 @@ var _ = Describe("when calculating an aroonosc with DOHLCV source data", func() 
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&indicatorInputs)
 	})
 
 	Context("and the indicator has received ticks equal to the lookback period", func() {
@@ -47,7 +47,7 @@ var _ = Describe("when calculating an aroonosc with DOHLCV source data", func() 
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&indicatorInputs)
 	})
 
 	Context("and the indicator has received more ticks than the lookback period", func() {
@@ -58,6 +58,6 @@ var _ = Describe("when calculating an aroonosc with DOHLCV source data", func() 
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&indicatorInputs)
 	})
 })

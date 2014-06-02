@@ -12,7 +12,7 @@ type MedPriceWithoutStorage struct {
 }
 
 func NewMedPriceWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *MedPriceWithoutStorage, err error) {
-	newVar := MedPriceWithoutStorage{baseIndicator: newBaseIndicator()}
+	newVar := MedPriceWithoutStorage{baseIndicator: newBaseIndicator(0)}
 
 	newVar.valueAvailableAction = valueAvailableAction
 

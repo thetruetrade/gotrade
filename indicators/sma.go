@@ -9,7 +9,6 @@ import (
 // A Simple Moving Average Indicator
 type SMAWithoutStorage struct {
 	*baseIndicator
-	*baseIndicatorWithLookback
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -24,8 +23,7 @@ type SMAWithoutStorage struct {
 // The SMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewSMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *SMAWithoutStorage, err error) {
-	newSMA := SMAWithoutStorage{baseIndicator: newBaseIndicator(),
-		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+	newSMA := SMAWithoutStorage{baseIndicator: newBaseIndicator(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,
 		periodHistory:               list.New()}

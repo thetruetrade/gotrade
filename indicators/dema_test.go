@@ -8,14 +8,14 @@ import (
 
 var _ = Describe("when calculating a double exponential moving average (dema) with DOHLCV source data", func() {
 	var (
-		period                      int = 3
-		indicator                   *DEMA
-		indicatorWithLookbackInputs IndicatorWithLookbackSharedSpecInputs
+		period          int = 3
+		indicator       *DEMA
+		indicatorInputs IndicatorSharedSpecInputs
 	)
 
 	BeforeEach(func() {
 		indicator, _ = NewDEMA(period, gotrade.UseClosePrice)
-		indicatorWithLookbackInputs = IndicatorWithLookbackSharedSpecInputs{IndicatorUnderTest: indicator,
+		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
 			SourceDataLength: len(sourceDOHLCVData),
 			GetMaximum: func() float64 {
 				return GetDataMax(indicator.Data)
@@ -26,7 +26,7 @@ var _ = Describe("when calculating a double exponential moving average (dema) wi
 	})
 
 	Context("and the indicator has not yet received any ticks", func() {
-		ShouldBeAnInitialisedIndicatorWithLookback(&indicatorWithLookbackInputs)
+		ShouldBeAnInitialisedIndicator(&indicatorInputs)
 	})
 
 	Context("and the indicator has received less ticks than the lookback period", func() {
@@ -37,7 +37,7 @@ var _ = Describe("when calculating a double exponential moving average (dema) wi
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&indicatorInputs)
 	})
 
 	Context("and the indicator has received ticks equal to the lookback period", func() {
@@ -48,7 +48,7 @@ var _ = Describe("when calculating a double exponential moving average (dema) wi
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&indicatorInputs)
 	})
 
 	Context("and the indicator has received more ticks than the lookback period", func() {
@@ -59,6 +59,16 @@ var _ = Describe("when calculating a double exponential moving average (dema) wi
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&indicatorWithLookbackInputs)
+		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&indicatorInputs)
+	})
+
+	Context("and the indicator has recieved all of its ticks", func() {
+		BeforeEach(func() {
+			for i := 0; i < len(sourceDOHLCVData); i++ {
+				indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+			}
+		})
+
+		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
 	})
 })

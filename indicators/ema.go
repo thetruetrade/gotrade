@@ -8,7 +8,6 @@ import (
 // An Exponential Moving Average Indicator
 type EMAWithoutStorage struct {
 	*baseIndicator
-	*baseIndicatorWithLookback
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -20,8 +19,7 @@ type EMAWithoutStorage struct {
 }
 
 func NewEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *EMAWithoutStorage, err error) {
-	newEMA := EMAWithoutStorage{baseIndicator: newBaseIndicator(),
-		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+	newEMA := EMAWithoutStorage{baseIndicator: newBaseIndicator(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,
 		multiplier:                  float64(2.0 / float64(timePeriod+1.0))}

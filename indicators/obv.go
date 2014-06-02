@@ -15,7 +15,7 @@ type OBVWithoutStorage struct {
 }
 
 func NewOBVWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *OBVWithoutStorage, err error) {
-	newVar := OBVWithoutStorage{baseIndicator: newBaseIndicator(),
+	newVar := OBVWithoutStorage{baseIndicator: newBaseIndicator(0),
 		periodCounter: -1,
 		previousOBV:   0.0,
 		previousClose: 0.0}

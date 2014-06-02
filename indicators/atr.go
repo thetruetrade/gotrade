@@ -8,7 +8,6 @@ import (
 // An Average True Range Indicator
 type ATRWithoutStorage struct {
 	*baseIndicator
-	*baseIndicatorWithLookback
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -24,8 +23,7 @@ type ATRWithoutStorage struct {
 // The ATR results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewATRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *ATRWithoutStorage, err error) {
-	newATR := ATRWithoutStorage{baseIndicator: newBaseIndicator(),
-		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod),
+	newATR := ATRWithoutStorage{baseIndicator: newBaseIndicator(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		multiplier:                  float64(timePeriod - 1),
 		previousAvgTrueRange:        -1}

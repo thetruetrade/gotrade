@@ -8,7 +8,6 @@ import (
 
 type WMAWithoutStorage struct {
 	*baseIndicator
-	*baseIndicatorWithLookback
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -24,8 +23,7 @@ type WMAWithoutStorage struct {
 // The WMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewWMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *WMAWithoutStorage, err error) {
-	newWMA := WMAWithoutStorage{baseIndicator: newBaseIndicator(),
-		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod - 1),
+	newWMA := WMAWithoutStorage{baseIndicator: newBaseIndicator(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,
 		periodHistory:               list.New()}

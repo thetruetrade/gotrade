@@ -13,19 +13,16 @@ var (
 	ErrLookbackPeriodMustBeGreaterThanZero  = errors.New("Lookback period must be greater than 0")
 
 	// lookback minimum
-	MinimumLookbackPeriod int = 1
+	MinimumLookbackPeriod int = 0
 	MaximumLookbackPeriod int = 200
 )
 
 type Indicator interface {
 	ValidFromBar() int
+	GetLookbackPeriod() int
 	Length() int
 	MinValue() float64
 	MaxValue() float64
-}
-
-type IndicatorWithLookback interface {
-	GetLookbackPeriod() int
 }
 
 type IndicatorWithTimePeriod interface {
@@ -33,20 +30,25 @@ type IndicatorWithTimePeriod interface {
 }
 
 type baseIndicator struct {
-	validFromBar int
-	dataLength   int
-	selectData   gotrade.DataSelectionFunc
-	minValue     float64
-	maxValue     float64
+	validFromBar   int
+	dataLength     int
+	selectData     gotrade.DataSelectionFunc
+	minValue       float64
+	maxValue       float64
+	lookbackPeriod int
 }
 
-func newBaseIndicator() *baseIndicator {
-	ind := baseIndicator{validFromBar: -1, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}
+func newBaseIndicator(lookbackPeriod int) *baseIndicator {
+	ind := baseIndicator{lookbackPeriod: lookbackPeriod, validFromBar: -1, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}
 	return &ind
 }
 
 func (ind *baseIndicator) ValidFromBar() int {
 	return ind.validFromBar
+}
+
+func (ind *baseIndicator) GetLookbackPeriod() int {
+	return ind.lookbackPeriod
 }
 
 func (ind *baseIndicator) MinValue() float64 {
@@ -59,19 +61,6 @@ func (ind *baseIndicator) MaxValue() float64 {
 
 func (ind *baseIndicator) Length() int {
 	return ind.dataLength
-}
-
-type baseIndicatorWithLookback struct {
-	lookbackPeriod int
-}
-
-func newBaseIndicatorWithLookback(lookbackPeriod int) *baseIndicatorWithLookback {
-	ind := baseIndicatorWithLookback{lookbackPeriod: lookbackPeriod}
-	return &ind
-}
-
-func (ind *baseIndicatorWithLookback) GetLookbackPeriod() int {
-	return ind.lookbackPeriod
 }
 
 type baseIndicatorWithTimePeriod struct {

@@ -10,7 +10,6 @@ import (
 // Aroon Down = 100 x (25 - Days Since 25-day Low)/25
 type AroonWithoutStorage struct {
 	*baseIndicator
-	*baseIndicatorWithLookback
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -22,8 +21,7 @@ type AroonWithoutStorage struct {
 }
 
 func NewAroonWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionAroon) (indicator *AroonWithoutStorage, err error) {
-	ind := AroonWithoutStorage{baseIndicator: newBaseIndicator(),
-		baseIndicatorWithLookback:   newBaseIndicatorWithLookback(timePeriod),
+	ind := AroonWithoutStorage{baseIndicator: newBaseIndicator(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod + 1) * -1,
 		periodHighHistory:           list.New(),

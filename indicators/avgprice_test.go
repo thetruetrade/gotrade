@@ -36,4 +36,14 @@ var _ = Describe("when calculating an avg price (avgprice) with DOHLCV source da
 
 		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
 	})
+
+	Context("and the indicator has recieved all of its ticks", func() {
+		BeforeEach(func() {
+			for i := 0; i < len(sourceDOHLCVData); i++ {
+				indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+			}
+		})
+
+		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
+	})
 })

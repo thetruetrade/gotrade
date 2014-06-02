@@ -64,7 +64,49 @@ type IndicatorSharedSpecInputs struct {
 	SourceDataLength   int
 }
 
+func ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(inputs *IndicatorSharedSpecInputs) {
+	It("the indicator should be valid from some bar >= 1", func() {
+		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(BeNumerically(">=", 1))
+	})
+
+	It("the indicator stream should have entries equal to the number of ticks less the lookback period", func() {
+		Expect(inputs.IndicatorUnderTest.Length()).To(Equal(inputs.SourceDataLength - inputs.IndicatorUnderTest.GetLookbackPeriod()))
+	})
+
+	It("the indicator min should equal the result stream minimum", func() {
+		Expect(inputs.IndicatorUnderTest.MinValue()).To(Equal(inputs.GetMinimum()))
+	})
+
+	It("the indicator max should equal the result stream maximum", func() {
+		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(inputs.GetMaximum()))
+	})
+}
+
 func ShouldBeAnInitialisedIndicator(inputs *IndicatorSharedSpecInputs) {
+	It("the indicator should not be valid from any bar yet", func() {
+		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(Equal(-1))
+	})
+
+	It("the indicator stream should have no results", func() {
+		Expect(inputs.IndicatorUnderTest.Length()).To(BeZero())
+	})
+
+	It("the indicator should have no minimum value set", func() {
+		Expect(inputs.IndicatorUnderTest.MinValue()).To(Equal(math.MaxFloat64))
+	})
+
+	It("the indicator should have no maximum value set", func() {
+		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
+	})
+
+	It("the indicator should have a valid lookback period", func() {
+		Expect(inputs.IndicatorUnderTest.GetLookbackPeriod()).Should(BeNumerically(">=", indicators.MinimumLookbackPeriod))
+		Expect(inputs.IndicatorUnderTest.GetLookbackPeriod()).Should(BeNumerically("<=", indicators.MaximumLookbackPeriod))
+	})
+}
+
+func ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(inputs *IndicatorSharedSpecInputs) {
+
 	It("the indicator should not be valid from any bar yet", func() {
 		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(Equal(-1))
 	})
@@ -82,98 +124,31 @@ func ShouldBeAnInitialisedIndicator(inputs *IndicatorSharedSpecInputs) {
 	})
 }
 
-func ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(inputs *IndicatorSharedSpecInputs) {
-	It("the indicator should be valid from some bar >= 1", func() {
-		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(BeNumerically(">=", 1))
-	})
-
-	It("the indicator stream should have entries equal to the number of ticks", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(Equal(inputs.SourceDataLength))
-	})
-
-	It("the indicator min should equal the result stream minimum", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()).To(Equal(inputs.GetMinimum()))
-	})
-
-	It("the indicator max should equal the result stream maximum", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(inputs.GetMaximum()))
-	})
-}
-
-type IndicatorWithLookbackSharedSpecInputs struct {
-	IndicatorUnderTest indicators.IndicatorWithLookback
-	GetMaximum         GetMaximumFunc
-	GetMinimum         GetMinimumFunc
-	SourceDataLength   int
-}
-
-func ShouldBeAnInitialisedIndicatorWithLookback(inputs *IndicatorWithLookbackSharedSpecInputs) {
-	It("the indicator should not be valid from any bar yet", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).ValidFromBar()).To(Equal(-1))
-	})
-
-	It("the indicator stream should have no results", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(BeZero())
-	})
-
-	It("the indicator should have no minimum value set", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()).To(Equal(math.MaxFloat64))
-	})
-
-	It("the indicator should have no maximum value set", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
-	})
-
-	It("the indicator should have a valid lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.GetLookbackPeriod()).Should(BeNumerically(">=", indicators.MinimumLookbackPeriod))
-		Expect(inputs.IndicatorUnderTest.GetLookbackPeriod()).Should(BeNumerically("<=", indicators.MaximumLookbackPeriod))
-	})
-}
-
-func ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(inputs *IndicatorWithLookbackSharedSpecInputs) {
-
-	It("the indicator should not be valid from any bar yet", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).ValidFromBar()).To(Equal(-1))
-	})
-
-	It("the indicator stream should have no results", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(BeZero())
-	})
-
-	It("the indicator should have no minimum value set", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()).To(Equal(math.MaxFloat64))
-	})
-
-	It("the indicator should have no maximum value set", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
-	})
-}
-
-func ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(inputs *IndicatorWithLookbackSharedSpecInputs) {
+func ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(inputs *IndicatorSharedSpecInputs) {
 	It("the indicator stream should have a single entry", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(Equal(1))
+		Expect(inputs.IndicatorUnderTest.Length()).To(Equal(1))
 	})
 
 	//It("the indicator min and max should be equal", func() {
-	//	Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()))
+	//	Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(inputs.IndicatorUnderTest.MinValue()))
 	//})
 
 	It("the indicator should be valid from the lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).ValidFromBar()).To(Equal(inputs.IndicatorUnderTest.GetLookbackPeriod() + 1))
+		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(Equal(inputs.IndicatorUnderTest.GetLookbackPeriod() + 1))
 	})
 }
 
-func ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(inputs *IndicatorWithLookbackSharedSpecInputs) {
+func ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(inputs *IndicatorSharedSpecInputs) {
 	It("the indicator stream should have entries equal to the number of ticks less the lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).Length()).To(Equal(inputs.SourceDataLength - (inputs.IndicatorUnderTest.GetLookbackPeriod())))
+		Expect(inputs.IndicatorUnderTest.Length()).To(Equal(inputs.SourceDataLength - (inputs.IndicatorUnderTest.GetLookbackPeriod())))
 	})
 
 	It("the indicator min should equal the result stream minimum", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MinValue()).To(Equal(inputs.GetMinimum()))
+		Expect(inputs.IndicatorUnderTest.MinValue()).To(Equal(inputs.GetMinimum()))
 	})
 
 	It("the indicator max should equal the result stream maximum", func() {
-		Expect(inputs.IndicatorUnderTest.(indicators.Indicator).MaxValue()).To(Equal(inputs.GetMaximum()))
+		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(inputs.GetMaximum()))
 	})
 }
 
