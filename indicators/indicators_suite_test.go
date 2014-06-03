@@ -1,3 +1,4 @@
+package indicators_test
 
 import (
 	"encoding/csv"
@@ -20,11 +21,11 @@ var (
 	csvFeed          *feeds.CSVFileFeed
 	sourceData       []float64        = []float64{5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0}
 	sourceDOHLCVData []gotrade.DOHLCV = []gotrade.DOHLCV{gotrade.NewDOHLCVDataItem(time.Now(), 0.0, 0.0, 0.0, 5.0, 0.0),
-		gotrade.NewDOHLCVDataItem(time.Now(), 7.0,  8.0,  5.0, 6.0,  0.0),
-		gotrade.NewDOHLCVDataItem(time.Now(), 8.0,  9.0,  6.0,  7.0,  0.0),
-		gotrade.NewDOHLCVDataItem(time.Now(), 9.0,  10.0, 7.0,  8.0,  0.0),
-		gotrade.NewDOHLCVDataItem(time.Now(), 10.0, 11.0, 8.0,  9.0,  0.0),
-		gotrade.NewDOHLCVDataItem(time.Now(), 11.0, 12.0, 9.0,  10.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 7.0, 8.0, 5.0, 6.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 8.0, 9.0, 6.0, 7.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 9.0, 10.0, 7.0, 8.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 10.0, 11.0, 8.0, 9.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 11.0, 12.0, 9.0, 10.0, 0.0),
 		gotrade.NewDOHLCVDataItem(time.Now(), 12.0, 13.0, 10.0, 11.0, 0.0),
 		gotrade.NewDOHLCVDataItem(time.Now(), 13.0, 14.0, 11.0, 12.0, 0.0),
 		gotrade.NewDOHLCVDataItem(time.Now(), 14.0, 15.0, 12.0, 13.0, 0.0),

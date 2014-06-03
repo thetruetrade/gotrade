@@ -647,4 +647,72 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			})
 		})
 	})
+
+	var _ = Describe("when executing the gotrade plus directional movement indicator (1) with a years data and known output", func() {
+		var (
+			plusDM          *indicators.PlusDM
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("plusdm_1_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using a time period of 1", func() {
+
+			BeforeEach(func() {
+				plusDM, err = indicators.NewPlusDM(1)
+				priceStream.AddTickSubscription(plusDM)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(plusDM.Length()).To(Equal(len(priceStream.Data) - plusDM.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", plusDM.Data[k], 0.01))
+				}
+			})
+		})
+	})
+
+	var _ = Describe("when executing the gotrade plus directional movement indicator (14) with a years data and known output", func() {
+		var (
+			plusDM          *indicators.PlusDM
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("plusdm_14_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using a time period of 14", func() {
+
+			BeforeEach(func() {
+				plusDM, err = indicators.NewPlusDM(14)
+				priceStream.AddTickSubscription(plusDM)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(plusDM.Length()).To(Equal(len(priceStream.Data) - plusDM.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", plusDM.Data[k], 0.01))
+				}
+			})
+		})
+	})
 })
