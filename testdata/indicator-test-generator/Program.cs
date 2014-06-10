@@ -538,6 +538,44 @@ namespace indicatortestgenerator
 				}
 				writer.Flush ();
 			}
+
+			// DX
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/dx_14_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.DxLookback(14);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.Dx(0, dataLength, highPrices.ToArray(), lowPrices.ToArray(), closingPrices.ToArray(),14, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
+
+			// ADX
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/adx_14_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.AdxLookback(14);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.Adx(0, dataLength, highPrices.ToArray(), lowPrices.ToArray(), closingPrices.ToArray(),14, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
 		}
 	}
 }
