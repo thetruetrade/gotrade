@@ -14,8 +14,6 @@ type DXWithoutStorage struct {
 
 	// private variables
 	valueAvailableAction ValueAvailableAction
-	periodCounter        int
-	lookbackCounter      int
 	minusDI              *MinusDI
 	plusDI               *PlusDI
 	currentPlusDI        float64
@@ -28,10 +26,8 @@ func NewDXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActi
 		lookback = timePeriod
 	}
 
-	newDX := DXWithoutStorage{baseIndicator: newBaseIndicator(timePeriod),
+	newDX := DXWithoutStorage{baseIndicator: newBaseIndicator(lookback),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               lookback * -1,
-		lookbackCounter:             -2,
 		currentPlusDI:               0.0,
 		currentMinusDI:              0.0}
 
