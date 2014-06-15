@@ -6,15 +6,15 @@ import (
 	. "github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when calculating an rate of change (roc) with DOHLCV source data", func() {
+var _ = Describe("when calculating an rate of change percentage (rocp) with DOHLCV source data", func() {
 	var (
 		period          int = 7
-		indicator       *ROC
+		indicator       *ROCP
 		indicatorInputs IndicatorSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewROC(period, gotrade.UseClosePrice)
+		indicator, _ = NewROCP(period, gotrade.UseClosePrice)
 		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
 			SourceDataLength: len(sourceDOHLCVData),
 			GetMaximum: func() float64 {
