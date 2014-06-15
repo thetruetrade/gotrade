@@ -24,10 +24,6 @@ func NewADXRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 	newADXR.adx, err = NewADXWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newADXR.periodHistory.PushBack(dataItem)
 
-		lenhist := newADXR.periodHistory.Len()
-		if lenhist == 4 {
-
-		}
 		if newADXR.periodCounter > newADXR.GetLookbackPeriod() {
 			adxN := newADXR.periodHistory.Front().Value.(float64)
 			result := (dataItem + adxN) / 2.0
