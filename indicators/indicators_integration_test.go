@@ -648,6 +648,40 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 		})
 	})
 
+	var _ = Describe("when executing the gotrade typical price indicator with a years data and known output", func() {
+		var (
+			typPrice        *indicators.TypicalPrice
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("typprice_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using no lookback period", func() {
+
+			BeforeEach(func() {
+				typPrice, err = indicators.NewTypicalPrice()
+				priceStream.AddTickSubscription(typPrice)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(typPrice.Length()).To(Equal(len(priceStream.Data)))
+			})
+
+			It("it should have correctly calculated the typical price for each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", typPrice.Data[k], 0.01))
+				}
+			})
+		})
+	})
+
 	var _ = Describe("when executing the gotrade plus directional movement indicator (1) with a years data and known output", func() {
 		var (
 			plusDM          *indicators.PlusDM
