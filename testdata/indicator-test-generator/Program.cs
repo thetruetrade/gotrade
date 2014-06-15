@@ -690,6 +690,25 @@ namespace indicatortestgenerator
 				}
 				writer.Flush ();
 			}
+
+			// ROCR
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/rocr_10_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.RocRLookback(10);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.RocR(0, dataLength, closingPrices.ToArray(), 10, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
 		}
 	}
 }
