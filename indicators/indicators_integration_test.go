@@ -1014,9 +1014,77 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 				Expect(adx.Length()).To(Equal(len(priceStream.Data) - adx.GetLookbackPeriod()))
 			})
 
-			It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
+			It("it should have correctly calculated the average directional movement for each item in the result set accurate to two decimal places", func() {
 				for k := range expectedResults {
 					Expect(expectedResults[k]).To(BeNumerically("~", adx.Data[k], 0.01))
+				}
+			})
+		})
+	})
+
+	var _ = Describe("when executing the gotrade average directional movement rating (14) with a years data and known output", func() {
+		var (
+			adxr            *indicators.ADXR
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("adxr_14_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using a time period of 14", func() {
+
+			BeforeEach(func() {
+				adxr, err = indicators.NewADXR(14)
+				priceStream.AddTickSubscription(adxr)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(adxr.Length()).To(Equal(len(priceStream.Data) - adxr.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the average directional rating for each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", adxr.Data[k], 0.01))
+				}
+			})
+		})
+	})
+
+	var _ = Describe("when executing the gotrade average directional movement rating (1) with a years data and known output", func() {
+		var (
+			adxr            *indicators.ADXR
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("adxr_1_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using a time period of 1", func() {
+
+			BeforeEach(func() {
+				adxr, err = indicators.NewADXR(1)
+				priceStream.AddTickSubscription(adxr)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(adxr.Length()).To(Equal(len(priceStream.Data) - adxr.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the average directional rating for each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", adxr.Data[k], 0.01))
 				}
 			})
 		})
