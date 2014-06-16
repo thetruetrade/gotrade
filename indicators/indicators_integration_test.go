@@ -1303,4 +1303,38 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			})
 		})
 	})
+
+	var _ = Describe("when executing the gotrade parabolic stop and reverse (SAR) with a years data and known output", func() {
+		var (
+			ind             *indicators.SAR
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("sar_002_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using an accelleration factor of 0.02", func() {
+
+			BeforeEach(func() {
+				ind, err = indicators.NewSAR(0.02, 0.20)
+				priceStream.AddTickSubscription(ind)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the money flow index for each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+				}
+			})
+		})
+	})
 })
