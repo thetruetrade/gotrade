@@ -1269,4 +1269,38 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			})
 		})
 	})
+
+	var _ = Describe("when executing the gotrade money flow index (14) with a years data and known output", func() {
+		var (
+			ind             *indicators.MFI
+			expectedResults []float64
+			err             error
+			priceStream     *gotrade.DOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVPriceDataFromFile("mfi_14_expectedresult.data")
+			priceStream = gotrade.NewDOHLCVStream()
+		})
+
+		Describe("using a time period of 14", func() {
+
+			BeforeEach(func() {
+				ind, err = indicators.NewMFI(14)
+				priceStream.AddTickSubscription(ind)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the money flow index for each item in the result set accurate to two decimal places", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+				}
+			})
+		})
+	})
 })
