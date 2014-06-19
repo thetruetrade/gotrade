@@ -16,7 +16,7 @@ Below is a look at the basic API so far
 	csvFeed := feeds.NewCSVFileFeedWithDOHLCVFormat("../github.com/thetruetrade/gotrade/testdata/JSETOPI.2013.data",
 		feeds.DashedYearDayMonthDateParserForLocation(time.Local))
 
-	priceStream := gotrade.NewDOHLCVStream()
+	priceStream := gotrade.NewDailyDOHLCVStream()
 	sma, _ := indicators.NewSMAForStream(priceStream, 20, gotrade.UseClosePrice)
 	ema, _ := indicators.NewEMAForStream(priceStream, 20, gotrade.UseClosePrice)
 	bb, _ := indicators.NewBollingerBandsForStream(priceStream, 20, gotrade.UseClosePrice)
