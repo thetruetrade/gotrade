@@ -16,7 +16,7 @@ func (csvFPSP *CSVDOHLCVRecordParser) ParseRecord(csvRecord []string,
 	lowPriceColumnIndex int,
 	closePriceColumnIndex int,
 	volumeColumnIndex int,
-	dateParser TextDateParser) (dholcv *gotrade.DOHLCVDataItem, err error) {
+	dateParser TextDateParser) (dholcv gotrade.DOHLCV, err error) {
 
 	// parse the record based on the supplied indexes and date func
 	recordLength := len(csvRecord)

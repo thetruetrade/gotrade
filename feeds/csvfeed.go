@@ -53,7 +53,7 @@ func NewCSVFileFeed(fileName string,
 		dateParser}
 }
 
-func (csvFPSF *CSVFileFeed) FillDOHLCVStream(priceStream *gotrade.DOHLCVStream) (err error) {
+func (csvFPSF *CSVFileFeed) FillDOHLCVStream(priceStream gotrade.DOHLCVStreamTickReceiver) (err error) {
 
 	file, err := os.Open(csvFPSF.fileName)
 	if err != nil {
@@ -86,7 +86,7 @@ func (csvFPSF *CSVFileFeed) FillDOHLCVStream(priceStream *gotrade.DOHLCVStream) 
 		if err != nil {
 			return err
 		}
-		priceStream.RecieveTick(dohlcv)
+		priceStream.ReceiveTick(dohlcv)
 	}
 	return nil
 }

@@ -13,13 +13,13 @@ var _ = Describe("when executing the gotrade simple moving average with a years 
 		period          int
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("sma_10_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback period of 10", func() {
@@ -49,13 +49,13 @@ var _ = Describe("when executing the gotrade exponential moving average with a y
 		period          int
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("ema_10_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback period of 10", func() {
@@ -85,13 +85,13 @@ var _ = Describe("when executing the gotrade weighted moving average with a year
 		period          int
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("wma_10_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback period of 10", func() {
@@ -121,13 +121,13 @@ var _ = Describe("when executing the gotrade double exponential moving average w
 		period          int
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("dema_10_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback period of 10", func() {
@@ -157,13 +157,13 @@ var _ = Describe("when executing the gotrade triple exponential moving average w
 		period          int
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("tema_10_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback period of 10", func() {
@@ -193,13 +193,13 @@ var _ = Describe("when executing the gotrade variance with a years data and know
 		period          int
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("variance_10_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback period of 10", func() {
@@ -229,13 +229,13 @@ var _ = Describe("when executing the gotrade standard deviation with a years dat
 		period          int
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("stddev_10_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback period of 10", func() {
@@ -265,13 +265,13 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 		period          int
 		expectedResults []BollingerBand
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVBollingerPriceDataFromFile("bb_10_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback period of 10", func() {
@@ -302,13 +302,13 @@ var _ = Describe("when executing the gotrade macd with a years data and known ou
 		macd            *indicators.MACD
 		expectedResults []MACDData
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVMACDPriceDataFromFile("macd_12_26_9_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback periods of 12, 26, 9", func() {
@@ -338,13 +338,13 @@ var _ = Describe("when executing the gotrade aroon with a years data and known o
 		aroon           *indicators.Aroon
 		expectedResults []AroonData
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVAroonPriceDataFromFile("aroon_25_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback periods of 25", func() {
@@ -378,13 +378,13 @@ var _ = Describe("when executing the gotrade aroonosc with a years data and know
 		aroon           *indicators.AroonOsc
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("aroonosc_25_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback periods of 25", func() {
@@ -412,13 +412,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 		trueRange       *indicators.TrueRange
 		expectedResults []float64
 		err             error
-		priceStream     *gotrade.DOHLCVStream
+		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
 		expectedResults, _ = LoadCSVPriceDataFromFile("truerange_expectedresult.data")
-		priceStream = gotrade.NewDOHLCVStream()
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using an implicit lookback period of 1", func() {
@@ -445,13 +445,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			avgTrueRange    *indicators.ATR
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("atr_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using an implicit lookback period of 14", func() {
@@ -479,13 +479,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			adl             *indicators.ADL
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("adl_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using no lookback", func() {
@@ -513,7 +513,7 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			chaikinOsc      *indicators.ChainkinOsc
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 			fastPeriod      int
 			slowPeriod      int
 		)
@@ -521,7 +521,7 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("chaikinosc_3_10_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 			fastPeriod = 3
 			slowPeriod = 10
 		})
@@ -551,13 +551,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			obv             *indicators.OBV
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("obv_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using no lookback period", func() {
@@ -585,13 +585,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			avgPrice        *indicators.AvgPrice
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("avgprice_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using no lookback period", func() {
@@ -619,13 +619,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			medPrice        *indicators.MedPrice
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("medprice_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using no lookback period", func() {
@@ -653,13 +653,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			typPrice        *indicators.TypicalPrice
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("typprice_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using no lookback period", func() {
@@ -687,13 +687,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			plusDM          *indicators.PlusDM
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("plusdm_1_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 1", func() {
@@ -721,13 +721,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			plusDM          *indicators.PlusDM
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("plusdm_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 14", func() {
@@ -755,13 +755,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			minusDM         *indicators.MinusDM
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("minusdm_1_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 1", func() {
@@ -789,13 +789,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			minusDM         *indicators.MinusDM
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("minusdm_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 14", func() {
@@ -823,13 +823,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			plusDI          *indicators.PlusDI
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("plusdi_1_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 1", func() {
@@ -857,13 +857,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			plusDI          *indicators.PlusDI
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("plusdi_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 14", func() {
@@ -891,13 +891,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			minusDI         *indicators.MinusDI
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("minusdi_1_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 1", func() {
@@ -925,13 +925,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			minusDI         *indicators.MinusDI
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("minusdi_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 14", func() {
@@ -959,13 +959,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			dx              *indicators.DX
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("dx_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 14", func() {
@@ -993,13 +993,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			adx             *indicators.ADX
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("adx_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 14", func() {
@@ -1027,13 +1027,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			adxr            *indicators.ADXR
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("adxr_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 14", func() {
@@ -1061,13 +1061,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			adxr            *indicators.ADXR
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("adxr_1_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 1", func() {
@@ -1096,13 +1096,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			period          int
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("rsi_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a lookback period of 14", func() {
@@ -1132,13 +1132,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			period          int
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("roc_10_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a lookback period of 10", func() {
@@ -1168,13 +1168,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			period          int
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("rocp_10_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a lookback period of 10", func() {
@@ -1204,13 +1204,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			period          int
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("rocr_10_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a lookback period of 10", func() {
@@ -1240,13 +1240,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			period          int
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("rocr100_10_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a lookback period of 10", func() {
@@ -1275,13 +1275,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			ind             *indicators.MFI
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("mfi_14_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using a time period of 14", func() {
@@ -1309,13 +1309,13 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			ind             *indicators.SAR
 			expectedResults []float64
 			err             error
-			priceStream     *gotrade.DOHLCVStream
+			priceStream     *gotrade.InterDayDOHLCVStream
 		)
 
 		BeforeEach(func() {
 			// load the expected results data
 			expectedResults, _ = LoadCSVPriceDataFromFile("sar_002_expectedresult.data")
-			priceStream = gotrade.NewDOHLCVStream()
+			priceStream = gotrade.NewDailyDOHLCVStream()
 		})
 
 		Describe("using an accelleration factor of 0.02", func() {
