@@ -24,17 +24,11 @@ func NewLinearRegWithoutStorage(timePeriod int, selectData gotrade.DataSelection
 		periodCounter:               (timePeriod) * -1,
 		periodHistory:               list.New()}
 
-	//timePeriodF := float64(timePeriod)
-	//timePeriodFMinusOne := timePeriodF - 1.0
-	var sumX float64 = 14.0 * 13.0 * 0.5
-	newVar.sumX = sumX
-	//newVar.sumX = timePeriodF * timePeriodFMinusOne * 0.5
-	var sumXSquare float64 = 14.0 * 13.0 * (2.0*14 - 1.0) / 6.0
-	newVar.sumXSquare = sumXSquare
-	//newVar.sumXSquare = timePeriodF * timePeriodFMinusOne * (2.0*timePeriodF - 1.0) / 6.0
-	var divisor float64 = sumX*sumX - 14.0*sumXSquare
-	//newVar.divisor = //newVar.sumX*newVar.sumX - timePeriodF*newVar.sumXSquare
-	newVar.divisor = divisor
+	timePeriodF := float64(timePeriod)
+	timePeriodFMinusOne := timePeriodF - 1.0
+	newVar.sumX = timePeriodF * timePeriodFMinusOne * 0.5
+	newVar.sumXSquare = timePeriodF * timePeriodFMinusOne * (2.0*timePeriodF - 1.0) / 6.0
+	newVar.divisor = newVar.sumX*newVar.sumX - timePeriodF*newVar.sumXSquare
 
 	newVar.selectData = selectData
 	newVar.valueAvailableAction = valueAvailableAction
