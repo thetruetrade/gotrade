@@ -54,6 +54,14 @@ func NewLinearReg(timePeriod int, selectData gotrade.DataSelectionFunc) (indicat
 	newVar.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod, selectData,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			newVar.Data = append(newVar.Data, dataItem)
+
+			if dataItem > newVar.LinearRegWithoutStorage.maxValue {
+				newVar.LinearRegWithoutStorage.maxValue = dataItem
+			}
+
+			if dataItem < newVar.LinearRegWithoutStorage.minValue {
+				newVar.LinearRegWithoutStorage.minValue = dataItem
+			}
 		})
 
 	return &newVar, err
@@ -95,13 +103,6 @@ func (ind *LinearRegWithoutStorage) ReceiveTick(tickData float64, streamBarIndex
 			ind.validFromBar = streamBarIndex
 		}
 
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		if result < ind.minValue {
-			ind.minValue = result
-		}
 		ind.valueAvailableAction(result, m, b, streamBarIndex)
 	}
 
