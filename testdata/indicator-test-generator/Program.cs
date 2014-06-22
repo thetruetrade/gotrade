@@ -766,6 +766,63 @@ namespace indicatortestgenerator
 				}
 				writer.Flush ();
 			}
+
+			// Linear Regression
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/linear_regression_14_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.LinearRegLookback(14);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.LinearReg(0, dataLength, closingPrices.ToArray(),14, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
+
+			// Linear Regression Slope
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/linear_regression_slope_14_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.LinearRegSlopeLookback(14);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.LinearRegSlope(0, dataLength, closingPrices.ToArray(),14, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
+
+			// Linear Regression Intercept
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/linear_regression_intercept_14_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.LinearRegInterceptLookback(14);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.LinearRegIntercept(0, dataLength, closingPrices.ToArray(),14, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
 		}
 	}
 }
