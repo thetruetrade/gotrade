@@ -880,6 +880,25 @@ namespace indicatortestgenerator
 				}
 				writer.Flush ();
 			}
+
+			// TRIMA
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/trima_30_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.TrimaLookback(30);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.Trima(0, dataLength, closingPrices.ToArray(),30, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
 		}
 	}
 }
