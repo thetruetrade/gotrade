@@ -2,7 +2,6 @@ package indicators
 
 import (
 	"container/list"
-	"fmt"
 	"github.com/thetruetrade/gotrade"
 	"math"
 )
@@ -125,9 +124,7 @@ func (ind *KAMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int)
 		var er float64 = 0.0
 		var sc float64 = 0.0
 		var closeMinusN float64 = ind.periodHistory.Front().Value.(float64)
-		fmt.Println(closeMinusN)
 		var closeMinusN1 float64 = ind.periodHistory.Front().Next().Value.(float64)
-		fmt.Println(closeMinusN1)
 		ind.periodROC = tickData - closeMinusN1
 
 		ind.sumROC -= math.Abs(closeMinusN1 - closeMinusN)
