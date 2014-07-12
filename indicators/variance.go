@@ -6,7 +6,7 @@ import (
 )
 
 type VarianceWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -18,7 +18,7 @@ type VarianceWithoutStorage struct {
 }
 
 func NewVarianceWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *VarianceWithoutStorage, err error) {
-	newVar := VarianceWithoutStorage{baseIndicator: newBaseIndicator(timePeriod - 1),
+	newVar := VarianceWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               0,
 		periodHistory:               list.New(),

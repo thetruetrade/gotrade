@@ -5,7 +5,7 @@ import (
 )
 
 type TRIMAWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -16,7 +16,7 @@ type TRIMAWithoutStorage struct {
 }
 
 func NewTRIMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *TRIMAWithoutStorage, err error) {
-	newTRIMA := TRIMAWithoutStorage{baseIndicator: newBaseIndicator(timePeriod - 1),
+	newTRIMA := TRIMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 	newTRIMA.selectData = selectData
 	newTRIMA.valueAvailableAction = valueAvailableAction

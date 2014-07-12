@@ -13,7 +13,7 @@ import (
 
 // A Moving Average Convergence-Divergence (MACD) Indicator
 type MACD struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionMACD
@@ -37,7 +37,7 @@ type MACD struct {
 // NewMACD returns a new Moving Average Convergence-Divergence (MACD) Indicator configured with the
 // specified timePeriod. The MACD results are stored in the DATA field.
 func NewMACD(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *MACD, err error) {
-	newMACD := MACD{baseIndicator: newBaseIndicator(slowTimePeriod + signalTimePeriod - 2),
+	newMACD := MACD{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(slowTimePeriod + signalTimePeriod - 2),
 		fastTimePeriod:   fastTimePeriod,
 		slowTimePeriod:   slowTimePeriod,
 		signalTimePeriod: signalTimePeriod}

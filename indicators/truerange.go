@@ -10,7 +10,7 @@ import (
 // TrueRange = TrueHigh = TrueLow
 
 type TrueRangeWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	periodCounter        int
@@ -19,7 +19,7 @@ type TrueRangeWithoutStorage struct {
 }
 
 func NewTrueRangeWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *TrueRangeWithoutStorage, err error) {
-	ind := TrueRangeWithoutStorage{baseIndicator: newBaseIndicator(1),
+	ind := TrueRangeWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(1),
 		periodCounter: -1,
 		previousClose: 0.0}
 	ind.valueAvailableAction = valueAvailableAction

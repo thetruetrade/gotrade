@@ -8,26 +8,27 @@ import (
 
 var _ = Describe("when calculating bollinger bands with DOHLCV source data", func() {
 	var (
-		period          int = 3
-		indicator       *BollingerBands
-		indicatorInputs IndicatorSharedSpecInputs
+		period    int = 3
+		indicator *BollingerBands
+		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
 		indicator, _ = NewBollingerBands(period, gotrade.UseClosePrice)
-		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
-			SourceDataLength: len(sourceDOHLCVData),
-			GetMaximum: func() float64 {
-				return GetDataMax(indicator.UpperBand)
-			},
-			GetMinimum: func() float64 {
-				return GetDataMin(indicator.LowerBand)
-			}}
 
+		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+			func() float64 {
+				return GetFloatDataMax(indicator.UpperBand)
+			},
+			func() float64 {
+				return GetFloatDataMin(indicator.LowerBand)
+			})
 	})
 
 	Context("and the indicator has not yet received any ticks", func() {
-		ShouldBeAnInitialisedIndicator(&indicatorInputs)
+		ShouldBeAnInitialisedIndicator(&inputs)
+
+		ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
 	})
 
 	Context("and the indicator has received less ticks than the lookback period", func() {
@@ -38,7 +39,9 @@ var _ = Describe("when calculating bollinger bands with DOHLCV source data", fun
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&inputs)
+
+		ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
 	})
 
 	Context("and the indicator has received ticks equal to the lookback period", func() {
@@ -49,7 +52,9 @@ var _ = Describe("when calculating bollinger bands with DOHLCV source data", fun
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 
 	Context("and the indicator has received more ticks than the lookback period", func() {
@@ -60,7 +65,9 @@ var _ = Describe("when calculating bollinger bands with DOHLCV source data", fun
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 
 	Context("and the indicator has recieved all of its ticks", func() {
@@ -70,6 +77,8 @@ var _ = Describe("when calculating bollinger bands with DOHLCV source data", fun
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 })

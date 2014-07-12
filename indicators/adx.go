@@ -8,7 +8,7 @@ import (
 )
 
 type ADXWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -22,7 +22,7 @@ type ADXWithoutStorage struct {
 
 func NewADXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *ADXWithoutStorage, err error) {
 
-	newADX := ADXWithoutStorage{baseIndicator: newBaseIndicator((2 * timePeriod) - 1),
+	newADX := ADXWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds((2 * timePeriod) - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,
 		currentDX:                   0.0,

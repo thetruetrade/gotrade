@@ -8,7 +8,7 @@ import (
 
 // A Kaufman Adaptive Moving Average Indicator
 type KAMAWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -29,7 +29,7 @@ type KAMAWithoutStorage struct {
 // The KAMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewKAMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *KAMAWithoutStorage, err error) {
-	newKAMA := KAMAWithoutStorage{baseIndicator: newBaseIndicator(timePeriod),
+	newKAMA := KAMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod + 1) * -1,
 		constantMax:                 float64(2.0 / (30.0 + 1.0)),

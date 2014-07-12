@@ -7,25 +7,27 @@ import (
 
 var _ = Describe("when calculating an average true range (atr) with DOHLCV source data", func() {
 	var (
-		period          int = 14
-		indicator       *indicators.ATR
-		indicatorInputs IndicatorSharedSpecInputs
+		period    int = 14
+		indicator *indicators.ATR
+		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
 		indicator, _ = indicators.NewATR(period)
-		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
-			SourceDataLength: len(sourceDOHLCVData),
-			GetMaximum: func() float64 {
-				return GetDataMax(indicator.Data)
+
+		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+			func() float64 {
+				return GetFloatDataMax(indicator.Data)
 			},
-			GetMinimum: func() float64 {
-				return GetDataMin(indicator.Data)
-			}}
+			func() float64 {
+				return GetFloatDataMin(indicator.Data)
+			})
 	})
 
 	Context("and the indicator has not yet received any ticks", func() {
-		ShouldBeAnInitialisedIndicator(&indicatorInputs)
+		ShouldBeAnInitialisedIndicator(&inputs)
+
+		ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
 	})
 
 	Context("and the indicator has received less ticks than the lookback period", func() {
@@ -36,7 +38,9 @@ var _ = Describe("when calculating an average true range (atr) with DOHLCV sourc
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&inputs)
+
+		ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
 	})
 
 	Context("and the indicator has received ticks equal to the lookback period", func() {
@@ -47,7 +51,9 @@ var _ = Describe("when calculating an average true range (atr) with DOHLCV sourc
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 
 	Context("and the indicator has received more ticks than the lookback period", func() {
@@ -58,7 +64,9 @@ var _ = Describe("when calculating an average true range (atr) with DOHLCV sourc
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 
 	Context("and the indicator has recieved all of its ticks", func() {
@@ -68,6 +76,8 @@ var _ = Describe("when calculating an average true range (atr) with DOHLCV sourc
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 })

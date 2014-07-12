@@ -10,7 +10,7 @@ import (
 
 // A Lowest Low Value In Period Indicator
 type LLVWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -25,7 +25,7 @@ type LLVWithoutStorage struct {
 // The LLV results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewLLVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *LLVWithoutStorage, err error) {
-	newLLV := LLVWithoutStorage{baseIndicator: newBaseIndicator(0),
+	newLLV := LLVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentLow:                  math.MaxFloat64,
 		currentLowIndex:             0,

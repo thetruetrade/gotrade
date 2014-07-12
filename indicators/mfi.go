@@ -8,7 +8,7 @@ import (
 
 // A plus DM Indicator
 type MFIWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -28,7 +28,7 @@ type MFIWithoutStorage struct {
 // The MFI results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewMFIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *MFIWithoutStorage, err error) {
-	newMFI := MFIWithoutStorage{baseIndicator: newBaseIndicator(timePeriod),
+	newMFI := MFIWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1) - 1,
 		positiveHistory:             list.New(),

@@ -7,24 +7,25 @@ import (
 
 var _ = Describe("when calculating an accumulation distribution line (adl) with DOHLCV source data", func() {
 	var (
-		indicator       *indicators.ADL
-		indicatorInputs IndicatorSharedSpecInputs
+		indicator *indicators.ADL
+		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
 		indicator, _ = indicators.NewADL()
-		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
-			SourceDataLength: len(sourceDOHLCVData),
-			GetMaximum: func() float64 {
-				return GetDataMax(indicator.Data)
+		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+			func() float64 {
+				return GetFloatDataMax(indicator.Data)
 			},
-			GetMinimum: func() float64 {
-				return GetDataMin(indicator.Data)
-			}}
+			func() float64 {
+				return GetFloatDataMin(indicator.Data)
+			})
 	})
 
 	Context("and the indicator has not yet received any ticks", func() {
-		ShouldBeAnInitialisedIndicator(&indicatorInputs)
+		ShouldBeAnInitialisedIndicator(&inputs)
+
+		ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
 	})
 
 	Context("and the indicator has recieved all of its ticks", func() {
@@ -34,6 +35,8 @@ var _ = Describe("when calculating an accumulation distribution line (adl) with 
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 })

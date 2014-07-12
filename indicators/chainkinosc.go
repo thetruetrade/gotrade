@@ -9,7 +9,7 @@ import (
 )
 
 type ChainkinOscWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	fastTimePeriod       int
@@ -25,7 +25,7 @@ type ChainkinOscWithoutStorage struct {
 }
 
 func NewChainkinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueAvailableAction ValueAvailableAction) (indicator *ChainkinOscWithoutStorage, err error) {
-	newChainkinOsc := ChainkinOscWithoutStorage{baseIndicator: newBaseIndicator(slowTimePeriod - 1),
+	newChainkinOsc := ChainkinOscWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(slowTimePeriod - 1),
 		slowTimePeriod:    slowTimePeriod,
 		fastTimePeriod:    fastTimePeriod,
 		emaFastMultiplier: float64(2.0 / float64(fastTimePeriod+1.0)),

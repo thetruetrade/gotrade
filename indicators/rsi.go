@@ -5,7 +5,7 @@ import (
 )
 
 type RSIWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -17,7 +17,7 @@ type RSIWithoutStorage struct {
 }
 
 func NewRSIWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *RSIWithoutStorage, err error) {
-	newRSI := RSIWithoutStorage{baseIndicator: newBaseIndicator(timePeriod),
+	newRSI := RSIWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1) - 1,
 		previousClose:               0.0,

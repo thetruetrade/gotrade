@@ -7,7 +7,7 @@ import (
 
 // A minus DM Indicator
 type MinusDMWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -27,7 +27,7 @@ func NewMinusDMWithoutStorage(timePeriod int, valueAvailableAction ValueAvailabl
 	if timePeriod > 1 {
 		lookback = timePeriod - 1
 	}
-	newMinusDM := MinusDMWithoutStorage{baseIndicator: newBaseIndicator(lookback),
+	newMinusDM := MinusDMWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               -1,
 		previousMinusDM:             0.0}

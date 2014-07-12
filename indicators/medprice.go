@@ -5,14 +5,14 @@ import (
 )
 
 type MedPriceWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableAction
 }
 
 func NewMedPriceWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *MedPriceWithoutStorage, err error) {
-	newVar := MedPriceWithoutStorage{baseIndicator: newBaseIndicator(0)}
+	newVar := MedPriceWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0)}
 
 	newVar.valueAvailableAction = valueAvailableAction
 

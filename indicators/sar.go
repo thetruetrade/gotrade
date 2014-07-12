@@ -7,7 +7,7 @@ import (
 
 // A plus DM Indicator
 type SARWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	valueAvailableAction  ValueAvailableAction
@@ -29,7 +29,7 @@ type SARWithoutStorage struct {
 // The SAR results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewSARWithoutStorage(accelerationFactor float64, accelerationFactorMax float64, valueAvailableAction ValueAvailableAction) (indicator *SARWithoutStorage, err error) {
-	newSAR := SARWithoutStorage{baseIndicator: newBaseIndicator(1),
+	newSAR := SARWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(1),
 		periodCounter:         -2,
 		isLong:                false,
 		hasInitialDirection:   false,

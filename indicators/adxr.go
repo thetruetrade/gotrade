@@ -6,7 +6,7 @@ import (
 )
 
 type ADXRWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -54,7 +54,7 @@ func NewADXRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 	if timePeriod > 1 {
 		lookback = timePeriod - 1 + newADXR.adx.GetLookbackPeriod()
 	}
-	newADXR.baseIndicator = newBaseIndicator(lookback)
+	newADXR.baseIndicatorWithFloatBounds = newBaseIndicatorWithFloatBounds(lookback)
 
 	newADXR.valueAvailableAction = valueAvailableAction
 

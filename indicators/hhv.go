@@ -10,7 +10,7 @@ import (
 
 // A Highest High Value In Period Indicator
 type HHVWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -25,7 +25,7 @@ type HHVWithoutStorage struct {
 // The HHV results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewHHVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *HHVWithoutStorage, err error) {
-	newHHV := HHVWithoutStorage{baseIndicator: newBaseIndicator(0),
+	newHHV := HHVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentHigh:                 math.SmallestNonzeroFloat64,
 		currentHighIndex:            0,

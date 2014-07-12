@@ -21,25 +21,67 @@ type Indicator interface {
 	ValidFromBar() int
 	GetLookbackPeriod() int
 	Length() int
-	MinValue() float64
-	MaxValue() float64
 }
 
 type IndicatorWithTimePeriod interface {
 	GetTimePeriod() int
 }
 
+type IndicatorWithFloatBounds interface {
+	MinValue() float64
+	MaxValue() float64
+}
+
+type IndicatorWithIntBounds interface {
+	MinValue() int64
+	MaxValue() int64
+}
+
+type baseFloatBounds struct {
+	minValue float64
+	maxValue float64
+}
+
+func newBaseFloatBounds() *baseFloatBounds {
+	ind := baseFloatBounds{minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}
+	return &ind
+}
+
+func (ind *baseFloatBounds) MinValue() float64 {
+	return ind.minValue
+}
+
+func (ind *baseFloatBounds) MaxValue() float64 {
+	return ind.maxValue
+}
+
+type baseIntBounds struct {
+	minValue int64
+	maxValue int64
+}
+
+func newBaseIntBounds() *baseIntBounds {
+	ind := baseIntBounds{minValue: math.MaxInt64, maxValue: math.MinInt64}
+	return &ind
+}
+
+func (ind *baseIntBounds) MinValue() int64 {
+	return ind.minValue
+}
+
+func (ind *baseIntBounds) MaxValue() int64 {
+	return ind.maxValue
+}
+
 type baseIndicator struct {
 	validFromBar   int
 	dataLength     int
 	selectData     gotrade.DataSelectionFunc
-	minValue       float64
-	maxValue       float64
 	lookbackPeriod int
 }
 
 func newBaseIndicator(lookbackPeriod int) *baseIndicator {
-	ind := baseIndicator{lookbackPeriod: lookbackPeriod, validFromBar: -1, minValue: math.MaxFloat64, maxValue: math.SmallestNonzeroFloat64}
+	ind := baseIndicator{lookbackPeriod: lookbackPeriod, validFromBar: -1}
 	return &ind
 }
 
@@ -51,20 +93,36 @@ func (ind *baseIndicator) GetLookbackPeriod() int {
 	return ind.lookbackPeriod
 }
 
-func (ind *baseIndicator) MinValue() float64 {
-	return ind.minValue
-}
-
-func (ind *baseIndicator) MaxValue() float64 {
-	return ind.maxValue
-}
-
 func (ind *baseIndicator) Length() int {
 	return ind.dataLength
 }
 
 type baseIndicatorWithTimePeriod struct {
 	timePeriod int
+}
+
+type baseIndicatorWithFloatBounds struct {
+	*baseIndicator
+	*baseFloatBounds
+}
+
+func newBaseIndicatorWithFloatBounds(lookbackPeriod int) *baseIndicatorWithFloatBounds {
+	ind := baseIndicatorWithFloatBounds{
+		baseIndicator:   newBaseIndicator(lookbackPeriod),
+		baseFloatBounds: newBaseFloatBounds()}
+	return &ind
+}
+
+type baseIndicatorWithIntBounds struct {
+	*baseIndicator
+	*baseIntBounds
+}
+
+func newBaseIndicatorWithIntBounds(lookbackPeriod int) *baseIndicatorWithIntBounds {
+	ind := baseIndicatorWithIntBounds{
+		baseIndicator: newBaseIndicator(lookbackPeriod),
+		baseIntBounds: newBaseIntBounds()}
+	return &ind
 }
 
 func newBaseIndicatorWithTimePeriod(timePeriod int) *baseIndicatorWithTimePeriod {
@@ -77,6 +135,7 @@ func (ind *baseIndicatorWithTimePeriod) GetTimePeriod() int {
 }
 
 type ValueAvailableAction func(dataItem float64, streamBarIndex int)
+type ValueAvailableActionInt func(dataItem int64, streamBarIndex int)
 type ValueAvailableActionDOHLCV func(dataItem gotrade.DOHLCV, streamBarIndex int)
 type ValueAvailableActionBollinger func(dataItemUpperBand float64, dataItemMiddleBand float64, dataItemLowerBand float64, streamBarIndex int)
 type ValueAvailableActionMACD func(dataItemMACD float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int)

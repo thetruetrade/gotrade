@@ -5,7 +5,7 @@ import (
 )
 
 type OBVWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	periodCounter        int
@@ -15,7 +15,7 @@ type OBVWithoutStorage struct {
 }
 
 func NewOBVWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *OBVWithoutStorage, err error) {
-	newVar := OBVWithoutStorage{baseIndicator: newBaseIndicator(0),
+	newVar := OBVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0),
 		periodCounter: -1,
 		previousOBV:   0.0,
 		previousClose: 0.0}

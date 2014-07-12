@@ -9,7 +9,7 @@ import (
 )
 
 type DXWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -26,7 +26,7 @@ func NewDXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActi
 		lookback = timePeriod
 	}
 
-	newDX := DXWithoutStorage{baseIndicator: newBaseIndicator(lookback),
+	newDX := DXWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentPlusDI:               0.0,
 		currentMinusDI:              0.0}

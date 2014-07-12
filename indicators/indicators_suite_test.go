@@ -52,103 +52,198 @@ var _ = AfterSuite(func() {
 	csvFeed = nil
 })
 
-// ValidFromBar() int
-// Length() int
-// MinValue() float64
-// MaxValue() float64
-
-type IndicatorSharedSpecInputs struct {
-	IndicatorUnderTest indicators.Indicator
-	GetMaximum         GetMaximumFunc
-	GetMinimum         GetMinimumFunc
-	SourceDataLength   int
+type IndicatorSharedSpec interface {
+	GetIndicator() indicators.Indicator
+	GetLength() int
 }
 
-func ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(inputs *IndicatorSharedSpecInputs) {
+type IndicatorWithFloatBoundsSharedSpec interface {
+	GetIndicatorWithFloatBounds() indicators.IndicatorWithFloatBounds
+	GetIndicator() indicators.Indicator
+	GetLength() int
+	GetMaximum() float64
+	GetMinimum() float64
+}
+
+type IndicatorWithIntBoundsSharedSpec interface {
+	GetIndicatorWithIntBounds() indicators.IndicatorWithIntBounds
+	GetIndicator() indicators.Indicator
+	GetLength() int
+	GetMaximum() int64
+	GetMinimum() int64
+}
+
+type IndicatorSharedSpecInputs struct {
+	indicatorUnderTest indicators.Indicator
+	sourceDataLength   int
+}
+
+func NewIndicatorSharedSpecInputs(indicatorUnderTest indicators.Indicator, sourceDataLength int) IndicatorSharedSpecInputs {
+	ind := IndicatorSharedSpecInputs{indicatorUnderTest: indicatorUnderTest, sourceDataLength: sourceDataLength}
+	return ind
+}
+
+func (spec IndicatorSharedSpecInputs) GetIndicator() indicators.Indicator {
+	return spec.indicatorUnderTest
+}
+
+func (spec IndicatorSharedSpecInputs) GetLength() int {
+	return spec.sourceDataLength
+}
+
+type IndicatorWithFloatBoundsSharedSpecInputs struct {
+	*IndicatorSharedSpecInputs
+	indicatorWithFloatBoundsUnderTest indicators.IndicatorWithFloatBounds
+	getMaximum                        GetMaximumFloatFunc
+	getMinimum                        GetMaximumFloatFunc
+}
+
+func NewIndicatorWithFloatBoundsSharedSpecInputs(indicatorUnderTest indicators.Indicator,
+	sourceDataLength int,
+	indicatorWithFloatBoundsUnderTest indicators.IndicatorWithFloatBounds,
+	getMaximum GetMaximumFloatFunc,
+	getMinimum GetMaximumFloatFunc) IndicatorWithFloatBoundsSharedSpecInputs {
+	ind := IndicatorWithFloatBoundsSharedSpecInputs{IndicatorSharedSpecInputs: &IndicatorSharedSpecInputs{indicatorUnderTest: indicatorUnderTest, sourceDataLength: sourceDataLength},
+		indicatorWithFloatBoundsUnderTest: indicatorWithFloatBoundsUnderTest,
+		getMaximum:                        getMaximum,
+		getMinimum:                        getMinimum}
+	return ind
+}
+
+func (spec IndicatorWithFloatBoundsSharedSpecInputs) GetIndicatorWithFloatBounds() indicators.IndicatorWithFloatBounds {
+	return spec.indicatorWithFloatBoundsUnderTest
+}
+
+func (spec IndicatorWithFloatBoundsSharedSpecInputs) GetMaximum() float64 {
+	return spec.getMaximum()
+
+}
+func (spec IndicatorWithFloatBoundsSharedSpecInputs) GetMinimum() float64 {
+	return spec.getMinimum()
+}
+
+type IndicatorWithIntBoundsSharedSpecInputs struct {
+	*IndicatorSharedSpecInputs
+	indicatorWithIntBoundsUnderTest indicators.IndicatorWithIntBounds
+	getMaximum                      GetMaximumIntFunc
+	getMinimum                      GetMaximumIntFunc
+}
+
+func NewIndicatorWithIntBoundsSharedSpecInputs(indicatorUnderTest indicators.Indicator,
+	sourceDataLength int,
+	indicatorWithIntBoundsUnderTest indicators.IndicatorWithIntBounds,
+	getMaximum GetMaximumIntFunc,
+	getMinimum GetMaximumIntFunc) IndicatorWithIntBoundsSharedSpecInputs {
+	ind := IndicatorWithIntBoundsSharedSpecInputs{IndicatorSharedSpecInputs: &IndicatorSharedSpecInputs{indicatorUnderTest: indicatorUnderTest, sourceDataLength: sourceDataLength},
+		indicatorWithIntBoundsUnderTest: indicatorWithIntBoundsUnderTest,
+		getMaximum:                      getMaximum,
+		getMinimum:                      getMinimum}
+	return ind
+}
+
+func (spec IndicatorWithIntBoundsSharedSpecInputs) GetIndicatorWithIntBounds() indicators.IndicatorWithIntBounds {
+	return spec.indicatorWithIntBoundsUnderTest
+}
+
+func (spec IndicatorWithIntBoundsSharedSpecInputs) GetMaximum() int64 {
+	return spec.getMaximum()
+
+}
+func (spec IndicatorWithIntBoundsSharedSpecInputs) GetMinimum() int64 {
+	return spec.getMinimum()
+}
+
+func ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(inputs IndicatorSharedSpec) {
 	It("the indicator should be valid from some bar >= 1", func() {
-		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(BeNumerically(">=", 1))
+		Expect(inputs.GetIndicator().ValidFromBar()).To(BeNumerically(">=", 1))
 	})
 
 	It("the indicator stream should have entries equal to the number of ticks less the lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.Length()).To(Equal(inputs.SourceDataLength - inputs.IndicatorUnderTest.GetLookbackPeriod()))
-	})
-
-	It("the indicator min should equal the result stream minimum", func() {
-		Expect(inputs.IndicatorUnderTest.MinValue()).To(Equal(inputs.GetMinimum()))
-	})
-
-	It("the indicator max should equal the result stream maximum", func() {
-		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(inputs.GetMaximum()))
+		Expect(inputs.GetIndicator().Length()).To(Equal(inputs.GetLength() - inputs.GetIndicator().GetLookbackPeriod()))
 	})
 }
 
-func ShouldBeAnInitialisedIndicator(inputs *IndicatorSharedSpecInputs) {
+func ShouldHaveFloatBoundsSetToMinMaxOfResults(inputs IndicatorWithFloatBoundsSharedSpec) {
+	It("the indicator min should equal the result stream minimum", func() {
+		Expect(inputs.GetIndicatorWithFloatBounds().MinValue()).To(Equal(inputs.GetMinimum()))
+	})
+
+	It("the indicator max should equal the result stream maximum", func() {
+		Expect(inputs.GetIndicatorWithFloatBounds().MaxValue()).To(Equal(inputs.GetMaximum()))
+	})
+}
+
+func ShouldHaveIntBoundsSetToMinMaxOfResults(inputs IndicatorWithIntBoundsSharedSpec) {
+	It("the indicator min should equal the result stream minimum", func() {
+		Expect(inputs.GetIndicatorWithIntBounds().MinValue()).To(Equal(inputs.GetMinimum()))
+	})
+
+	It("the indicator max should equal the result stream maximum", func() {
+		Expect(inputs.GetIndicatorWithIntBounds().MaxValue()).To(Equal(inputs.GetMaximum()))
+	})
+}
+
+func ShouldBeAnInitialisedIndicator(inputs IndicatorSharedSpec) {
+
 	It("the indicator should not be valid from any bar yet", func() {
-		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(Equal(-1))
+		Expect(inputs.GetIndicator().ValidFromBar()).To(Equal(-1))
 	})
 
 	It("the indicator stream should have no results", func() {
-		Expect(inputs.IndicatorUnderTest.Length()).To(BeZero())
-	})
-
-	It("the indicator should have no minimum value set", func() {
-		Expect(inputs.IndicatorUnderTest.MinValue()).To(Equal(math.MaxFloat64))
-	})
-
-	It("the indicator should have no maximum value set", func() {
-		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
+		Expect(inputs.GetIndicator().Length()).To(BeZero())
 	})
 
 	It("the indicator should have a valid lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.GetLookbackPeriod()).Should(BeNumerically(">=", indicators.MinimumLookbackPeriod))
-		Expect(inputs.IndicatorUnderTest.GetLookbackPeriod()).Should(BeNumerically("<=", indicators.MaximumLookbackPeriod))
+		Expect(inputs.GetIndicator().GetLookbackPeriod()).Should(BeNumerically(">=", indicators.MinimumLookbackPeriod))
+		Expect(inputs.GetIndicator().GetLookbackPeriod()).Should(BeNumerically("<=", indicators.MaximumLookbackPeriod))
 	})
+	// nobounds
 }
 
-func ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(inputs *IndicatorSharedSpecInputs) {
-
-	It("the indicator should not be valid from any bar yet", func() {
-		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(Equal(-1))
-	})
-
-	It("the indicator stream should have no results", func() {
-		Expect(inputs.IndicatorUnderTest.Length()).To(BeZero())
-	})
-
+func ShouldNotHaveAnyFloatBoundsSetYet(inputs IndicatorWithFloatBoundsSharedSpec) {
 	It("the indicator should have no minimum value set", func() {
-		Expect(inputs.IndicatorUnderTest.MinValue()).To(Equal(math.MaxFloat64))
+		Expect(inputs.GetIndicatorWithFloatBounds().MinValue()).To(Equal(math.MaxFloat64))
 	})
 
 	It("the indicator should have no maximum value set", func() {
-		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
+		Expect(inputs.GetIndicatorWithFloatBounds().MaxValue()).To(Equal(math.SmallestNonzeroFloat64))
 	})
 }
 
-func ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(inputs *IndicatorSharedSpecInputs) {
-	It("the indicator stream should have a single entry", func() {
-		Expect(inputs.IndicatorUnderTest.Length()).To(Equal(1))
+func ShouldNotHaveAnyIntBoundsSetYet(inputs IndicatorWithIntBoundsSharedSpec) {
+	It("the indicator should have no minimum value set", func() {
+		Expect(inputs.GetIndicatorWithIntBounds().MinValue()).To(Equal(int64(math.MaxInt64)))
 	})
 
-	//It("the indicator min and max should be equal", func() {
-	//	Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(inputs.IndicatorUnderTest.MinValue()))
-	//})
+	It("the indicator should have no maximum value set", func() {
+		Expect(inputs.GetIndicatorWithIntBounds().MaxValue()).To(Equal(int64(math.MinInt64)))
+	})
+}
+
+func ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(inputs IndicatorSharedSpec) {
+
+	It("the indicator should not be valid from any bar yet", func() {
+		Expect(inputs.GetIndicator().ValidFromBar()).To(Equal(-1))
+	})
+
+	It("the indicator stream should have no results", func() {
+		Expect(inputs.GetIndicator().Length()).To(BeZero())
+	})
+}
+
+func ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(inputs IndicatorSharedSpec) {
+	It("the indicator stream should have a single entry", func() {
+		Expect(inputs.GetIndicator().Length()).To(Equal(1))
+	})
 
 	It("the indicator should be valid from the lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.ValidFromBar()).To(Equal(inputs.IndicatorUnderTest.GetLookbackPeriod() + 1))
+		Expect(inputs.GetIndicator().ValidFromBar()).To(Equal(inputs.GetIndicator().GetLookbackPeriod() + 1))
 	})
 }
 
-func ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(inputs *IndicatorSharedSpecInputs) {
+func ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(inputs IndicatorSharedSpec) {
 	It("the indicator stream should have entries equal to the number of ticks less the lookback period", func() {
-		Expect(inputs.IndicatorUnderTest.Length()).To(Equal(inputs.SourceDataLength - (inputs.IndicatorUnderTest.GetLookbackPeriod())))
-	})
-
-	It("the indicator min should equal the result stream minimum", func() {
-		Expect(inputs.IndicatorUnderTest.MinValue()).To(Equal(inputs.GetMinimum()))
-	})
-
-	It("the indicator max should equal the result stream maximum", func() {
-		Expect(inputs.IndicatorUnderTest.MaxValue()).To(Equal(inputs.GetMaximum()))
+		Expect(inputs.GetIndicator().Length()).To(Equal(inputs.GetLength() - (inputs.GetIndicator().GetLookbackPeriod())))
 	})
 }
 
@@ -268,28 +363,56 @@ func LoadCSVAroonPriceDataFromFile(fileName string) (results []AroonData, err er
 	return results, nil
 }
 
-type GetMaximumFunc func() float64
+type GetMaximumFloatFunc func() float64
 
-type GetMinimumFunc func() float64
+type GetMinimumFloatFunc func() float64
 
-func GetDataMax(dohlcvArray []float64) float64 {
+type GetMaximumIntFunc func() int64
+
+type GetMinimumIntFunc func() int64
+
+func GetFloatDataMax(floatArray []float64) float64 {
 	max := math.SmallestNonzeroFloat64
 
-	for i := range dohlcvArray {
-		if max < dohlcvArray[i] {
-			max = dohlcvArray[i]
+	for i := range floatArray {
+		if max < floatArray[i] {
+			max = floatArray[i]
 		}
 	}
 
 	return max
 }
 
-func GetDataMin(dohlcvArray []float64) float64 {
+func GetIntDataMax(intArray []int64) int64 {
+	max := int64(math.MinInt64)
+
+	for i := range intArray {
+		if max < intArray[i] {
+			max = intArray[i]
+		}
+	}
+
+	return max
+}
+
+func GetFloatDataMin(floatArray []float64) float64 {
 	min := math.MaxFloat64
 
-	for i := range dohlcvArray {
-		if min > dohlcvArray[i] {
-			min = dohlcvArray[i]
+	for i := range floatArray {
+		if min > floatArray[i] {
+			min = floatArray[i]
+		}
+	}
+
+	return min
+}
+
+func GetIntDataMin(intArray []int64) int64 {
+	min := int64(math.MaxInt64)
+
+	for i := range intArray {
+		if min > intArray[i] {
+			min = intArray[i]
 		}
 	}
 

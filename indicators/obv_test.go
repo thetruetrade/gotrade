@@ -7,34 +7,65 @@ import (
 
 var _ = Describe("when calculating an on balance volume (obv) with DOHLCV source data", func() {
 	var (
-		indicator       *indicators.OBV
-		indicatorInputs IndicatorSharedSpecInputs
+		indicator *indicators.OBV
+		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
 		indicator, _ = indicators.NewOBV()
-		indicatorInputs = IndicatorSharedSpecInputs{IndicatorUnderTest: indicator,
-			SourceDataLength: len(sourceDOHLCVData),
-			GetMaximum: func() float64 {
-				return GetDataMax(indicator.Data)
+
+		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+			func() float64 {
+				return GetFloatDataMax(indicator.Data)
 			},
-			GetMinimum: func() float64 {
-				return GetDataMin(indicator.Data)
-			}}
+			func() float64 {
+				return GetFloatDataMin(indicator.Data)
+			})
 	})
 
 	Context("and the indicator has not yet received any ticks", func() {
-		ShouldBeAnInitialisedIndicator(&indicatorInputs)
+		ShouldBeAnInitialisedIndicator(&inputs)
+
+		ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
 	})
 
-	Context("and the indicator has recveived all of its ticks", func() {
+	Context("and the indicator has received less ticks than the lookback period", func() {
+
 		BeforeEach(func() {
-			for i := 0; i < len(sourceDOHLCVData); i++ {
+			for i := 0; i < indicator.GetLookbackPeriod(); i++ {
 				indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedFewerTicksThanItsLookbackPeriod(&inputs)
+
+		ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
+	})
+
+	Context("and the indicator has received ticks equal to the lookback period", func() {
+
+		BeforeEach(func() {
+			for i := 0; i <= indicator.GetLookbackPeriod(); i++ {
+				indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+			}
+		})
+
+		ShouldBeAnIndicatorThatHasReceivedTicksEqualToItsLookbackPeriod(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+	})
+
+	Context("and the indicator has received more ticks than the lookback period", func() {
+
+		BeforeEach(func() {
+			for i := range sourceDOHLCVData {
+				indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+			}
+		})
+
+		ShouldBeAnIndicatorThatHasReceivedMoreTicksThanItsLookbackPeriod(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 
 	Context("and the indicator has recieved all of its ticks", func() {
@@ -44,6 +75,8 @@ var _ = Describe("when calculating an on balance volume (obv) with DOHLCV source
 			}
 		})
 
-		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&indicatorInputs)
+		ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+
+		ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 	})
 })

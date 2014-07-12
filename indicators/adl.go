@@ -7,7 +7,7 @@ import (
 
 // An Accumulation Distribution Line Indicator
 type ADLWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableAction
@@ -19,7 +19,7 @@ type ADLWithoutStorage struct {
 // The ADL results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewADLWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *ADLWithoutStorage, err error) {
-	newADL := ADLWithoutStorage{baseIndicator: newBaseIndicator(0),
+	newADL := ADLWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0),
 		previousADL: float64(0.0)}
 	newADL.valueAvailableAction = valueAvailableAction
 

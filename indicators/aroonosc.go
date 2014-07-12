@@ -5,7 +5,7 @@ import (
 )
 
 type AroonOsc struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	//private variables
@@ -14,7 +14,7 @@ type AroonOsc struct {
 }
 
 func NewAroonOsc(timePeriod int) (indicator *AroonOsc, err error) {
-	ind := AroonOsc{baseIndicator: newBaseIndicator(timePeriod),
+	ind := AroonOsc{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 
 	ind.aroon, err = NewAroonWithoutStorage(timePeriod,

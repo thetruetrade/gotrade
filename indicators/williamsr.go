@@ -9,7 +9,7 @@ import (
 
 // A Williamns Percent R Indicator
 type WILLRWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -24,7 +24,7 @@ type WILLRWithoutStorage struct {
 // The WILLR results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewWILLRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *WILLRWithoutStorage, err error) {
-	newWILLR := WILLRWithoutStorage{baseIndicator: newBaseIndicator(timePeriod - 1),
+	newWILLR := WILLRWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,
 		periodHighHistory:           list.New(),

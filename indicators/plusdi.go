@@ -7,7 +7,7 @@ import (
 
 // A plus DM Indicator
 type PlusDIWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -30,7 +30,7 @@ func NewPlusDIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailable
 	if timePeriod > 1 {
 		lookback = timePeriod
 	}
-	newPlusDI := PlusDIWithoutStorage{baseIndicator: newBaseIndicator(lookback),
+	newPlusDI := PlusDIWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               -1,
 		previousPlusDM:              0.0,

@@ -6,7 +6,7 @@ import (
 )
 
 type LinearRegWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -19,7 +19,7 @@ type LinearRegWithoutStorage struct {
 }
 
 func NewLinearRegWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionLinearReg) (indicator *LinearRegWithoutStorage, err error) {
-	newVar := LinearRegWithoutStorage{baseIndicator: newBaseIndicator(timePeriod - 1),
+	newVar := LinearRegWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod) * -1,
 		periodHistory:               list.New()}

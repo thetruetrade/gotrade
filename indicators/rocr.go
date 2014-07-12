@@ -6,7 +6,7 @@ import (
 )
 
 type ROCRWithoutStorage struct {
-	*baseIndicator
+	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
 	// private variables
@@ -16,7 +16,7 @@ type ROCRWithoutStorage struct {
 }
 
 func NewROCRWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *ROCRWithoutStorage, err error) {
-	newROCR := ROCRWithoutStorage{baseIndicator: newBaseIndicator(timePeriod),
+	newROCR := ROCRWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1),
 		periodHistory:               list.New()}
