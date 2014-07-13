@@ -274,6 +274,34 @@ func LoadCSVPriceDataFromFile(fileName string) (results []float64, err error) {
 	return results, nil
 }
 
+func LoadCSVIntPriceDataFromFile(fileName string) (results []int64, err error) {
+	file, err := os.Open("../testdata/" + fileName)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
+	}
+	defer file.Close()
+	reader := csv.NewReader(file)
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+
+		tmp, err := strconv.ParseFloat(record[0], 64)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+		priceValue := int64(tmp)
+		results = append(results, priceValue)
+	}
+	return results, nil
+}
+
 func LoadCSVBollingerPriceDataFromFile(fileName string) (results []BollingerBand, err error) {
 	file, err := os.Open("../testdata/" + fileName)
 	if err != nil {
