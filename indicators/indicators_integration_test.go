@@ -1712,4 +1712,37 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 		})
 	})
 
+	var _ = Describe("when executing the gotrade lowest low bars (LLVBars) with a years data and known output", func() {
+		var (
+			ind             *indicators.LLVBars
+			expectedResults []int64
+			err             error
+			priceStream     *gotrade.InterDayDOHLCVStream
+		)
+
+		BeforeEach(func() {
+			// load the expected results data
+			expectedResults, _ = LoadCSVIntPriceDataFromFile("llvbars_14_expectedresult.data")
+			priceStream = gotrade.NewDailyDOHLCVStream()
+		})
+
+		Describe("using a time period of 14", func() {
+
+			BeforeEach(func() {
+				ind, err = indicators.NewLLVBars(14, gotrade.UseClosePrice)
+				priceStream.AddTickSubscription(ind)
+				csvFeed.FillDOHLCVStream(priceStream)
+			})
+
+			It("the result set should have a length equal to the source data length", func() {
+				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+			})
+
+			It("it should have correctly calculated the llv for each item in the result", func() {
+				for k := range expectedResults {
+					Expect(expectedResults[k]).To(Equal(ind.Data[k]))
+				}
+			})
+		})
+	})
 })
