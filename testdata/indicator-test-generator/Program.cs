@@ -918,6 +918,26 @@ namespace indicatortestgenerator
 				}
 				writer.Flush ();
 			}
+
+			// STOCH
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/stoch_5_3_3_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.StochLookback(5, 3, talib.Core.MAType.Sma, 3, talib.Core.MAType.Sma);
+				int dataLength = closingPrices.Count - 1;
+				double[] outSlowK = new double[dataLength - lookback +1];
+				double[] outSlowD = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.Stoch(0, dataLength, highPrices.ToArray(), lowPrices.ToArray(), closingPrices.ToArray(), 5,3, talib.Core.MAType.Sma, 3, talib.Core.MAType.Sma, out outBeginIndex, out outNBElement, outSlowK, outSlowD);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					for (var i=0;i< outSlowK.Length;i++) 
+					{
+						writer.WriteLine ("{0}, {1}", outSlowK[i].ToString(CultureInfo.InvariantCulture), outSlowD[i].ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
 		}
 	}
 }

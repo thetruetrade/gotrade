@@ -140,4 +140,5 @@ type ValueAvailableActionDOHLCV func(dataItem gotrade.DOHLCV, streamBarIndex int
 type ValueAvailableActionBollinger func(dataItemUpperBand float64, dataItemMiddleBand float64, dataItemLowerBand float64, streamBarIndex int)
 type ValueAvailableActionMACD func(dataItemMACD float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int)
 type ValueAvailableActionAroon func(dataItemAroonUp float64, dataItemAroonDown float64, streamBarIndex int)
+type ValueAvailableActionStoch func(dataItemSlowK float64, dataItemSlowD float64, streamBarIndex int)
 type ValueAvailableActionLinearReg func(dataItem float64, slope float64, intercept float64, streamBarIndex int)

@@ -439,1310 +439,1350 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade average truerange with a years data and known output", func() {
-		var (
-			avgTrueRange    *indicators.ATR
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade average truerange with a years data and known output", func() {
+	var (
+		avgTrueRange    *indicators.ATR
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("atr_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using an implicit lookback period of 14", func() {
-
-			BeforeEach(func() {
-				avgTrueRange, err = indicators.NewATR(14)
-				priceStream.AddTickSubscription(avgTrueRange)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length less the lookback period", func() {
-				Expect(avgTrueRange.Length()).To(Equal(len(priceStream.Data) - avgTrueRange.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the truerangefor each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", avgTrueRange.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("atr_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade accumulation distribution line with a years data and known output", func() {
-		var (
-			adl             *indicators.ADL
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using an implicit lookback period of 14", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("adl_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			avgTrueRange, err = indicators.NewATR(14)
+			priceStream.AddTickSubscription(avgTrueRange)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using no lookback", func() {
+		It("the result set should have a length equal to the source data length less the lookback period", func() {
+			Expect(avgTrueRange.Length()).To(Equal(len(priceStream.Data) - avgTrueRange.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				adl, err = indicators.NewADL()
-				priceStream.AddTickSubscription(adl)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(adl.Length()).To(Equal(len(priceStream.Data)))
-			})
-
-			It("it should have correctly calculated the truerangefor each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", adl.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the truerangefor each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", avgTrueRange.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade chaikin oscilator with a years data and known output", func() {
-		var (
-			chaikinOsc      *indicators.ChainkinOsc
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-			fastPeriod      int
-			slowPeriod      int
-		)
+var _ = Describe("when executing the gotrade accumulation distribution line with a years data and known output", func() {
+	var (
+		adl             *indicators.ADL
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("chaikinosc_3_10_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-			fastPeriod = 3
-			slowPeriod = 10
-		})
-
-		Describe("using no a fast Time Period of 3 and a slow Time Period of 10", func() {
-
-			BeforeEach(func() {
-				chaikinOsc, err = indicators.NewChainkinOsc(3, 10)
-				priceStream.AddTickSubscription(chaikinOsc)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length - the lookback Period", func() {
-				Expect(chaikinOsc.Length()).To(Equal(len(priceStream.Data) - chaikinOsc.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the chaikin oscillator for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", chaikinOsc.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("adl_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade on balance volume indicator with a years data and known output", func() {
-		var (
-			obv             *indicators.OBV
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using no lookback", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("obv_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			adl, err = indicators.NewADL()
+			priceStream.AddTickSubscription(adl)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using no lookback period", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(adl.Length()).To(Equal(len(priceStream.Data)))
+		})
 
-			BeforeEach(func() {
-				obv, err = indicators.NewOBV()
-				priceStream.AddTickSubscription(obv)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(obv.Length()).To(Equal(len(priceStream.Data)))
-			})
-
-			It("it should have correctly calculated the on balance volume for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", obv.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the truerangefor each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", adl.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade average price indicator with a years data and known output", func() {
-		var (
-			avgPrice        *indicators.AvgPrice
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade chaikin oscilator with a years data and known output", func() {
+	var (
+		chaikinOsc      *indicators.ChainkinOsc
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+		fastPeriod      int
+		slowPeriod      int
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("avgprice_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using no lookback period", func() {
-
-			BeforeEach(func() {
-				avgPrice, err = indicators.NewAvgPrice()
-				priceStream.AddTickSubscription(avgPrice)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(avgPrice.Length()).To(Equal(len(priceStream.Data)))
-			})
-
-			It("it should have correctly calculated the avg price for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", avgPrice.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("chaikinosc_3_10_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+		fastPeriod = 3
+		slowPeriod = 10
 	})
 
-	var _ = Describe("when executing the gotrade median price indicator with a years data and known output", func() {
-		var (
-			medPrice        *indicators.MedPrice
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using no a fast Time Period of 3 and a slow Time Period of 10", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("medprice_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			chaikinOsc, err = indicators.NewChainkinOsc(3, 10)
+			priceStream.AddTickSubscription(chaikinOsc)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using no lookback period", func() {
+		It("the result set should have a length equal to the source data length - the lookback Period", func() {
+			Expect(chaikinOsc.Length()).To(Equal(len(priceStream.Data) - chaikinOsc.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				medPrice, err = indicators.NewMedPrice()
-				priceStream.AddTickSubscription(medPrice)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(medPrice.Length()).To(Equal(len(priceStream.Data)))
-			})
-
-			It("it should have correctly calculated the median price for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", medPrice.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the chaikin oscillator for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", chaikinOsc.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade typical price indicator with a years data and known output", func() {
-		var (
-			typPrice        *indicators.TypicalPrice
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade on balance volume indicator with a years data and known output", func() {
+	var (
+		obv             *indicators.OBV
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("typprice_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using no lookback period", func() {
-
-			BeforeEach(func() {
-				typPrice, err = indicators.NewTypicalPrice()
-				priceStream.AddTickSubscription(typPrice)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(typPrice.Length()).To(Equal(len(priceStream.Data)))
-			})
-
-			It("it should have correctly calculated the typical price for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", typPrice.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("obv_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade plus directional movement indicator (1) with a years data and known output", func() {
-		var (
-			plusDM          *indicators.PlusDM
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using no lookback period", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("plusdm_1_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			obv, err = indicators.NewOBV()
+			priceStream.AddTickSubscription(obv)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 1", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(obv.Length()).To(Equal(len(priceStream.Data)))
+		})
 
-			BeforeEach(func() {
-				plusDM, err = indicators.NewPlusDM(1)
-				priceStream.AddTickSubscription(plusDM)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(plusDM.Length()).To(Equal(len(priceStream.Data) - plusDM.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", plusDM.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the on balance volume for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", obv.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade plus directional movement indicator (14) with a years data and known output", func() {
-		var (
-			plusDM          *indicators.PlusDM
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade average price indicator with a years data and known output", func() {
+	var (
+		avgPrice        *indicators.AvgPrice
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("plusdm_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				plusDM, err = indicators.NewPlusDM(14)
-				priceStream.AddTickSubscription(plusDM)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(plusDM.Length()).To(Equal(len(priceStream.Data) - plusDM.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", plusDM.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("avgprice_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade minus directional movement indicator (1) with a years data and known output", func() {
-		var (
-			minusDM         *indicators.MinusDM
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using no lookback period", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("minusdm_1_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			avgPrice, err = indicators.NewAvgPrice()
+			priceStream.AddTickSubscription(avgPrice)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 1", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(avgPrice.Length()).To(Equal(len(priceStream.Data)))
+		})
 
-			BeforeEach(func() {
-				minusDM, err = indicators.NewMinusDM(1)
-				priceStream.AddTickSubscription(minusDM)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(minusDM.Length()).To(Equal(len(priceStream.Data) - minusDM.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", minusDM.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the avg price for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", avgPrice.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade minus directional movement indicator (14) with a years data and known output", func() {
-		var (
-			minusDM         *indicators.MinusDM
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade median price indicator with a years data and known output", func() {
+	var (
+		medPrice        *indicators.MedPrice
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("minusdm_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				minusDM, err = indicators.NewMinusDM(14)
-				priceStream.AddTickSubscription(minusDM)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(minusDM.Length()).To(Equal(len(priceStream.Data) - minusDM.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", minusDM.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("medprice_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade plus directional indicator (1) with a years data and known output", func() {
-		var (
-			plusDI          *indicators.PlusDI
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using no lookback period", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("plusdi_1_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			medPrice, err = indicators.NewMedPrice()
+			priceStream.AddTickSubscription(medPrice)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 1", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(medPrice.Length()).To(Equal(len(priceStream.Data)))
+		})
 
-			BeforeEach(func() {
-				plusDI, err = indicators.NewPlusDI(1)
-				priceStream.AddTickSubscription(plusDI)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(plusDI.Length()).To(Equal(len(priceStream.Data) - plusDI.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", plusDI.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the median price for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", medPrice.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade plus directional indicator (14) with a years data and known output", func() {
-		var (
-			plusDI          *indicators.PlusDI
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade typical price indicator with a years data and known output", func() {
+	var (
+		typPrice        *indicators.TypicalPrice
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("plusdi_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				plusDI, err = indicators.NewPlusDI(14)
-				priceStream.AddTickSubscription(plusDI)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(plusDI.Length()).To(Equal(len(priceStream.Data) - plusDI.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", plusDI.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("typprice_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade minus directional indicator (1) with a years data and known output", func() {
-		var (
-			minusDI         *indicators.MinusDI
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using no lookback period", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("minusdi_1_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			typPrice, err = indicators.NewTypicalPrice()
+			priceStream.AddTickSubscription(typPrice)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 1", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(typPrice.Length()).To(Equal(len(priceStream.Data)))
+		})
 
-			BeforeEach(func() {
-				minusDI, err = indicators.NewMinusDI(1)
-				priceStream.AddTickSubscription(minusDI)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(minusDI.Length()).To(Equal(len(priceStream.Data) - minusDI.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", minusDI.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the typical price for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", typPrice.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade minus directional indicator (14) with a years data and known output", func() {
-		var (
-			minusDI         *indicators.MinusDI
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade plus directional movement indicator (1) with a years data and known output", func() {
+	var (
+		plusDM          *indicators.PlusDM
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("minusdi_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				minusDI, err = indicators.NewMinusDI(14)
-				priceStream.AddTickSubscription(minusDI)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(minusDI.Length()).To(Equal(len(priceStream.Data) - minusDI.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", minusDI.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("plusdm_1_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade directional movement indicator (14) with a years data and known output", func() {
-		var (
-			dx              *indicators.DX
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("dx_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			plusDM, err = indicators.NewPlusDM(1)
+			priceStream.AddTickSubscription(plusDM)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 14", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(plusDM.Length()).To(Equal(len(priceStream.Data) - plusDM.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				dx, err = indicators.NewDX(14)
-				priceStream.AddTickSubscription(dx)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(dx.Length()).To(Equal(len(priceStream.Data) - dx.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", dx.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", plusDM.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade average directional movement indicator (14) with a years data and known output", func() {
-		var (
-			adx             *indicators.ADX
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade plus directional movement indicator (14) with a years data and known output", func() {
+	var (
+		plusDM          *indicators.PlusDM
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("adx_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				adx, err = indicators.NewADX(14)
-				priceStream.AddTickSubscription(adx)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(adx.Length()).To(Equal(len(priceStream.Data) - adx.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the average directional movement for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", adx.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("plusdm_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade average directional movement rating (14) with a years data and known output", func() {
-		var (
-			adxr            *indicators.ADXR
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("adxr_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			plusDM, err = indicators.NewPlusDM(14)
+			priceStream.AddTickSubscription(plusDM)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 14", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(plusDM.Length()).To(Equal(len(priceStream.Data) - plusDM.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				adxr, err = indicators.NewADXR(14)
-				priceStream.AddTickSubscription(adxr)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(adxr.Length()).To(Equal(len(priceStream.Data) - adxr.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the average directional rating for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", adxr.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", plusDM.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade average directional movement rating (1) with a years data and known output", func() {
-		var (
-			adxr            *indicators.ADXR
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade minus directional movement indicator (1) with a years data and known output", func() {
+	var (
+		minusDM         *indicators.MinusDM
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("adxr_1_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 1", func() {
-
-			BeforeEach(func() {
-				adxr, err = indicators.NewADXR(1)
-				priceStream.AddTickSubscription(adxr)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(adxr.Length()).To(Equal(len(priceStream.Data) - adxr.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the average directional rating for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", adxr.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("minusdm_1_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade relative strength index with a years data and known output", func() {
-		var (
-			rsi             *indicators.RSI
-			period          int
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("rsi_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			minusDM, err = indicators.NewMinusDM(1)
+			priceStream.AddTickSubscription(minusDM)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a lookback period of 14", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(minusDM.Length()).To(Equal(len(priceStream.Data) - minusDM.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				period = 14
-				rsi, err = indicators.NewRSI(period, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(rsi)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
-				Expect(len(rsi.Data)).To(Equal(len(priceStream.Data) - rsi.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", rsi.Data[k], 0.1))
-				}
-			})
+		It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", minusDM.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade rate of change with a years data and known output", func() {
-		var (
-			ind             *indicators.ROC
-			period          int
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade minus directional movement indicator (14) with a years data and known output", func() {
+	var (
+		minusDM         *indicators.MinusDM
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("roc_10_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a lookback period of 10", func() {
-
-			BeforeEach(func() {
-				period = 10
-				ind, err = indicators.NewROC(period, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
-				Expect(len(ind.Data)).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.1))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("minusdm_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade rate of change percentage with a years data and known output", func() {
-		var (
-			ind             *indicators.ROCP
-			period          int
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("rocp_10_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			minusDM, err = indicators.NewMinusDM(14)
+			priceStream.AddTickSubscription(minusDM)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a lookback period of 10", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(minusDM.Length()).To(Equal(len(priceStream.Data) - minusDM.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				period = 10
-				ind, err = indicators.NewROCP(period, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
-				Expect(len(ind.Data)).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.1))
-				}
-			})
+		It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", minusDM.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade rate of change ratio with a years data and known output", func() {
-		var (
-			ind             *indicators.ROCR
-			period          int
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade plus directional indicator (1) with a years data and known output", func() {
+	var (
+		plusDI          *indicators.PlusDI
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("rocr_10_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a lookback period of 10", func() {
-
-			BeforeEach(func() {
-				period = 10
-				ind, err = indicators.NewROCR(period, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
-				Expect(len(ind.Data)).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.1))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("plusdi_1_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade rate of change ratio 100 scale with a years data and known output", func() {
-		var (
-			ind             *indicators.ROCR100
-			period          int
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("rocr100_10_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			plusDI, err = indicators.NewPlusDI(1)
+			priceStream.AddTickSubscription(plusDI)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a lookback period of 10", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(plusDI.Length()).To(Equal(len(priceStream.Data) - plusDI.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				period = 10
-				ind, err = indicators.NewROCR100(period, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
-				Expect(len(ind.Data)).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.1))
-				}
-			})
+		It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", plusDI.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade money flow index (14) with a years data and known output", func() {
-		var (
-			ind             *indicators.MFI
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade plus directional indicator (14) with a years data and known output", func() {
+	var (
+		plusDI          *indicators.PlusDI
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("mfi_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				ind, err = indicators.NewMFI(14)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the money flow index for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("plusdi_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade parabolic stop and reverse (SAR) with a years data and known output", func() {
-		var (
-			ind             *indicators.SAR
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("sar_002_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			plusDI, err = indicators.NewPlusDI(14)
+			priceStream.AddTickSubscription(plusDI)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using an accelleration factor of 0.02", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(plusDI.Length()).To(Equal(len(priceStream.Data) - plusDI.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				ind, err = indicators.NewSAR(0.02, 0.20)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the SAR for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the plus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", plusDI.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade linearregression (LinearReg) with a years data and known output", func() {
-		var (
-			ind             *indicators.LinearReg
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade minus directional indicator (1) with a years data and known output", func() {
+	var (
+		minusDI         *indicators.MinusDI
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("linear_regression_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				ind, err = indicators.NewLinearReg(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the linear regression for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("minusdi_1_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade linearregression slope (LinearRegSlope) with a years data and known output", func() {
-		var (
-			ind             *indicators.LinearRegSlope
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("linear_regression_slope_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			minusDI, err = indicators.NewMinusDI(1)
+			priceStream.AddTickSubscription(minusDI)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 14", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(minusDI.Length()).To(Equal(len(priceStream.Data) - minusDI.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				ind, err = indicators.NewLinearRegSlope(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the linear regression slope for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", minusDI.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade linearregression intercept (LinearRegIntercept) with a years data and known output", func() {
-		var (
-			ind             *indicators.LinearRegIntercept
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade minus directional indicator (14) with a years data and known output", func() {
+	var (
+		minusDI         *indicators.MinusDI
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("linear_regression_intercept_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				ind, err = indicators.NewLinearRegIntercept(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the linear regression intercept for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("minusdi_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade linearregression angle (LinearRegAngle) with a years data and known output", func() {
-		var (
-			ind             *indicators.LinearRegAngle
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("linear_regression_angle_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			minusDI, err = indicators.NewMinusDI(14)
+			priceStream.AddTickSubscription(minusDI)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 14", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(minusDI.Length()).To(Equal(len(priceStream.Data) - minusDI.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				ind, err = indicators.NewLinearRegAngle(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the linear regression angle for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", minusDI.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade time series forecast (TSF) with a years data and known output", func() {
-		var (
-			ind             *indicators.TSF
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade directional movement indicator (14) with a years data and known output", func() {
+	var (
+		dx              *indicators.DX
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("tsf_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				ind, err = indicators.NewTSF(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the times series forecast for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("dx_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade kaufman adaptive moving average (KAMA) with a years data and known output", func() {
-		var (
-			ind             *indicators.KAMA
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("kama_30_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			dx, err = indicators.NewDX(14)
+			priceStream.AddTickSubscription(dx)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 30", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(dx.Length()).To(Equal(len(priceStream.Data) - dx.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				ind, err = indicators.NewKAMA(30, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the kama for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the minus directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", dx.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade triangular moving average (TRIMA) with a years data and known output", func() {
-		var (
-			ind             *indicators.TRIMA
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade average directional movement indicator (14) with a years data and known output", func() {
+	var (
+		adx             *indicators.ADX
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("trima_30_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 30", func() {
-
-			BeforeEach(func() {
-				ind, err = indicators.NewTRIMA(30, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the trima for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("adx_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade williams percent r (WILLR) with a years data and known output", func() {
-		var (
-			ind             *indicators.WILLR
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("willr_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			adx, err = indicators.NewADX(14)
+			priceStream.AddTickSubscription(adx)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 14", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(adx.Length()).To(Equal(len(priceStream.Data) - adx.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				ind, err = indicators.NewWILLR(14)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the willr for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the average directional movement for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", adx.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade highest high value (HHV) with a years data and known output", func() {
-		var (
-			ind             *indicators.HHV
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade average directional movement rating (14) with a years data and known output", func() {
+	var (
+		adxr            *indicators.ADXR
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("hhv_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				ind, err = indicators.NewHHV(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the hhv for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("adxr_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade lowest low value (LLV) with a years data and known output", func() {
-		var (
-			ind             *indicators.LLV
-			expectedResults []float64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVPriceDataFromFile("llv_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			adxr, err = indicators.NewADXR(14)
+			priceStream.AddTickSubscription(adxr)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 14", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(adxr.Length()).To(Equal(len(priceStream.Data) - adxr.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				ind, err = indicators.NewLLV(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the llv for each item in the result set accurate to two decimal places", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
-				}
-			})
+		It("it should have correctly calculated the average directional rating for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", adxr.Data[k], 0.01))
+			}
 		})
 	})
+})
 
-	var _ = Describe("when executing the gotrade highest high bars (HHVBars) with a years data and known output", func() {
-		var (
-			ind             *indicators.HHVBars
-			expectedResults []int64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+var _ = Describe("when executing the gotrade average directional movement rating (1) with a years data and known output", func() {
+	var (
+		adxr            *indicators.ADXR
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVIntPriceDataFromFile("hhvbars_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
-		})
-
-		Describe("using a time period of 14", func() {
-
-			BeforeEach(func() {
-				ind, err = indicators.NewHHVBars(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
-
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
-
-			It("it should have correctly calculated the hhv for each item in the result", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(Equal(ind.Data[k]))
-				}
-			})
-		})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("adxr_1_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
-	var _ = Describe("when executing the gotrade lowest low bars (LLVBars) with a years data and known output", func() {
-		var (
-			ind             *indicators.LLVBars
-			expectedResults []int64
-			err             error
-			priceStream     *gotrade.InterDayDOHLCVStream
-		)
+	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			// load the expected results data
-			expectedResults, _ = LoadCSVIntPriceDataFromFile("llvbars_14_expectedresult.data")
-			priceStream = gotrade.NewDailyDOHLCVStream()
+			adxr, err = indicators.NewADXR(1)
+			priceStream.AddTickSubscription(adxr)
+			csvFeed.FillDOHLCVStream(priceStream)
 		})
 
-		Describe("using a time period of 14", func() {
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(adxr.Length()).To(Equal(len(priceStream.Data) - adxr.GetLookbackPeriod()))
+		})
 
-			BeforeEach(func() {
-				ind, err = indicators.NewLLVBars(14, gotrade.UseClosePrice)
-				priceStream.AddTickSubscription(ind)
-				csvFeed.FillDOHLCVStream(priceStream)
-			})
+		It("it should have correctly calculated the average directional rating for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", adxr.Data[k], 0.01))
+			}
+		})
+	})
+})
 
-			It("the result set should have a length equal to the source data length", func() {
-				Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
-			})
+var _ = Describe("when executing the gotrade relative strength index with a years data and known output", func() {
+	var (
+		rsi             *indicators.RSI
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-			It("it should have correctly calculated the llv for each item in the result", func() {
-				for k := range expectedResults {
-					Expect(expectedResults[k]).To(Equal(ind.Data[k]))
-				}
-			})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("rsi_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 14", func() {
+
+		BeforeEach(func() {
+			period = 14
+			rsi, err = indicators.NewRSI(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(rsi)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(rsi.Data)).To(Equal(len(priceStream.Data) - rsi.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", rsi.Data[k], 0.1))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade rate of change with a years data and known output", func() {
+	var (
+		ind             *indicators.ROC
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("roc_10_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 10", func() {
+
+		BeforeEach(func() {
+			period = 10
+			ind, err = indicators.NewROC(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(ind.Data)).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.1))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade rate of change percentage with a years data and known output", func() {
+	var (
+		ind             *indicators.ROCP
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("rocp_10_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 10", func() {
+
+		BeforeEach(func() {
+			period = 10
+			ind, err = indicators.NewROCP(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(ind.Data)).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.1))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade rate of change ratio with a years data and known output", func() {
+	var (
+		ind             *indicators.ROCR
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("rocr_10_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 10", func() {
+
+		BeforeEach(func() {
+			period = 10
+			ind, err = indicators.NewROCR(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(ind.Data)).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.1))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade rate of change ratio 100 scale with a years data and known output", func() {
+	var (
+		ind             *indicators.ROCR100
+		period          int
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("rocr100_10_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a lookback period of 10", func() {
+
+		BeforeEach(func() {
+			period = 10
+			ind, err = indicators.NewROCR100(period, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(len(ind.Data)).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the standard deviation for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.1))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade money flow index (14) with a years data and known output", func() {
+	var (
+		ind             *indicators.MFI
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("mfi_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewMFI(14)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the money flow index for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade parabolic stop and reverse (SAR) with a years data and known output", func() {
+	var (
+		ind             *indicators.SAR
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("sar_002_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using an accelleration factor of 0.02", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewSAR(0.02, 0.20)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the SAR for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade linearregression (LinearReg) with a years data and known output", func() {
+	var (
+		ind             *indicators.LinearReg
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("linear_regression_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewLinearReg(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the linear regression for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade linearregression slope (LinearRegSlope) with a years data and known output", func() {
+	var (
+		ind             *indicators.LinearRegSlope
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("linear_regression_slope_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewLinearRegSlope(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the linear regression slope for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade linearregression intercept (LinearRegIntercept) with a years data and known output", func() {
+	var (
+		ind             *indicators.LinearRegIntercept
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("linear_regression_intercept_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewLinearRegIntercept(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the linear regression intercept for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade linearregression angle (LinearRegAngle) with a years data and known output", func() {
+	var (
+		ind             *indicators.LinearRegAngle
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("linear_regression_angle_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewLinearRegAngle(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the linear regression angle for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade time series forecast (TSF) with a years data and known output", func() {
+	var (
+		ind             *indicators.TSF
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("tsf_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewTSF(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the times series forecast for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade kaufman adaptive moving average (KAMA) with a years data and known output", func() {
+	var (
+		ind             *indicators.KAMA
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("kama_30_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 30", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewKAMA(30, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the kama for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade triangular moving average (TRIMA) with a years data and known output", func() {
+	var (
+		ind             *indicators.TRIMA
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("trima_30_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 30", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewTRIMA(30, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the trima for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade williams percent r (WILLR) with a years data and known output", func() {
+	var (
+		ind             *indicators.WILLR
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("willr_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewWILLR(14)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the willr for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade highest high value (HHV) with a years data and known output", func() {
+	var (
+		ind             *indicators.HHV
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("hhv_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewHHV(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the hhv for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade lowest low value (LLV) with a years data and known output", func() {
+	var (
+		ind             *indicators.LLV
+		expectedResults []float64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVPriceDataFromFile("llv_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewLLV(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the llv for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade highest high bars (HHVBars) with a years data and known output", func() {
+	var (
+		ind             *indicators.HHVBars
+		expectedResults []int64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVIntPriceDataFromFile("hhvbars_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewHHVBars(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the hhv for each item in the result", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(Equal(ind.Data[k]))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade lowest low bars (LLVBars) with a years data and known output", func() {
+	var (
+		ind             *indicators.LLVBars
+		expectedResults []int64
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVIntPriceDataFromFile("llvbars_14_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a time period of 14", func() {
+
+		BeforeEach(func() {
+			ind, err = indicators.NewLLVBars(14, gotrade.UseClosePrice)
+			priceStream.AddTickSubscription(ind)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length", func() {
+			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the llv for each item in the result", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k]).To(Equal(ind.Data[k]))
+			}
+		})
+	})
+})
+
+var _ = Describe("when executing the gotrade stochastic oscillator with a years data and known output", func() {
+	var (
+		stoch           *indicators.StochasticOsc
+		expectedResults []StochData
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
+
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVStochPriceDataFromFile("stoch_5_3_3_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
+
+	Describe("using a lookback periods of 5,3,3", func() {
+
+		BeforeEach(func() {
+			stoch, err = indicators.NewStochasticOsc(5, 3, 3)
+			priceStream.AddTickSubscription(stoch)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
+
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(stoch.Length()).To(Equal(len(priceStream.Data) - stoch.GetLookbackPeriod()))
+		})
+
+		It("it should have correctly calculated the stoch slowk for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k].K()).To(BeNumerically("~", stoch.SlowK[k], 0.01))
+			}
+		})
+
+		It("it should have correctly calculated the stoch slowd for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k].D()).To(BeNumerically("~", stoch.SlowD[k], 0.01))
+			}
 		})
 	})
 })

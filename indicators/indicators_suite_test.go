@@ -391,6 +391,35 @@ func LoadCSVAroonPriceDataFromFile(fileName string) (results []AroonData, err er
 	return results, nil
 }
 
+func LoadCSVStochPriceDataFromFile(fileName string) (results []StochData, err error) {
+	file, err := os.Open("../testdata/" + fileName)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
+	}
+	defer file.Close()
+	reader := csv.NewReader(file)
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+
+		k, err := strconv.ParseFloat(strings.TrimSpace(record[0]), 64)
+		d, err := strconv.ParseFloat(strings.TrimSpace(record[1]), 64)
+
+		if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+		results = append(results, NewStochDataItem(k, d))
+	}
+	return results, nil
+}
+
 type GetMaximumFloatFunc func() float64
 
 type GetMinimumFloatFunc func() float64
@@ -517,6 +546,42 @@ func GetDataMinMACD(macd []float64, signal []float64, histogram []float64) float
 	return min
 }
 
+func GetDataMaxStoch(slowK []float64, slowD []float64) float64 {
+	max := math.SmallestNonzeroFloat64
+
+	for i := range slowK {
+		slowKVal := slowK[i]
+		slowDVal := slowD[i]
+
+		if max < slowKVal {
+			max = slowKVal
+		}
+		if max < slowDVal {
+			max = slowDVal
+		}
+	}
+
+	return max
+}
+
+func GetDataMinStoch(slowK []float64, slowD []float64) float64 {
+	min := math.MaxFloat64
+
+	for i := range slowK {
+		slowKVal := slowK[i]
+		slowDVal := slowD[i]
+
+		if min > slowKVal {
+			min = slowKVal
+		}
+		if min > slowDVal {
+			min = slowDVal
+		}
+	}
+
+	return min
+}
+
 type MACDData interface {
 	// MACD
 	M() float64
@@ -599,4 +664,26 @@ func (adi *AroonDataItem) U() float64 {
 
 func (adi *AroonDataItem) D() float64 {
 	return adi.dwn
+}
+
+type StochData interface {
+	K() float64
+	D() float64
+}
+
+type StochDataItem struct {
+	k float64
+	d float64
+}
+
+func NewStochDataItem(k float64, d float64) *StochDataItem {
+	return &StochDataItem{k: k, d: d}
+}
+
+func (sdi *StochDataItem) K() float64 {
+	return sdi.k
+}
+
+func (sdi *StochDataItem) D() float64 {
+	return sdi.d
 }
