@@ -25,7 +25,7 @@ type LLVWithoutStorage struct {
 // The LLV results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewLLVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *LLVWithoutStorage, err error) {
-	newLLV := LLVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0),
+	newLLV := LLVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentLow:                  math.MaxFloat64,
 		currentLowIndex:             0,
@@ -95,6 +95,24 @@ func (ind *LLVWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 			}
 		}
 
+		var result = ind.currentLow
+
+		ind.dataLength += 1
+
+		if ind.validFromBar == -1 {
+			ind.validFromBar = streamBarIndex
+		}
+
+		if result > ind.maxValue {
+			ind.maxValue = result
+		}
+
+		if result < ind.minValue {
+			ind.minValue = result
+		}
+
+		ind.valueAvailableAction(result, streamBarIndex)
+
 	} else {
 		if tickData < ind.currentLow {
 			ind.currentLow = tickData
@@ -102,23 +120,26 @@ func (ind *LLVWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 		} else {
 			ind.currentLowIndex += 1
 		}
+
+		if ind.periodHistory.Len() == ind.GetTimePeriod() {
+			var result = ind.currentLow
+
+			ind.dataLength += 1
+
+			if ind.validFromBar == -1 {
+				ind.validFromBar = streamBarIndex
+			}
+
+			if result > ind.maxValue {
+				ind.maxValue = result
+			}
+
+			if result < ind.minValue {
+				ind.minValue = result
+			}
+
+			ind.valueAvailableAction(result, streamBarIndex)
+		}
 	}
 
-	var result = ind.currentLow
-
-	ind.dataLength += 1
-
-	if ind.validFromBar == -1 {
-		ind.validFromBar = streamBarIndex
-	}
-
-	if result > ind.maxValue {
-		ind.maxValue = result
-	}
-
-	if result < ind.minValue {
-		ind.minValue = result
-	}
-
-	ind.valueAvailableAction(result, streamBarIndex)
 }
