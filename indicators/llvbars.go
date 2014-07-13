@@ -25,7 +25,7 @@ type LLVBarsWithoutStorage struct {
 // The LLVBars results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
 func NewLLVBarsWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionInt) (indicator *LLVBarsWithoutStorage, err error) {
-	newLLVBars := LLVBarsWithoutStorage{baseIndicatorWithIntBounds: newBaseIndicatorWithIntBounds(0),
+	newLLVBars := LLVBarsWithoutStorage{baseIndicatorWithIntBounds: newBaseIndicatorWithIntBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentLow:                  math.MaxFloat64,
 		currentLowIndex:             0,
@@ -95,6 +95,24 @@ func (ind *LLVBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 			}
 		}
 
+		var result = ind.currentLowIndex
+
+		ind.dataLength += 1
+
+		if ind.validFromBar == -1 {
+			ind.validFromBar = streamBarIndex
+		}
+
+		if result > ind.maxValue {
+			ind.maxValue = result
+		}
+
+		if result < ind.minValue {
+			ind.minValue = result
+		}
+
+		ind.valueAvailableAction(result, streamBarIndex)
+
 	} else {
 		if tickData < ind.currentLow {
 			ind.currentLow = tickData
@@ -102,23 +120,26 @@ func (ind *LLVBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 		} else {
 			ind.currentLowIndex += 1
 		}
+
+		if ind.periodHistory.Len() == ind.GetTimePeriod() {
+			var result = ind.currentLowIndex
+
+			ind.dataLength += 1
+
+			if ind.validFromBar == -1 {
+				ind.validFromBar = streamBarIndex
+			}
+
+			if result > ind.maxValue {
+				ind.maxValue = result
+			}
+
+			if result < ind.minValue {
+				ind.minValue = result
+			}
+
+			ind.valueAvailableAction(result, streamBarIndex)
+		}
 	}
 
-	var result = ind.currentLowIndex
-
-	ind.dataLength += 1
-
-	if ind.validFromBar == -1 {
-		ind.validFromBar = streamBarIndex
-	}
-
-	if result > ind.maxValue {
-		ind.maxValue = result
-	}
-
-	if result < ind.minValue {
-		ind.minValue = result
-	}
-
-	ind.valueAvailableAction(result, streamBarIndex)
 }
