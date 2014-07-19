@@ -28,10 +28,10 @@ func NewADXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 		return nil, ErrValueAvailableActionIsNil
 	}
 
-	// the minimum timeperiod for an ADX indicator is 2
-	if timePeriod < 2 {
-		return nil, errors.New("timePeriod is less than the minimum (2)")
-	}
+	// // the minimum timeperiod for an ADX indicator is 2
+	// if timePeriod < 2 {
+	// 	return nil, errors.New("timePeriod is less than the minimum (2)")
+	// }
 
 	// check the maximum timeperiod
 	if timePeriod > MaximumLookbackPeriod {
@@ -126,14 +126,14 @@ func NewDefaultADX() (indicator *ADX, err error) {
 
 // NewADXWithKnownSourceLength creates an Average Directional Index (ADX) for offline usage
 func NewADXWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *ADX, err error) {
-	ind, err := NewADXWithKnownSourceLength(sourceLength, timePeriod)
+	ind, err := NewADX(timePeriod)
 	ind.Data = make([]float64, 0, sourceLength)
 
 	return ind, err
 }
 
 // NewDefaultADXWithKnownSourceLength creates an Average Directional Index (ADX) for offline usage with default parameters
-func NewDefaultADXWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *ADX, err error) {
+func NewDefaultADXWithKnownSourceLength(sourceLength int) (indicator *ADX, err error) {
 
 	ind, err := NewDefaultADX()
 	ind.Data = make([]float64, 0, sourceLength)
