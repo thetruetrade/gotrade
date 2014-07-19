@@ -1,86 +1,103 @@
-// Average Directional Movement Index (ADX)
 package indicators
 
-// ADX = ( (+DI)-(-DI) ) / ( (+DI) + (-DI) )
-
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
+// An Average Directional Index (ADX), no storage
 type ADXWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
-	dx                   *DX
+	dx                   *DXWithoutStorage
 	currentDX            float64
 	sumDX                float64
 	previousADX          float64
+	timePeriod           int
 }
 
+// NewADXWithoutStorage creates an Average Directional Index (ADX) without storage
 func NewADXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ADXWithoutStorage, err error) {
 
-	newADX := ADXWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds((2 * timePeriod) - 1),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               timePeriod * -1,
-		currentDX:                   0.0,
-		sumDX:                       0.0,
-		previousADX:                 0.0}
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
 
-	newADX.valueAvailableAction = valueAvailableAction
+	// the minimum timeperiod for an ADX indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
 
-	newADX.dx, _ = NewDX(timePeriod)
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
 
-	newADX.dx.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	lookback := (2 * timePeriod) - 1
+	ind := ADXWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		timePeriod:           timePeriod,
+		periodCounter:        timePeriod * -1,
+		currentDX:            0.0,
+		sumDX:                0.0,
+		previousADX:          0.0,
+		valueAvailableAction: valueAvailableAction,
+	}
 
-		newADX.currentDX = dataItem
+	ind.dx, _ = NewDXWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 
-		newADX.periodCounter += 1
-		if newADX.periodCounter < 0 {
-			newADX.sumDX += newADX.currentDX
-		} else if newADX.periodCounter == 0 {
-			newADX.dataLength += 1
+		ind.currentDX = dataItem
 
-			if newADX.validFromBar == -1 {
-				newADX.validFromBar = streamBarIndex
+		ind.periodCounter += 1
+		if ind.periodCounter < 0 {
+			ind.sumDX += ind.currentDX
+		} else if ind.periodCounter == 0 {
+			ind.dataLength += 1
+
+			if ind.validFromBar == -1 {
+				ind.validFromBar = streamBarIndex
 			}
 
-			newADX.sumDX += newADX.currentDX
-			result := newADX.sumDX / float64(newADX.GetTimePeriod())
-			if result > newADX.maxValue {
-				newADX.maxValue = result
+			ind.sumDX += ind.currentDX
+			result := ind.sumDX / float64(ind.GetTimePeriod())
+			if result > ind.maxValue {
+				ind.maxValue = result
 			}
 
-			if result < newADX.minValue {
-				newADX.minValue = result
+			if result < ind.minValue {
+				ind.minValue = result
 			}
-			newADX.valueAvailableAction(result, streamBarIndex)
-			newADX.previousADX = result
+			ind.valueAvailableAction(result, streamBarIndex)
+			ind.previousADX = result
 
 		} else {
 
-			newADX.dataLength += 1
+			ind.dataLength += 1
 
-			result := (newADX.previousADX*float64(newADX.GetTimePeriod()-1) + newADX.currentDX) / float64(newADX.GetTimePeriod())
-			if result > newADX.maxValue {
-				newADX.maxValue = result
+			result := (ind.previousADX*float64(ind.GetTimePeriod()-1) + ind.currentDX) / float64(ind.GetTimePeriod())
+			if result > ind.maxValue {
+				ind.maxValue = result
 			}
 
-			if result < newADX.minValue {
-				newADX.minValue = result
+			if result < ind.minValue {
+				ind.minValue = result
 			}
-			newADX.valueAvailableAction(result, streamBarIndex)
-			newADX.previousADX = result
+			ind.valueAvailableAction(result, streamBarIndex)
+			ind.previousADX = result
 		}
 
-	}
+	})
 
-	return &newADX, nil
+	return &ind, nil
 }
 
-// A Directional Movement Indicator
+// A Directional Movement Indicator (ADX)
 type ADX struct {
 	*ADXWithoutStorage
 
@@ -88,25 +105,75 @@ type ADX struct {
 	Data []float64
 }
 
-// NewADX returns a new Directional Movement Indicator (ADX) configured with the
-// specified timePeriod. The ADX results are stored in the DATA field.
+// NewADX creates an Average Directional Index (ADX) for online usage
 func NewADX(timePeriod int) (indicator *ADX, err error) {
 
-	newADX := ADX{}
-	newADX.ADXWithoutStorage, err = NewADXWithoutStorage(timePeriod,
+	ind := ADX{}
+	ind.ADXWithoutStorage, err = NewADXWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newADX.Data = append(newADX.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
 
-	return &newADX, err
+	return &ind, err
 }
 
+// NewDefaultADX creates an Average Directional Index (ADX) for online usage with default parameters
+//	- timePeriod: 14
+func NewDefaultADX() (indicator *ADX, err error) {
+	timePeriod := 14
+	return NewADX(timePeriod)
+}
+
+// NewADXWithKnownSourceLength creates an Average Directional Index (ADX) for offline usage
+func NewADXWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *ADX, err error) {
+	ind, err := NewADXWithKnownSourceLength(sourceLength, timePeriod)
+	ind.Data = make([]float64, 0, sourceLength)
+
+	return ind, err
+}
+
+// NewDefaultADXWithKnownSourceLength creates an Average Directional Index (ADX) for offline usage with default parameters
+func NewDefaultADXWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *ADX, err error) {
+
+	ind, err := NewDefaultADX()
+	ind.Data = make([]float64, 0, sourceLength)
+	return ind, err
+}
+
+// NewADXForStream creates an Average Directional Index (ADX) for online usage with a source data stream
 func NewADXForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *ADX, err error) {
-	newADX, err := NewADX(timePeriod)
-	priceStream.AddTickSubscription(newADX)
-	return newADX, err
+	ind, err := NewADX(timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
 }
 
+// NewADefaultDXForStream creates an Average Directional Index (ADX) for online usage with a source data stream
+func NewDefaultADXForStream(priceStream *gotrade.DOHLCVStream) (indicator *ADX, err error) {
+	ind, err := NewDefaultADX()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewADXForStreamWithKnownSourceLength creates an Average Directional Index (ADX) for offline usage with a source data stream
+func NewADXForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *ADX, err error) {
+	ind, err := NewADXWithKnownSourceLength(sourceLength, timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultADXForStreamWithKnownSourceLength creates an Average Directional Index (ADX) for offline usage with a source data stream
+func NewDefaultADXForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *ADX, err error) {
+	ind, err := NewDefaultADXWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// GetTimePeriod returns the configured ADX timePeriod
+func (ind *ADXWithoutStorage) GetTimePeriod() int {
+	return ind.timePeriod
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *ADXWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.dx.ReceiveDOHLCVTick(tickData, streamBarIndex)
 }
