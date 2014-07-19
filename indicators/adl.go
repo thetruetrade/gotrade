@@ -1,4 +1,3 @@
-//Advance Decline Line (ADL)
 package indicators
 
 import (
@@ -10,7 +9,7 @@ type ADLWithoutStorage struct {
 	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	previousADL          float64
 }
 
@@ -18,7 +17,7 @@ type ADLWithoutStorage struct {
 // This version is intended for use by other indicators.
 // The ADL results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewADLWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *ADLWithoutStorage, err error) {
+func NewADLWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indicator *ADLWithoutStorage, err error) {
 	newADL := ADLWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0),
 		previousADL: float64(0.0)}
 	newADL.valueAvailableAction = valueAvailableAction

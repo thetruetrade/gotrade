@@ -15,14 +15,14 @@ type SMAWithoutStorage struct {
 	periodTotal          float64
 	periodHistory        *list.List
 	periodCounter        int
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
 // NewSMAWithoutStorage returns a new Simple Moving Average (SMA) configured with the
 // specified timePeriod, this version is intended for use by other indicators.
 // The SMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewSMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *SMAWithoutStorage, err error) {
+func NewSMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *SMAWithoutStorage, err error) {
 	newSMA := SMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,

@@ -13,10 +13,10 @@ type ADXRWithoutStorage struct {
 	periodCounter        int
 	periodHistory        *list.List
 	adx                  *ADXWithoutStorage
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
-func NewADXRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *ADXRWithoutStorage, err error) {
+func NewADXRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ADXRWithoutStorage, err error) {
 	newADXR := ADXRWithoutStorage{baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter: 0,
 		periodHistory: list.New()}

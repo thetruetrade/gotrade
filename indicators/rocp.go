@@ -10,12 +10,12 @@ type ROCPWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	periodHistory        *list.List
 }
 
-func NewROCPWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *ROCPWithoutStorage, err error) {
+func NewROCPWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCPWithoutStorage, err error) {
 	newROCP := ROCPWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1),

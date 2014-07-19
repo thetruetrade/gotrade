@@ -8,10 +8,10 @@ type MedPriceWithoutStorage struct {
 	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
-func NewMedPriceWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *MedPriceWithoutStorage, err error) {
+func NewMedPriceWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indicator *MedPriceWithoutStorage, err error) {
 	newVar := MedPriceWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0)}
 
 	newVar.valueAvailableAction = valueAvailableAction

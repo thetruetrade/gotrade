@@ -9,14 +9,14 @@ type RSIWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	previousClose        float64
 	previousGain         float64
 	previousLoss         float64
 }
 
-func NewRSIWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *RSIWithoutStorage, err error) {
+func NewRSIWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *RSIWithoutStorage, err error) {
 	newRSI := RSIWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1) - 1,

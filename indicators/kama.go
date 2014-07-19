@@ -21,14 +21,14 @@ type KAMAWithoutStorage struct {
 	periodROC            float64
 	previousClose        float64
 	previousKAMA         float64
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
 // NewKAMAWithoutStorage returns a new Kaufman Adaptive Moving Average (KAMA) configured with the
 // specified timePeriod, this version is intended for use by other indicators.
 // The KAMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewKAMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *KAMAWithoutStorage, err error) {
+func NewKAMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *KAMAWithoutStorage, err error) {
 	newKAMA := KAMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod + 1) * -1,

@@ -12,7 +12,7 @@ type TEMAWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	ema1                 *EMA
 	ema2                 *EMA
 	ema3                 *EMA
@@ -20,7 +20,7 @@ type TEMAWithoutStorage struct {
 	currentEMA2          float64
 }
 
-func NewTEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *TEMAWithoutStorage, err error) {
+func NewTEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *TEMAWithoutStorage, err error) {
 	newTEMA := TEMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(3 * (timePeriod - 1)),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 	newTEMA.selectData = selectData

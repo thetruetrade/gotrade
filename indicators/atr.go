@@ -11,7 +11,7 @@ type ATRWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	trueRange            *TrueRangeWithoutStorage
 	sma                  *SMAWithoutStorage
 	previousAvgTrueRange float64
@@ -22,7 +22,7 @@ type ATRWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The ATR results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewATRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *ATRWithoutStorage, err error) {
+func NewATRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ATRWithoutStorage, err error) {
 	newATR := ATRWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		multiplier:                  float64(timePeriod - 1),

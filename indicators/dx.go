@@ -13,14 +13,14 @@ type DXWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	minusDI              *MinusDI
 	plusDI               *PlusDI
 	currentPlusDI        float64
 	currentMinusDI       float64
 }
 
-func NewDXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *DXWithoutStorage, err error) {
+func NewDXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *DXWithoutStorage, err error) {
 	var lookback int = 2
 	if timePeriod > 1 {
 		lookback = timePeriod

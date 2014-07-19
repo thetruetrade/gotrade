@@ -14,10 +14,10 @@ type VarianceWithoutStorage struct {
 	periodHistory        *list.List
 	mean                 float64
 	variance             float64
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
-func NewVarianceWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *VarianceWithoutStorage, err error) {
+func NewVarianceWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *VarianceWithoutStorage, err error) {
 	newVar := VarianceWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               0,

@@ -14,7 +14,7 @@ type ChainkinOscWithoutStorage struct {
 	// private variables
 	fastTimePeriod       int
 	slowTimePeriod       int
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	adl                  *ADLWithoutStorage
 	emaFast              float64
 	emaSlow              float64
@@ -24,7 +24,7 @@ type ChainkinOscWithoutStorage struct {
 	isInitialised        bool
 }
 
-func NewChainkinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueAvailableAction ValueAvailableAction) (indicator *ChainkinOscWithoutStorage, err error) {
+func NewChainkinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ChainkinOscWithoutStorage, err error) {
 	newChainkinOsc := ChainkinOscWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(slowTimePeriod - 1),
 		slowTimePeriod:    slowTimePeriod,
 		fastTimePeriod:    fastTimePeriod,

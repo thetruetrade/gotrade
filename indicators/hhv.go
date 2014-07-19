@@ -15,7 +15,7 @@ type HHVWithoutStorage struct {
 
 	// private variables
 	periodHistory        *list.List
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	currentHigh          float64
 	currentHighIndex     int
 }
@@ -24,7 +24,7 @@ type HHVWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The HHV results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewHHVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *HHVWithoutStorage, err error) {
+func NewHHVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *HHVWithoutStorage, err error) {
 	newHHV := HHVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentHigh:                 math.SmallestNonzeroFloat64,

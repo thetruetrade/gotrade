@@ -9,13 +9,13 @@ type TRIMAWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	sma1                 *SMAWithoutStorage
 	sma2                 *SMAWithoutStorage
 	currentSMA           float64
 }
 
-func NewTRIMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *TRIMAWithoutStorage, err error) {
+func NewTRIMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *TRIMAWithoutStorage, err error) {
 	newTRIMA := TRIMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 	newTRIMA.selectData = selectData

@@ -15,14 +15,14 @@ type WMAWithoutStorage struct {
 	periodHistory        *list.List
 	periodCounter        int
 	periodWeightTotal    int
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
 // NewAttachedWMA returns a new Simple Moving Average (WMA) configured with the
 // specified timePeriod, this version is intended for use by other indicators.
 // The WMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewWMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *WMAWithoutStorage, err error) {
+func NewWMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *WMAWithoutStorage, err error) {
 	newWMA := WMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,

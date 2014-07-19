@@ -11,10 +11,10 @@ type OBVWithoutStorage struct {
 	periodCounter        int
 	previousOBV          float64
 	previousClose        float64
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
-func NewOBVWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *OBVWithoutStorage, err error) {
+func NewOBVWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indicator *OBVWithoutStorage, err error) {
 	newVar := OBVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0),
 		periodCounter: -1,
 		previousOBV:   0.0,

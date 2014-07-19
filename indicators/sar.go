@@ -10,7 +10,7 @@ type SARWithoutStorage struct {
 	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction  ValueAvailableAction
+	valueAvailableAction  ValueAvailableActionFloat
 	periodCounter         int
 	isLong                bool
 	extremePoint          float64
@@ -28,7 +28,7 @@ type SARWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The SAR results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewSARWithoutStorage(accelerationFactor float64, accelerationFactorMax float64, valueAvailableAction ValueAvailableAction) (indicator *SARWithoutStorage, err error) {
+func NewSARWithoutStorage(accelerationFactor float64, accelerationFactorMax float64, valueAvailableAction ValueAvailableActionFloat) (indicator *SARWithoutStorage, err error) {
 	newSAR := SARWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(1),
 		periodCounter:         -2,
 		isLong:                false,

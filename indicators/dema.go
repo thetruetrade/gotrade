@@ -12,13 +12,13 @@ type DEMAWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	ema1                 *EMA
 	ema2                 *EMA
 	currentEMA           float64
 }
 
-func NewDEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *DEMAWithoutStorage, err error) {
+func NewDEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *DEMAWithoutStorage, err error) {
 	newDEMA := DEMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(2 * (timePeriod - 1)),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 	newDEMA.selectData = selectData

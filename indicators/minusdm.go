@@ -11,7 +11,7 @@ type MinusDMWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	previousHigh         float64
 	previousLow          float64
@@ -22,7 +22,7 @@ type MinusDMWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The MinusDM results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewMinusDMWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *MinusDMWithoutStorage, err error) {
+func NewMinusDMWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MinusDMWithoutStorage, err error) {
 	var lookback int = 1
 	if timePeriod > 1 {
 		lookback = timePeriod - 1

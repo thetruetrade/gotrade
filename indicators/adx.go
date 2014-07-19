@@ -12,7 +12,7 @@ type ADXWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	dx                   *DX
 	currentDX            float64
@@ -20,7 +20,7 @@ type ADXWithoutStorage struct {
 	previousADX          float64
 }
 
-func NewADXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *ADXWithoutStorage, err error) {
+func NewADXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ADXWithoutStorage, err error) {
 
 	newADX := ADXWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds((2 * timePeriod) - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),

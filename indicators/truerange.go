@@ -15,10 +15,10 @@ type TrueRangeWithoutStorage struct {
 	// private variables
 	periodCounter        int
 	previousClose        float64
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
-func NewTrueRangeWithoutStorage(valueAvailableAction ValueAvailableAction) (indicator *TrueRangeWithoutStorage, err error) {
+func NewTrueRangeWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indicator *TrueRangeWithoutStorage, err error) {
 	ind := TrueRangeWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(1),
 		periodCounter: -1,
 		previousClose: 0.0}

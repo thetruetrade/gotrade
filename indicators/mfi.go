@@ -12,7 +12,7 @@ type MFIWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	typicalPrice         *TypicalPriceWithoutStorage
 	positiveMoneyFlow    float64
@@ -27,7 +27,7 @@ type MFIWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The MFI results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewMFIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *MFIWithoutStorage, err error) {
+func NewMFIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MFIWithoutStorage, err error) {
 	newMFI := MFIWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1) - 1,

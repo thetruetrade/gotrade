@@ -11,7 +11,7 @@ type MinusDIWithoutStorage struct {
 	*baseIndicatorWithTimePeriod
 
 	// private variables
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	previousHigh         float64
 	previousLow          float64
@@ -25,7 +25,7 @@ type MinusDIWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The MinusDI results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewMinusDIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *MinusDIWithoutStorage, err error) {
+func NewMinusDIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MinusDIWithoutStorage, err error) {
 	var lookback int = 1
 	if timePeriod > 1 {
 		lookback = timePeriod

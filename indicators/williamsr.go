@@ -16,14 +16,14 @@ type WILLRWithoutStorage struct {
 	periodHighHistory    *list.List
 	periodLowHistory     *list.List
 	periodCounter        int
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 }
 
 // NewWILLRWithoutStorage returns a new Simple Moving Average (WILLR) configured with the
 // specified timePeriod, this version is intended for use by other indicators.
 // The WILLR results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewWILLRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAction) (indicator *WILLRWithoutStorage, err error) {
+func NewWILLRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *WILLRWithoutStorage, err error) {
 	newWILLR := WILLRWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,

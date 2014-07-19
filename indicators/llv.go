@@ -15,7 +15,7 @@ type LLVWithoutStorage struct {
 
 	// private variables
 	periodHistory        *list.List
-	valueAvailableAction ValueAvailableAction
+	valueAvailableAction ValueAvailableActionFloat
 	currentLow           float64
 	currentLowIndex      int
 }
@@ -24,7 +24,7 @@ type LLVWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The LLV results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewLLVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableAction) (indicator *LLVWithoutStorage, err error) {
+func NewLLVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *LLVWithoutStorage, err error) {
 	newLLV := LLVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentLow:                  math.MaxFloat64,
