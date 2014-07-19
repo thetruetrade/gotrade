@@ -938,6 +938,45 @@ namespace indicatortestgenerator
 				}
 				writer.Flush ();
 			}
+
+			// STOCHRSI
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/stochrsi_14_5_3_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.StochRsiLookback(14, 5, 3, talib.Core.MAType.Sma);
+				int dataLength = closingPrices.Count - 1;
+				double[] outFastK = new double[dataLength - lookback +1];
+				double[] outFastD = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.StochRsi(0, dataLength, closingPrices.ToArray(), 14,5,3, talib.Core.MAType.Sma, out outBeginIndex, out outNBElement, outFastK, outFastD);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					for (var i=0;i< outFastK.Length;i++) 
+					{
+						writer.WriteLine ("{0}, {1}", outFastK[i].ToString(CultureInfo.InvariantCulture), outFastD[i].ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
+
+			// Momentum
+			using (var writer = new StreamWriter (@"/home/eugened/Development/go/src/github.com/thetruetrade/gotrade/testdata/mom_10_expectedresult.data")) 
+			{
+				int outBeginIndex = 0;
+				int outNBElement = 0;
+				int lookback = talib.Core.MomLookback(10);
+				int dataLength = closingPrices.Count - 1;
+				double[] outData = new double[dataLength - lookback +1];
+				talib.Core.RetCode retCode =talib.Core.Mom(0, dataLength, closingPrices.ToArray(),10, out outBeginIndex, out outNBElement, outData);
+				if (retCode == TicTacTec.TA.Library.Core.RetCode.Success) 
+				{
+					foreach (var item in outData) 
+					{
+						writer.WriteLine (item.ToString(CultureInfo.InvariantCulture));
+					}
+				}
+				writer.Flush ();
+			}
 		}
 	}
 }
