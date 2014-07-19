@@ -37,11 +37,12 @@ var (
 	ErrSourceDataEmpty                      = errors.New("Source data is empty")
 	ErrNotEnoughSourceDataForLookbackPeriod = errors.New("Source data does not contain enough data for the specfied lookback period")
 	ErrLookbackPeriodMustBeGreaterThanZero  = errors.New("Lookback period must be greater than 0")
+	ErrValueAvailableActionIsNil            = errors.New("ValueAvailableAction cannot be empty")
 
 	// lookback minimum
 	MinimumLookbackPeriod int = 0
 	// lookback maximum
-	MaximumLookbackPeriod int = 200
+	MaximumLookbackPeriod int = 100000
 )
 
 type Indicator interface {
