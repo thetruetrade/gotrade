@@ -4,28 +4,36 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-// An Accumulation Distribution Line Indicator
+// An Accumulation Distribution Line Indicator (ADL), no storage
 type ADLWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	previousADL          float64
 }
 
-// NewADLWithoutStorage returns a new Accumulation Distribution Line (ADL)
-// This version is intended for use by other indicators.
-// The ADL results are not stored in a local field but made available though the
-// configured valueAvailableAction for storage by the parent indicator.
+// NewADLWithoutStorage creates an Accumulation Distribution Line Indicator (ADL) without storage
 func NewADLWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indicator *ADLWithoutStorage, err error) {
-	newADL := ADLWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(0),
-		previousADL: float64(0.0)}
-	newADL.valueAvailableAction = valueAvailableAction
 
-	return &newADL, nil
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	ind := ADLWithoutStorage{
+		baseIndicator:        newBaseIndicator(0),
+		baseFloatBounds:      newBaseFloatBounds(),
+		previousADL:          float64(0.0),
+		valueAvailableAction: valueAvailableAction,
+	}
+
+	return &ind, nil
+
 }
 
-// An Accumulation Distribution Line Indicator
+// An Accumulation Distribution Line Indicator (ADL)
 type ADL struct {
 	*ADLWithoutStorage
 
@@ -33,23 +41,39 @@ type ADL struct {
 	Data []float64
 }
 
-// NewADL returns a new Accumulation Distribution Line (ADL)
-// The ADL results are stored in the Data field.
+// NewADL creates an Accumulation Distribution Line Indicator (ADL) for online usage
 func NewADL() (indicator *ADL, err error) {
-	newADL := ADL{}
-	newADL.ADLWithoutStorage, err = NewADLWithoutStorage(func(dataItem float64, streamBarIndex int) {
-		newADL.Data = append(newADL.Data, dataItem)
+	ind := ADL{}
+	ind.ADLWithoutStorage, err = NewADLWithoutStorage(func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	})
 
-	return &newADL, err
+	return &ind, err
 }
 
+// NewADLWithKnownSourceLength creates an Accumulation Distribution Line Indicator (ADL) for offline usage
+func NewADLWithKnownSourceLength(sourceLength int) (indicator *ADL, err error) {
+	ind, err := NewADL()
+	ind.Data = make([]float64, 0, sourceLength)
+
+	return ind, err
+}
+
+// NewADLForStream creates an Accumulation Distribution Line Indicator (ADL) for online usage with a source data stream
 func NewADLForStream(priceStream *gotrade.DOHLCVStream) (indicator *ADL, err error) {
-	newADL, err := NewADL()
-	priceStream.AddTickSubscription(newADL)
-	return newADL, err
+	ind, err := NewADL()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
 }
 
+// NewADLForStream creates an Accumulation Distribution Line Indicator (ADL) for offline usage with a source data stream
+func NewADLForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *ADL, err error) {
+	ind, err := NewADLWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *ADLWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.dataLength += 1
 
