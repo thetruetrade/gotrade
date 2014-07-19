@@ -85,9 +85,9 @@ type StochasticOsc struct {
 func NewStochasticOsc(fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochasticOsc, err error) {
 	newStochasticOsc := StochasticOsc{}
 	newStochasticOsc.StochasticOscWithoutStorage, err = NewStochasticOscWithoutStorage(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod,
-		func(dataItemSlowK float64, dataItemSlowD float64, streamBarIndex int) {
-			newStochasticOsc.SlowK = append(newStochasticOsc.SlowK, dataItemSlowK)
-			newStochasticOsc.SlowD = append(newStochasticOsc.SlowD, dataItemSlowD)
+		func(dataItemK float64, dataItemD float64, streamBarIndex int) {
+			newStochasticOsc.SlowK = append(newStochasticOsc.SlowK, dataItemK)
+			newStochasticOsc.SlowD = append(newStochasticOsc.SlowD, dataItemD)
 		})
 
 	return &newStochasticOsc, err

@@ -93,10 +93,12 @@ func UseVolume(dataItem DOHLCV) float64 {
 	return dataItem.V()
 }
 
+// Consumer of DOHLCV Ticks
 type DOHLCVTickReceiver interface {
 	ReceiveDOHLCVTick(tickData DOHLCV, streamBarIndex int)
 }
 
+// Consumer of a float tick
 type TickReceiver interface {
 	ReceiveTick(tickData float64, streamBarIndex int)
 }
