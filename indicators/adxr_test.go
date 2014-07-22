@@ -5,15 +5,15 @@ import (
 	. "github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when calculating an average directional movement rating (ADXR) with DOHLCV source data", func() {
+var _ = Describe("when calculating an average directional movement rating (Adxr) with DOHLCV source data", func() {
 	var (
 		period    int = 4
-		indicator *ADXR
+		indicator *Adxr
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewADXR(period)
+		indicator, _ = NewAdxr(period)
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {
 				return GetFloatDataMax(indicator.Data)

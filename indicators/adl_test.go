@@ -7,12 +7,12 @@ import (
 
 var _ = Describe("when calculating an accumulation distribution line (adl) with DOHLCV source data", func() {
 	var (
-		indicator *indicators.ADL
+		indicator *indicators.Adl
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewADL()
+		indicator, _ = indicators.NewAdl()
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {
 				return GetFloatDataMax(indicator.Data)
