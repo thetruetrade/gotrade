@@ -2,15 +2,15 @@ package indicators
 
 import (
 	"container/list"
+	"errors"
 	"github.com/thetruetrade/gotrade"
 	"math"
 )
 
-// Aroon Up = 100 x (25 - Days Since 25-day High)/25
-// Aroon Down = 100 x (25 - Days Since 25-day Low)/25
+// An Aroon (Aroon), no storage, for use in other indicators
 type AroonWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	periodCounter        int
@@ -18,43 +18,115 @@ type AroonWithoutStorage struct {
 	periodLowHistory     *list.List
 	valueAvailableAction ValueAvailableActionAroon
 	aroonFactor          float64
+	timePeriod           int
 }
 
+// NewAroonWithoutStorage creates an Aroon (Aroon) without storage
 func NewAroonWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionAroon) (indicator *AroonWithoutStorage, err error) {
-	ind := AroonWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               (timePeriod + 1) * -1,
-		periodHighHistory:           list.New(),
-		periodLowHistory:            list.New()}
-	ind.valueAvailableAction = valueAvailableAction
-	ind.aroonFactor = 100.0 / float64(timePeriod)
+
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for an Aroon indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod
+	ind := AroonWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		periodCounter:        (timePeriod + 1) * -1,
+		periodHighHistory:    list.New(),
+		periodLowHistory:     list.New(),
+		valueAvailableAction: valueAvailableAction,
+		aroonFactor:          100.0 / float64(timePeriod),
+	}
 
 	return &ind, nil
 }
 
+// An Aroon (Aroon)
 type Aroon struct {
 	*AroonWithoutStorage
 
+	// public variables
 	Up   []float64
 	Down []float64
 }
 
+// NewAroon creates an Aroon (Aroon) for online usage
 func NewAroon(timePeriod int) (indicator *Aroon, err error) {
-	newAroon := Aroon{}
-	newAroon.AroonWithoutStorage, err = NewAroonWithoutStorage(timePeriod,
+	ind := Aroon{}
+	ind.AroonWithoutStorage, err = NewAroonWithoutStorage(timePeriod,
 		func(dataItemAroonUp float64, dataItemAroonDown float64, streamBarIndex int) {
-			newAroon.Up = append(newAroon.Up, dataItemAroonUp)
-			newAroon.Down = append(newAroon.Down, dataItemAroonDown)
+			ind.Up = append(ind.Up, dataItemAroonUp)
+			ind.Down = append(ind.Down, dataItemAroonDown)
 		})
-	return &newAroon, err
+	return &ind, err
 }
 
+// NewDefaultAroon creates an Aroon (Aroon) for online usage with default parameters
+//	- timePeriod: 14
+func NewDefaultAroon() (indicator *Aroon, err error) {
+	timePeriod := 14
+	return NewAroon(timePeriod)
+}
+
+// NewAroonWithKnownSourceLength creates an Aroon (Aroon) for offline usage
+func NewAroonWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Aroon, err error) {
+	ind, err := NewAroon(timePeriod)
+	ind.Up = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	ind.Down = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultAroonWithKnownSourceLength creates an Aroon (Aroon) for offline usage with default parameters
+func NewDefaultAroonWithKnownSourceLength(sourceLength int) (indicator *Aroon, err error) {
+
+	ind, err := NewDefaultAroon()
+	ind.Up = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	ind.Down = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewAroonForStream creates an Aroon (Aroon) for online usage with a source data stream
 func NewAroonForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Aroon, err error) {
 	ind, err := NewAroon(timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
+// NewDefaultAroonForStream creates an Aroon (Aroon) for online usage with a source data stream
+func NewDefaultAroonForStream(priceStream *gotrade.DOHLCVStream) (indicator *Aroon, err error) {
+	ind, err := NewDefaultAroon()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewAroonForStreamWithKnownSourceLength creates an Aroon (Aroon) for online usage with a source data stream
+func NewAroonForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Aroon, err error) {
+	ind, err := NewAroonWithKnownSourceLength(sourceLength, timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultAroonForStreamWithKnownSourceLength creates an Aroon (Aroon) for online usage with a source data stream
+func NewDefaultAroonForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Aroon, err error) {
+	ind, err := NewDefaultAroonWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.periodCounter += 1
 	ind.periodHighHistory.PushBack(tickData.H())
@@ -71,6 +143,7 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 		ind.dataLength += 1
 
 		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
 			ind.validFromBar = streamBarIndex
 		}
 
@@ -106,15 +179,18 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 
 		aroonUp = ind.aroonFactor * float64(ind.GetLookbackPeriod()-daysSinceHigh)
 		aroonDwn = ind.aroonFactor * float64(ind.GetLookbackPeriod()-daysSinceLow)
+
+		// update the maximum result value
 		if aroonUp > ind.maxValue {
 			ind.maxValue = aroonUp
 		}
 
+		// update the minimum result value
 		if aroonDwn < ind.minValue {
 			ind.minValue = aroonDwn
 		}
 
+		// notify of a new result value though the value available action
 		ind.valueAvailableAction(aroonUp, aroonDwn, streamBarIndex)
 	}
-
 }
