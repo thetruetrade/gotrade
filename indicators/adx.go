@@ -156,7 +156,7 @@ func NewAdxForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicat
 	return ind, err
 }
 
-// NewADefaultDXForStream creates an Average Directional Index (Adx) for online usage with a source data stream
+// NewDefaultAdxForStream creates an Average Directional Index (Adx) for online usage with a source data stream
 func NewDefaultAdxForStream(priceStream *gotrade.DOHLCVStream) (indicator *Adx, err error) {
 	ind, err := NewDefaultAdx()
 	priceStream.AddTickSubscription(ind)
