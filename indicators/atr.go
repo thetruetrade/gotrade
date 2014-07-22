@@ -1,105 +1,177 @@
-// Average True Range (ATR)
 package indicators
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-// An Average True Range Indicator
-type ATRWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// An Average True Range (Atr), no storage, for use in other indicators
+type AtrWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	trueRange            *TrueRangeWithoutStorage
-	sma                  *SMAWithoutStorage
+	sma                  *SmaWithoutStorage
 	previousAvgTrueRange float64
 	multiplier           float64
+	timePeriod           int
 }
 
-// NewATRWithoutStorage returns a new Average True Range (ATR) configured with the
-// specified timePeriod, this version is intended for use by other indicators.
-// The ATR results are not stored in a local field but made available though the
-// configured valueAvailableAction for storage by the parent indicator.
-func NewATRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ATRWithoutStorage, err error) {
-	newATR := ATRWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		multiplier:                  float64(timePeriod - 1),
-		previousAvgTrueRange:        -1}
-	newATR.valueAvailableAction = valueAvailableAction
-	newATR.sma, err = NewSMAWithoutStorage(timePeriod, nil, func(dataItem float64, streamBarIndex int) {
-		newATR.previousAvgTrueRange = dataItem
+// NewAtrWithoutStorage creates an Average True Range (Atr) without storage
+func NewAtrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *AtrWithoutStorage, err error) {
 
-		newATR.dataLength += 1
-		if newATR.validFromBar == -1 {
-			newATR.validFromBar = streamBarIndex
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for an Atr indicator is 1
+	if timePeriod < 1 {
+		return nil, errors.New("timePeriod is less than the minimum (1)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod
+	ind := AtrWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		multiplier:           float64(timePeriod - 1),
+		previousAvgTrueRange: -1,
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
+
+	ind.sma, err = NewSmaWithoutStorage(timePeriod, nil, func(dataItem float64, streamBarIndex int) {
+		ind.previousAvgTrueRange = dataItem
+
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
-		if dataItem > newATR.maxValue {
-			newATR.maxValue = dataItem
+		// update the maximum result value
+		if dataItem > ind.maxValue {
+			ind.maxValue = dataItem
 		}
 
-		if dataItem < newATR.minValue {
-			newATR.minValue = dataItem
+		// update the minimum result value
+		if dataItem < ind.minValue {
+			ind.minValue = dataItem
 		}
-		newATR.valueAvailableAction(dataItem, streamBarIndex)
+
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(dataItem, streamBarIndex)
 	})
 
-	newATR.trueRange, err = NewTrueRangeWithoutStorage(func(dataItem float64, streamBarIndex int) {
+	ind.trueRange, err = NewTrueRangeWithoutStorage(func(dataItem float64, streamBarIndex int) {
 
-		if newATR.previousAvgTrueRange == -1 {
-			newATR.sma.ReceiveTick(dataItem, streamBarIndex)
+		if ind.previousAvgTrueRange == -1 {
+			ind.sma.ReceiveTick(dataItem, streamBarIndex)
 		} else {
 
-			newATR.dataLength += 1
+			// increment the number of results this indicator can be expected to return
+			ind.dataLength += 1
 
-			avgTrueRange := ((newATR.previousAvgTrueRange * newATR.multiplier) + dataItem) / float64(newATR.GetTimePeriod())
+			result := ((ind.previousAvgTrueRange * ind.multiplier) + dataItem) / float64(ind.timePeriod)
 
-			if avgTrueRange > newATR.maxValue {
-				newATR.maxValue = avgTrueRange
+			// update the maximum result value
+			if result > ind.maxValue {
+				ind.maxValue = result
 			}
 
-			if avgTrueRange < newATR.minValue {
-				newATR.minValue = avgTrueRange
+			// update the minimum result value
+			if result < ind.minValue {
+				ind.minValue = result
 			}
 
-			newATR.valueAvailableAction(avgTrueRange, streamBarIndex)
+			ind.valueAvailableAction(result, streamBarIndex)
 
 			// update the previous true range for the next tick
-			newATR.previousAvgTrueRange = avgTrueRange
+			ind.previousAvgTrueRange = result
 		}
 
 	})
-	return &newATR, nil
+	return &ind, nil
 }
 
 // An Average True Range Indicator
-type ATR struct {
-	*ATRWithoutStorage
+type Atr struct {
+	*AtrWithoutStorage
 
 	// public variables
 	Data []float64
 }
 
-// NewATR returns a new Average True Range (ATR) configured with the
-// specified timePeriod. The ATR results are stored in the Data field.
-func NewATR(timePeriod int) (indicator *ATR, err error) {
-	newATR := ATR{}
-	newATR.ATRWithoutStorage, err = NewATRWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newATR.Data = append(newATR.Data, dataItem)
+// NewAtr creates an Average True Range (Atr) for online usage
+func NewAtr(timePeriod int) (indicator *Atr, err error) {
+	newAtr := Atr{}
+	newAtr.AtrWithoutStorage, err = NewAtrWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		newAtr.Data = append(newAtr.Data, dataItem)
 	})
 
-	return &newATR, err
+	return &newAtr, err
 }
 
-func NewATRForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *ATR, err error) {
-	newATR, err := NewATR(timePeriod)
-	priceStream.AddTickSubscription(newATR)
-	return newATR, err
+// NewDefaultAtr creates an Average True Range (Atr) for online usage with default parameters
+//	- timePeriod: 14
+func NewDefaultAtr() (indicator *Atr, err error) {
+	timePeriod := 14
+	return NewAtr(timePeriod)
 }
 
-func (ind *ATRWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewAtrWithKnownSourceLength creates an Average True Range (Atr) for offline usage
+func NewAtrWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Atr, err error) {
+	ind, err := NewAtr(timePeriod)
+	ind.Data = make([]float64, 0, sourceLength)
+
+	return ind, err
+}
+
+// NewDefaultAtrWithKnownSourceLength creates an Average True Range (Atr) for offline usage with default parameters
+func NewDefaultAtrWithKnownSourceLength(sourceLength int) (indicator *Atr, err error) {
+
+	ind, err := NewDefaultAtr()
+	ind.Data = make([]float64, 0, sourceLength)
+	return ind, err
+}
+
+// NewAtrForStream creates an Average True Range (Atr) for online usage with a source data stream
+func NewAtrForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Atr, err error) {
+	ind, err := NewAtr(timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultAtrForStream creates an Average True Range (Atr) for online usage with a source data stream
+func NewDefaultAtrForStream(priceStream *gotrade.DOHLCVStream) (indicator *Atr, err error) {
+	ind, err := NewDefaultAtr()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewAtrForStreamWithKnownSourceLength creates an Average True Range (Atr) for offline usage with a source data stream
+func NewAtrForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Atr, err error) {
+	ind, err := NewAtrWithKnownSourceLength(sourceLength, timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultAtrForStreamWithKnownSourceLength creates an Average True Range (Atr) for offline usage with a source data stream
+func NewDefaultAtrForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Atr, err error) {
+	ind, err := NewDefaultAtrWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+func (ind *AtrWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	// update the current true range
 	ind.trueRange.ReceiveDOHLCVTick(tickData, streamBarIndex)
 }

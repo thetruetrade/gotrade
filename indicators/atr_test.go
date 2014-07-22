@@ -8,12 +8,12 @@ import (
 var _ = Describe("when calculating an average true range (atr) with DOHLCV source data", func() {
 	var (
 		period    int = 14
-		indicator *indicators.ATR
+		indicator *indicators.Atr
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewATR(period)
+		indicator, _ = indicators.NewAtr(period)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {
