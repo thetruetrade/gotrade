@@ -4,7 +4,7 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-// An Accumulation Distribution Line Indicator (ADL), no storage
+// An Accumulation Distribution Line Indicator (ADL), no storage, for use in other indicators
 type ADLWithoutStorage struct {
 	*baseIndicator
 	*baseFloatBounds
@@ -30,7 +30,6 @@ func NewADLWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indic
 	}
 
 	return &ind, nil
-
 }
 
 // An Accumulation Distribution Line Indicator (ADL)
@@ -66,7 +65,7 @@ func NewADLForStream(priceStream *gotrade.DOHLCVStream) (indicator *ADL, err err
 	return ind, err
 }
 
-// NewADLForStream creates an Accumulation Distribution Line Indicator (ADL) for offline usage with a source data stream
+// NewADLForStreamWithKnownSourceLength creates an Accumulation Distribution Line Indicator (ADL) for offline usage with a source data stream
 func NewADLForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *ADL, err error) {
 	ind, err := NewADLWithKnownSourceLength(sourceLength)
 	priceStream.AddTickSubscription(ind)
@@ -75,25 +74,30 @@ func NewADLForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade
 
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *ADLWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	// increment the number of results this indicator can be expected to return
 	ind.dataLength += 1
 
 	moneyFlowMultiplier := ((tickData.C() - tickData.L()) - (tickData.H() - tickData.C())) / (tickData.H() - tickData.L())
 	moneyFlowVolume := moneyFlowMultiplier * tickData.V()
-	ADL := ind.previousADL + moneyFlowVolume
+	result := ind.previousADL + moneyFlowVolume
 
 	if ind.validFromBar == -1 {
+		// set the streamBarIndex from which this indicator returns valid results
 		ind.validFromBar = streamBarIndex
 	}
 
-	if ADL > ind.maxValue {
-		ind.maxValue = ADL
+	// update the maximum result value
+	if result > ind.maxValue {
+		ind.maxValue = result
 	}
 
-	if ADL < ind.minValue {
-		ind.minValue = ADL
+	// update the minimum result value
+	if result < ind.minValue {
+		ind.minValue = result
 	}
 
-	ind.valueAvailableAction(ADL, streamBarIndex)
+	// notify of a new result value though the value available action
+	ind.valueAvailableAction(result, streamBarIndex)
 
-	ind.previousADL = ADL
+	ind.previousADL = result
 }
