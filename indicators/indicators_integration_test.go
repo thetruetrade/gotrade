@@ -9,7 +9,7 @@ import (
 
 var _ = Describe("when executing the gotrade simple moving average with a years data and known output", func() {
 	var (
-		sma             *indicators.SMA
+		sma             *indicators.Sma
 		period          int
 		expectedResults []float64
 		err             error
@@ -26,7 +26,7 @@ var _ = Describe("when executing the gotrade simple moving average with a years 
 
 		BeforeEach(func() {
 			period = 10
-			sma, err = indicators.NewSMA(period, gotrade.UseClosePrice)
+			sma, err = indicators.NewSma(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(sma)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -443,7 +443,7 @@ var _ = Describe("when executing the gotrade truerange with a years data and kno
 
 var _ = Describe("when executing the gotrade average truerange with a years data and known output", func() {
 	var (
-		avgTrueRange    *indicators.ATR
+		avgTrueRange    *indicators.Atr
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -458,7 +458,7 @@ var _ = Describe("when executing the gotrade average truerange with a years data
 	Describe("using an implicit lookback period of 14", func() {
 
 		BeforeEach(func() {
-			avgTrueRange, err = indicators.NewATR(14)
+			avgTrueRange, err = indicators.NewAtr(14)
 			priceStream.AddTickSubscription(avgTrueRange)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -477,7 +477,7 @@ var _ = Describe("when executing the gotrade average truerange with a years data
 
 var _ = Describe("when executing the gotrade accumulation distribution line with a years data and known output", func() {
 	var (
-		adl             *indicators.ADL
+		adl             *indicators.Adl
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -492,7 +492,7 @@ var _ = Describe("when executing the gotrade accumulation distribution line with
 	Describe("using no lookback", func() {
 
 		BeforeEach(func() {
-			adl, err = indicators.NewADL()
+			adl, err = indicators.NewAdl()
 			priceStream.AddTickSubscription(adl)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -991,7 +991,7 @@ var _ = Describe("when executing the gotrade directional movement indicator (14)
 
 var _ = Describe("when executing the gotrade average directional movement indicator (14) with a years data and known output", func() {
 	var (
-		adx             *indicators.ADX
+		adx             *indicators.Adx
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1006,7 +1006,7 @@ var _ = Describe("when executing the gotrade average directional movement indica
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			adx, err = indicators.NewADX(14)
+			adx, err = indicators.NewAdx(14)
 			priceStream.AddTickSubscription(adx)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1025,7 +1025,7 @@ var _ = Describe("when executing the gotrade average directional movement indica
 
 var _ = Describe("when executing the gotrade average directional movement rating (14) with a years data and known output", func() {
 	var (
-		adxr            *indicators.ADXR
+		adxr            *indicators.Adxr
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1040,41 +1040,7 @@ var _ = Describe("when executing the gotrade average directional movement rating
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			adxr, err = indicators.NewADXR(14)
-			priceStream.AddTickSubscription(adxr)
-			csvFeed.FillDOHLCVStream(priceStream)
-		})
-
-		It("the result set should have a length equal to the source data length", func() {
-			Expect(adxr.Length()).To(Equal(len(priceStream.Data) - adxr.GetLookbackPeriod()))
-		})
-
-		It("it should have correctly calculated the average directional rating for each item in the result set accurate to two decimal places", func() {
-			for k := range expectedResults {
-				Expect(expectedResults[k]).To(BeNumerically("~", adxr.Data[k], 0.01))
-			}
-		})
-	})
-})
-
-var _ = Describe("when executing the gotrade average directional movement rating (1) with a years data and known output", func() {
-	var (
-		adxr            *indicators.ADXR
-		expectedResults []float64
-		err             error
-		priceStream     *gotrade.InterDayDOHLCVStream
-	)
-
-	BeforeEach(func() {
-		// load the expected results data
-		expectedResults, _ = LoadCSVPriceDataFromFile("adxr_1_expectedresult.data")
-		priceStream = gotrade.NewDailyDOHLCVStream()
-	})
-
-	Describe("using a time period of 1", func() {
-
-		BeforeEach(func() {
-			adxr, err = indicators.NewADXR(1)
+			adxr, err = indicators.NewAdxr(14)
 			priceStream.AddTickSubscription(adxr)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

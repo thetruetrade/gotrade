@@ -17,7 +17,7 @@ type VarianceWithoutStorage struct {
 	valueAvailableAction ValueAvailableActionFloat
 }
 
-func NewVarianceWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *VarianceWithoutStorage, err error) {
+func NewVarianceWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *VarianceWithoutStorage, err error) {
 	newVar := VarianceWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               0,
@@ -25,7 +25,6 @@ func NewVarianceWithoutStorage(timePeriod int, selectData gotrade.DataSelectionF
 		mean:                        0.0,
 		variance:                    0.0}
 
-	newVar.selectData = selectData
 	newVar.valueAvailableAction = valueAvailableAction
 
 	return &newVar, nil
@@ -33,14 +32,15 @@ func NewVarianceWithoutStorage(timePeriod int, selectData gotrade.DataSelectionF
 
 type Variance struct {
 	*VarianceWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 func NewVariance(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Variance, err error) {
-	newVar := Variance{}
-	newVar.VarianceWithoutStorage, err = NewVarianceWithoutStorage(timePeriod, selectData,
+	newVar := Variance{selectData: selectData}
+	newVar.VarianceWithoutStorage, err = NewVarianceWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newVar.Data = append(newVar.Data, dataItem)
 		})
@@ -54,7 +54,7 @@ func NewVarianceForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, sel
 	return newVar, err
 }
 
-func (ind *VarianceWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *Variance) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

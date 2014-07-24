@@ -6,14 +6,15 @@ import (
 
 type LinearRegSlope struct {
 	*LinearRegWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 func NewLinearRegSlope(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinearRegSlope, err error) {
-	newInd := LinearRegSlope{}
-	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod, selectData,
+	newInd := LinearRegSlope{selectData: selectData}
+	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := slope
 
@@ -35,4 +36,9 @@ func NewLinearRegSlopeForStream(priceStream *gotrade.DOHLCVStream, timePeriod in
 	newInd, err := NewLinearRegSlope(timePeriod, selectData)
 	priceStream.AddTickSubscription(newInd)
 	return newInd, err
+}
+
+func (ind *LinearRegSlope) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ind.selectData(tickData)
+	ind.ReceiveTick(selectedData, streamBarIndex)
 }

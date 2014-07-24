@@ -16,7 +16,7 @@ type RSIWithoutStorage struct {
 	previousLoss         float64
 }
 
-func NewRSIWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *RSIWithoutStorage, err error) {
+func NewRSIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *RSIWithoutStorage, err error) {
 	newRSI := RSIWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1) - 1,
@@ -24,7 +24,6 @@ func NewRSIWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, 
 		previousGain:                0.0,
 		previousLoss:                0.0}
 
-	newRSI.selectData = selectData
 	newRSI.valueAvailableAction = valueAvailableAction
 
 	return &newRSI, err
@@ -33,6 +32,7 @@ func NewRSIWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, 
 // A Relative Strength Indicator
 type RSI struct {
 	*RSIWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -41,8 +41,8 @@ type RSI struct {
 // NewRSI returns a new Relative Strength Indicator(RSI) configured with the
 // specified timePeriod. The RSI results are stored in the DATA field.
 func NewRSI(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RSI, err error) {
-	newRSI := RSI{}
-	newRSI.RSIWithoutStorage, err = NewRSIWithoutStorage(timePeriod, selectData,
+	newRSI := RSI{selectData: selectData}
+	newRSI.RSIWithoutStorage, err = NewRSIWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newRSI.Data = append(newRSI.Data, dataItem)
 		})
@@ -59,7 +59,7 @@ func NewRSIForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectDa
 	return newRSI, err
 }
 
-func (ind *RSIWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *RSI) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

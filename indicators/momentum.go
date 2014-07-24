@@ -15,13 +15,12 @@ type MomentumWithoutStorage struct {
 	periodHistory        *list.List
 }
 
-func NewMomentumWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *MomentumWithoutStorage, err error) {
+func NewMomentumWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MomentumWithoutStorage, err error) {
 	newMomentum := MomentumWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1),
 		periodHistory:               list.New()}
 
-	newMomentum.selectData = selectData
 	newMomentum.valueAvailableAction = valueAvailableAction
 
 	return &newMomentum, err
@@ -30,6 +29,7 @@ func NewMomentumWithoutStorage(timePeriod int, selectData gotrade.DataSelectionF
 // A Momentum Indicator
 type Momentum struct {
 	*MomentumWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -38,8 +38,8 @@ type Momentum struct {
 // NewMomentum returns a new Momentum Indicator(Momentum) configured with the
 // specified timePeriod. The Momentum results are stored in the DATA field.
 func NewMomentum(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Momentum, err error) {
-	newMomentum := Momentum{}
-	newMomentum.MomentumWithoutStorage, err = NewMomentumWithoutStorage(timePeriod, selectData,
+	newMomentum := Momentum{selectData: selectData}
+	newMomentum.MomentumWithoutStorage, err = NewMomentumWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newMomentum.Data = append(newMomentum.Data, dataItem)
 		})
@@ -56,7 +56,7 @@ func NewMomentumForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, sel
 	return newMomentum, err
 }
 
-func (ind *MomentumWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *Momentum) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

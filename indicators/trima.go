@@ -10,15 +10,15 @@ type TRIMAWithoutStorage struct {
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
-	sma1                 *SMAWithoutStorage
-	sma2                 *SMAWithoutStorage
-	currentSMA           float64
+	sma1                 *SmaWithoutStorage
+	sma2                 *SmaWithoutStorage
+	currentSma           float64
 }
 
-func NewTRIMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *TRIMAWithoutStorage, err error) {
+func NewTRIMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *TRIMAWithoutStorage, err error) {
 	newTRIMA := TRIMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
-	newTRIMA.selectData = selectData
+
 	newTRIMA.valueAvailableAction = valueAvailableAction
 
 	var sma1Period int
@@ -34,12 +34,12 @@ func NewTRIMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc
 		sma2Period = (timePeriod + 1) / 2
 	}
 
-	newTRIMA.sma1, err = NewSMAWithoutStorage(sma1Period, selectData, func(dataItem float64, streamBarIndex int) {
-		newTRIMA.currentSMA = dataItem
+	newTRIMA.sma1, err = NewSmaWithoutStorage(sma1Period, func(dataItem float64, streamBarIndex int) {
+		newTRIMA.currentSma = dataItem
 		newTRIMA.sma2.ReceiveTick(dataItem, streamBarIndex)
 	})
 
-	newTRIMA.sma2, _ = NewSMAWithoutStorage(sma2Period, selectData, func(dataItem float64, streamBarIndex int) {
+	newTRIMA.sma2, _ = NewSmaWithoutStorage(sma2Period, func(dataItem float64, streamBarIndex int) {
 		newTRIMA.dataLength += 1
 		if newTRIMA.validFromBar == -1 {
 			newTRIMA.validFromBar = streamBarIndex
@@ -64,7 +64,7 @@ func NewTRIMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc
 // A Triangular Moving Average Indicator
 type TRIMA struct {
 	*TRIMAWithoutStorage
-
+	selectData gotrade.DataSelectionFunc
 	// public variables
 	Data []float64
 }
@@ -72,8 +72,8 @@ type TRIMA struct {
 // NewTRIMA returns a new TriangularMoving Average (TRIMA) configured with the
 // specified timePeriod. The TRIMA results are stored in the DATA field.
 func NewTRIMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TRIMA, err error) {
-	newTRIMA := TRIMA{}
-	newTRIMA.TRIMAWithoutStorage, err = NewTRIMAWithoutStorage(timePeriod, selectData,
+	newTRIMA := TRIMA{selectData: selectData}
+	newTRIMA.TRIMAWithoutStorage, err = NewTRIMAWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newTRIMA.Data = append(newTRIMA.Data, dataItem)
 		})
@@ -86,7 +86,7 @@ func NewTRIMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, select
 	return newTRIMA, err
 }
 
-func (tema *TRIMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (tema *TRIMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = tema.selectData(tickData)
 	tema.ReceiveTick(selectedData, streamBarIndex)
 }

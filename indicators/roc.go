@@ -15,13 +15,12 @@ type ROCWithoutStorage struct {
 	periodHistory        *list.List
 }
 
-func NewROCWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCWithoutStorage, err error) {
+func NewROCWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCWithoutStorage, err error) {
 	newROC := ROCWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1),
 		periodHistory:               list.New()}
 
-	newROC.selectData = selectData
 	newROC.valueAvailableAction = valueAvailableAction
 
 	return &newROC, err
@@ -30,6 +29,7 @@ func NewROCWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, 
 // A Relative Strength Indicator
 type ROC struct {
 	*ROCWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -38,8 +38,8 @@ type ROC struct {
 // NewROC returns a new Rate of change (ROC) configured with the
 // specified timePeriod. The ROC results are stored in the DATA field.
 func NewROC(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *ROC, err error) {
-	newROC := ROC{}
-	newROC.ROCWithoutStorage, err = NewROCWithoutStorage(timePeriod, selectData,
+	newROC := ROC{selectData: selectData}
+	newROC.ROCWithoutStorage, err = NewROCWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newROC.Data = append(newROC.Data, dataItem)
 		})
@@ -56,7 +56,7 @@ func NewROCForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectDa
 	return newROC, err
 }
 
-func (ind *ROCWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *ROC) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

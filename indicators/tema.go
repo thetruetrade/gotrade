@@ -13,35 +13,29 @@ type TEMAWithoutStorage struct {
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
-	ema1                 *EMA
-	ema2                 *EMA
-	ema3                 *EMA
+	ema1                 *EMAWithoutStorage
+	ema2                 *EMAWithoutStorage
+	ema3                 *EMAWithoutStorage
 	currentEMA           float64
 	currentEMA2          float64
 }
 
-func NewTEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *TEMAWithoutStorage, err error) {
+func NewTEMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *TEMAWithoutStorage, err error) {
 	newTEMA := TEMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(3 * (timePeriod - 1)),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
-	newTEMA.selectData = selectData
 	newTEMA.valueAvailableAction = valueAvailableAction
 
-	newTEMA.ema1, err = NewEMA(timePeriod, selectData)
-
-	newTEMA.ema1.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	newTEMA.ema1, err = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newTEMA.currentEMA = dataItem
 		newTEMA.ema2.ReceiveTick(dataItem, streamBarIndex)
-	}
+	})
 
-	newTEMA.ema2, _ = NewEMA(timePeriod, selectData)
-	newTEMA.ema2.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	newTEMA.ema2, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newTEMA.currentEMA2 = dataItem
 		newTEMA.ema3.ReceiveTick(dataItem, streamBarIndex)
-	}
+	})
 
-	newTEMA.ema3, _ = NewEMA(timePeriod, selectData)
-
-	newTEMA.ema3.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	newTEMA.ema3, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newTEMA.dataLength += 1
 		if newTEMA.validFromBar == -1 {
 			newTEMA.validFromBar = streamBarIndex
@@ -59,7 +53,7 @@ func NewTEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc,
 		}
 
 		newTEMA.valueAvailableAction(tema, streamBarIndex)
-	}
+	})
 
 	return &newTEMA, err
 }
@@ -67,6 +61,7 @@ func NewTEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc,
 // A Double Exponential Moving Average Indicator
 type TEMA struct {
 	*TEMAWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -75,8 +70,8 @@ type TEMA struct {
 // NewTEMA returns a new Double Exponential Moving Average (TEMA) configured with the
 // specified timePeriod. The TEMA results are stored in the DATA field.
 func NewTEMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
-	newTEMA := TEMA{}
-	newTEMA.TEMAWithoutStorage, err = NewTEMAWithoutStorage(timePeriod, selectData,
+	newTEMA := TEMA{selectData: selectData}
+	newTEMA.TEMAWithoutStorage, err = NewTEMAWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newTEMA.Data = append(newTEMA.Data, dataItem)
 		})
@@ -89,7 +84,7 @@ func NewTEMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectD
 	return newTEMA, err
 }
 
-func (tema *TEMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (tema *TEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = tema.selectData(tickData)
 	tema.ReceiveTick(selectedData, streamBarIndex)
 }

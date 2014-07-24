@@ -24,13 +24,12 @@ type HHVWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The HHV results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewHHVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *HHVWithoutStorage, err error) {
+func NewHHVWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *HHVWithoutStorage, err error) {
 	newHHV := HHVWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentHigh:                 math.SmallestNonzeroFloat64,
 		currentHighIndex:            0,
 		periodHistory:               list.New()}
-	newHHV.selectData = selectData
 	newHHV.valueAvailableAction = valueAvailableAction
 
 	return &newHHV, nil
@@ -39,6 +38,7 @@ func NewHHVWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, 
 // A Highest High Value Indicator
 type HHV struct {
 	*HHVWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -47,8 +47,8 @@ type HHV struct {
 // NewHHV returns a new Highest High Value (HHV) configured with the
 // specified timePeriod. The HHV results are stored in the Data field.
 func NewHHV(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HHV, err error) {
-	newHHV := HHV{}
-	newHHV.HHVWithoutStorage, err = NewHHVWithoutStorage(timePeriod, selectData, func(dataItem float64, streamBarIndex int) {
+	newHHV := HHV{selectData: selectData}
+	newHHV.HHVWithoutStorage, err = NewHHVWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newHHV.Data = append(newHHV.Data, dataItem)
 	})
 
@@ -61,7 +61,7 @@ func NewHHVForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectDa
 	return newSma, err
 }
 
-func (ind *HHVWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *HHV) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

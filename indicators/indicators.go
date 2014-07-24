@@ -111,7 +111,6 @@ func (ind *baseIntBounds) MaxValue() int64 {
 type baseIndicator struct {
 	validFromBar   int
 	dataLength     int
-	selectData     gotrade.DataSelectionFunc
 	lookbackPeriod int
 }
 

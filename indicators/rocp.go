@@ -15,13 +15,12 @@ type ROCPWithoutStorage struct {
 	periodHistory        *list.List
 }
 
-func NewROCPWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCPWithoutStorage, err error) {
+func NewROCPWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCPWithoutStorage, err error) {
 	newROCP := ROCPWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1),
 		periodHistory:               list.New()}
 
-	newROCP.selectData = selectData
 	newROCP.valueAvailableAction = valueAvailableAction
 
 	return &newROCP, err
@@ -30,6 +29,7 @@ func NewROCPWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc,
 // A Relative Strength Indicator
 type ROCP struct {
 	*ROCPWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -38,8 +38,8 @@ type ROCP struct {
 // NewROCP returns a new Rate of change percentage (ROCP) configured with the
 // specified timePeriod. The ROCP results are stored in the DATA field.
 func NewROCP(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *ROCP, err error) {
-	newROCP := ROCP{}
-	newROCP.ROCPWithoutStorage, err = NewROCPWithoutStorage(timePeriod, selectData,
+	newROCP := ROCP{selectData: selectData}
+	newROCP.ROCPWithoutStorage, err = NewROCPWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newROCP.Data = append(newROCP.Data, dataItem)
 		})
@@ -56,7 +56,7 @@ func NewROCPForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectD
 	return newROCP, err
 }
 
-func (ind *ROCPWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *ROCP) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

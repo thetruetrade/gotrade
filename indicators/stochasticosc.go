@@ -11,8 +11,8 @@ type StochasticOscWithoutStorage struct {
 	// private variables
 	valueAvailableAction ValueAvailableActionStoch
 	periodCounter        int
-	slowKMA              *SMAWithoutStorage
-	slowDMA              *SMAWithoutStorage
+	slowKMA              *SmaWithoutStorage
+	slowDMA              *SmaWithoutStorage
 	hhv                  *HHVWithoutStorage
 	llv                  *LLVWithoutStorage
 	currentPeriodHigh    float64
@@ -28,12 +28,12 @@ func NewStochasticOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, sl
 		currentSlowDMA: 0.0,
 		periodCounter:  (fastKTimePeriod * -1)}
 
-	tmpSlowKMA, err := NewSMAWithoutStorage(slowKTimePeriod, nil, func(dataItem float64, streamBarIndex int) {
+	tmpSlowKMA, err := NewSmaWithoutStorage(slowKTimePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentSlowKMA = dataItem
 		ind.slowDMA.ReceiveTick(ind.currentSlowKMA, streamBarIndex)
 	})
 
-	tmpSlowDMA, err := NewSMAWithoutStorage(slowDTimePeriod, nil, func(dataItem float64, streamBarIndex int) {
+	tmpSlowDMA, err := NewSmaWithoutStorage(slowDTimePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentSlowDMA = dataItem
 		ind.dataLength += 1
 		if ind.validFromBar == -1 {
@@ -59,10 +59,10 @@ func NewStochasticOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, sl
 	ind.baseIndicatorWithFloatBounds = newBaseIndicatorWithFloatBounds(timePeriod)
 	ind.slowKMA = tmpSlowKMA
 	ind.slowDMA = tmpSlowDMA
-	ind.hhv, err = NewHHVWithoutStorage(fastKTimePeriod, nil, func(dataItem float64, streamBarIndex int) {
+	ind.hhv, err = NewHHVWithoutStorage(fastKTimePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentPeriodHigh = dataItem
 	})
-	ind.llv, err = NewLLVWithoutStorage(fastKTimePeriod, nil, func(dataItem float64, streamBarIndex int) {
+	ind.llv, err = NewLLVWithoutStorage(fastKTimePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentPeriodLow = dataItem
 	})
 

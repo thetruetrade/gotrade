@@ -1,4 +1,4 @@
-// Simple Moving Average (SMA)
+// Simple Moving Average (Sma)
 package indicators
 
 import (
@@ -7,7 +7,7 @@ import (
 )
 
 // A Simple Moving Average Indicator
-type SMAWithoutStorage struct {
+type SmaWithoutStorage struct {
 	*baseIndicatorWithFloatBounds
 	*baseIndicatorWithTimePeriod
 
@@ -18,52 +18,55 @@ type SMAWithoutStorage struct {
 	valueAvailableAction ValueAvailableActionFloat
 }
 
-// NewSMAWithoutStorage returns a new Simple Moving Average (SMA) configured with the
+// NewSmaWithoutStorage returns a new Simple Moving Average (Sma) configured with the
 // specified timePeriod, this version is intended for use by other indicators.
-// The SMA results are not stored in a local field but made available though the
+// The Sma results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewSMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *SMAWithoutStorage, err error) {
-	newSMA := SMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
+func NewSmaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *SmaWithoutStorage, err error) {
+	newSma := SmaWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,
 		periodHistory:               list.New()}
-	newSMA.selectData = selectData
-	newSMA.valueAvailableAction = valueAvailableAction
+	newSma.valueAvailableAction = valueAvailableAction
 
-	return &newSMA, nil
+	return &newSma, nil
 }
 
 // A Simple Moving Average Indicator
-type SMA struct {
-	*SMAWithoutStorage
+type Sma struct {
+	*SmaWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-// NewSMA returns a new Simple Moving Average (SMA) configured with the
-// specified timePeriod. The SMA results are stored in the Data field.
-func NewSMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *SMA, err error) {
-	newSMA := SMA{}
-	newSMA.SMAWithoutStorage, err = NewSMAWithoutStorage(timePeriod, selectData, func(dataItem float64, streamBarIndex int) {
-		newSMA.Data = append(newSMA.Data, dataItem)
-	})
+// NewSma returns a new Simple Moving Average (Sma) configured with the
+// specified timePeriod. The Sma results are stored in the Data field.
+func NewSma(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+	newSma := Sma{}
+	newSma.SmaWithoutStorage, err = NewSmaWithoutStorage(
+		timePeriod,
+		func(dataItem float64, streamBarIndex int) {
+			newSma.Data = append(newSma.Data, dataItem)
+		})
+	newSma.selectData = selectData
 
-	return &newSMA, err
+	return &newSma, err
 }
 
-func NewSMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *SMA, err error) {
-	newSma, err := NewSMA(timePeriod, selectData)
+func NewSmaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+	newSma, err := NewSma(timePeriod, selectData)
 	priceStream.AddTickSubscription(newSma)
 	return newSma, err
 }
 
-func (sma *SMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (sma *Sma) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = sma.selectData(tickData)
 	sma.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (sma *SMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+func (sma *SmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	sma.periodCounter += 1
 	sma.periodHistory.PushBack(tickData)
 

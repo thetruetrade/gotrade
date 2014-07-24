@@ -18,7 +18,7 @@ type LinearRegWithoutStorage struct {
 	valueAvailableAction ValueAvailableActionLinearReg
 }
 
-func NewLinearRegWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionLinearReg) (indicator *LinearRegWithoutStorage, err error) {
+func NewLinearRegWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionLinearReg) (indicator *LinearRegWithoutStorage, err error) {
 	newVar := LinearRegWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod) * -1,
@@ -30,7 +30,6 @@ func NewLinearRegWithoutStorage(timePeriod int, selectData gotrade.DataSelection
 	newVar.sumXSquare = timePeriodF * timePeriodFMinusOne * (2.0*timePeriodF - 1.0) / 6.0
 	newVar.divisor = newVar.sumX*newVar.sumX - timePeriodF*newVar.sumXSquare
 
-	newVar.selectData = selectData
 	newVar.valueAvailableAction = valueAvailableAction
 
 	return &newVar, nil
@@ -38,14 +37,15 @@ func NewLinearRegWithoutStorage(timePeriod int, selectData gotrade.DataSelection
 
 type LinearReg struct {
 	*LinearRegWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 func NewLinearReg(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinearReg, err error) {
-	newVar := LinearReg{}
-	newVar.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod, selectData,
+	newVar := LinearReg{selectData: selectData}
+	newVar.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			newVar.Data = append(newVar.Data, dataItem)
 
@@ -67,7 +67,7 @@ func NewLinearRegForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, se
 	return newVar, err
 }
 
-func (ind *LinearRegWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *LinearReg) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

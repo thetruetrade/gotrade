@@ -6,14 +6,15 @@ import (
 
 type TSF struct {
 	*LinearRegWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 func NewTSF(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TSF, err error) {
-	newInd := TSF{}
-	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod, selectData,
+	newInd := TSF{selectData: selectData}
+	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := intercept + slope*float64(timePeriod)
 
@@ -35,4 +36,9 @@ func NewTSFForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectDa
 	newInd, err := NewTSF(timePeriod, selectData)
 	priceStream.AddTickSubscription(newInd)
 	return newInd, err
+}
+
+func (ind *TSF) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ind.selectData(tickData)
+	ind.ReceiveTick(selectedData, streamBarIndex)
 }

@@ -112,7 +112,7 @@ func NewDefaultAdxr() (indicator *Adxr, err error) {
 // NewAdxrWithKnownSourceLength creates an Average Directional Index Rating (Adxr) for offline usage
 func NewAdxrWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Adxr, err error) {
 	ind, err := NewAdxr(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
@@ -121,7 +121,7 @@ func NewAdxrWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *
 func NewDefaultAdxrWithKnownSourceLength(sourceLength int) (indicator *Adxr, err error) {
 
 	ind, err := NewDefaultAdxr()
-	ind.Data = make([]float64, 0, sourceLength)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
 }
 

@@ -7,14 +7,15 @@ import (
 
 type LinearRegAngle struct {
 	*LinearRegWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 func NewLinearRegAngle(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinearRegAngle, err error) {
-	newInd := LinearRegAngle{}
-	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod, selectData,
+	newInd := LinearRegAngle{selectData: selectData}
+	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := math.Atan(slope) * (180.0 / math.Pi)
 
@@ -36,4 +37,9 @@ func NewLinearRegAngleForStream(priceStream *gotrade.DOHLCVStream, timePeriod in
 	newInd, err := NewLinearRegAngle(timePeriod, selectData)
 	priceStream.AddTickSubscription(newInd)
 	return newInd, err
+}
+
+func (ind *LinearRegAngle) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ind.selectData(tickData)
+	ind.ReceiveTick(selectedData, streamBarIndex)
 }

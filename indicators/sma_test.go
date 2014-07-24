@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a simple moving average (sma) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *indicators.SMA
+		indicator *indicators.Sma
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewSMA(period, gotrade.UseClosePrice)
+		indicator, _ = indicators.NewSma(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

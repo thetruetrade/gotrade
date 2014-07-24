@@ -24,13 +24,12 @@ type LLVBarsWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The LLVBars results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewLLVBarsWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionInt) (indicator *LLVBarsWithoutStorage, err error) {
+func NewLLVBarsWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionInt) (indicator *LLVBarsWithoutStorage, err error) {
 	newLLVBars := LLVBarsWithoutStorage{baseIndicatorWithIntBounds: newBaseIndicatorWithIntBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		currentLow:                  math.MaxFloat64,
 		currentLowIndex:             0,
 		periodHistory:               list.New()}
-	newLLVBars.selectData = selectData
 	newLLVBars.valueAvailableAction = valueAvailableAction
 
 	return &newLLVBars, nil
@@ -39,6 +38,7 @@ func NewLLVBarsWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFu
 // A Lowest Low Value Indicator
 type LLVBars struct {
 	*LLVBarsWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []int64
@@ -47,8 +47,8 @@ type LLVBars struct {
 // NewLLVBars returns a new Lowest Low Value (LLVBars) configured with the
 // specified timePeriod. The LLVBars results are stored in the Data field.
 func NewLLVBars(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LLVBars, err error) {
-	newLLVBars := LLVBars{}
-	newLLVBars.LLVBarsWithoutStorage, err = NewLLVBarsWithoutStorage(timePeriod, selectData, func(dataItem int64, streamBarIndex int) {
+	newLLVBars := LLVBars{selectData: selectData}
+	newLLVBars.LLVBarsWithoutStorage, err = NewLLVBarsWithoutStorage(timePeriod, func(dataItem int64, streamBarIndex int) {
 		newLLVBars.Data = append(newLLVBars.Data, dataItem)
 	})
 
@@ -61,7 +61,7 @@ func NewLLVBarsForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, sele
 	return newSma, err
 }
 
-func (ind *LLVBarsWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *LLVBars) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

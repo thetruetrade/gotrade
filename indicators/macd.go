@@ -27,6 +27,7 @@ type MACD struct {
 	currentSlowEMA       float64
 	currentMACD          float64
 	emaSlowSkip          int
+	selectData           gotrade.DataSelectionFunc
 
 	// public variables
 	MACD      []float64

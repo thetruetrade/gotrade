@@ -18,12 +18,11 @@ type EMAWithoutStorage struct {
 	valueAvailableAction ValueAvailableActionFloat
 }
 
-func NewEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *EMAWithoutStorage, err error) {
+func NewEMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *EMAWithoutStorage, err error) {
 	newEMA := EMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,
 		multiplier:                  float64(2.0 / float64(timePeriod+1.0))}
-	newEMA.selectData = selectData
 	newEMA.valueAvailableAction = valueAvailableAction
 
 	return &newEMA, err
@@ -32,6 +31,7 @@ func NewEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, 
 // An Exponential Moving Average Indicator
 type EMA struct {
 	*EMAWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -40,8 +40,8 @@ type EMA struct {
 // NewEMA returns a new Exponential Moving Average (EMA) configured with the
 // specified timePeriod. The EMA results are stored in the Data field.
 func NewEMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *EMA, err error) {
-	newEMA := EMA{}
-	newEMA.EMAWithoutStorage, err = NewEMAWithoutStorage(timePeriod, selectData,
+	newEMA := EMA{selectData: selectData}
+	newEMA.EMAWithoutStorage, err = NewEMAWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newEMA.Data = append(newEMA.Data, dataItem)
 		})
@@ -55,7 +55,7 @@ func NewEMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectDa
 	return newEma, err
 }
 
-func (ema *EMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ema *EMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ema.selectData(tickData)
 	ema.ReceiveTick(selectedData, streamBarIndex)
 }

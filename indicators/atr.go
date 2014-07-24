@@ -47,7 +47,7 @@ func NewAtrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 		timePeriod:           timePeriod,
 	}
 
-	ind.sma, err = NewSmaWithoutStorage(timePeriod, nil, func(dataItem float64, streamBarIndex int) {
+	ind.sma, err = NewSmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.previousAvgTrueRange = dataItem
 
 		// increment the number of results this indicator can be expected to return
@@ -92,6 +92,7 @@ func NewAtrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 				ind.minValue = result
 			}
 
+			// notify of a new result value though the value available action
 			ind.valueAvailableAction(result, streamBarIndex)
 
 			// update the previous true range for the next tick
@@ -112,12 +113,12 @@ type Atr struct {
 
 // NewAtr creates an Average True Range (Atr) for online usage
 func NewAtr(timePeriod int) (indicator *Atr, err error) {
-	newAtr := Atr{}
-	newAtr.AtrWithoutStorage, err = NewAtrWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newAtr.Data = append(newAtr.Data, dataItem)
+	ind := Atr{}
+	ind.AtrWithoutStorage, err = NewAtrWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	})
 
-	return &newAtr, err
+	return &ind, err
 }
 
 // NewDefaultAtr creates an Average True Range (Atr) for online usage with default parameters
@@ -130,16 +131,15 @@ func NewDefaultAtr() (indicator *Atr, err error) {
 // NewAtrWithKnownSourceLength creates an Average True Range (Atr) for offline usage
 func NewAtrWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Atr, err error) {
 	ind, err := NewAtr(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
 // NewDefaultAtrWithKnownSourceLength creates an Average True Range (Atr) for offline usage with default parameters
 func NewDefaultAtrWithKnownSourceLength(sourceLength int) (indicator *Atr, err error) {
-
 	ind, err := NewDefaultAtr()
-	ind.Data = make([]float64, 0, sourceLength)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
 }
 
@@ -171,6 +171,7 @@ func NewDefaultAtrForStreamWithKnownSourceLength(sourceLength int, priceStream *
 	return ind, err
 }
 
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *AtrWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	// update the current true range
 	ind.trueRange.ReceiveDOHLCVTick(tickData, streamBarIndex)

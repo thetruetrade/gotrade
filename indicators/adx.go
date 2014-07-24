@@ -58,6 +58,7 @@ func NewAdxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 		if ind.periodCounter < 0 {
 			ind.sumDX += ind.currentDX
 		} else if ind.periodCounter == 0 {
+			// increment the number of results this indicator can be expected to return
 			ind.dataLength += 1
 
 			if ind.validFromBar == -1 {
@@ -136,7 +137,7 @@ func NewDefaultAdx() (indicator *Adx, err error) {
 // NewAdxWithKnownSourceLength creates an Average Directional Index (Adx) for offline usage
 func NewAdxWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Adx, err error) {
 	ind, err := NewAdx(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
@@ -145,7 +146,7 @@ func NewAdxWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *A
 func NewDefaultAdxWithKnownSourceLength(sourceLength int) (indicator *Adx, err error) {
 
 	ind, err := NewDefaultAdx()
-	ind.Data = make([]float64, 0, sourceLength)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
 }
 

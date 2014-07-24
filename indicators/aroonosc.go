@@ -95,7 +95,7 @@ func NewDefaultAroonOsc() (indicator *AroonOsc, err error) {
 // NewAroonOscWithKnownSourceLength creates an Aroon Oscillator (AroonOsc) for offline usage
 func NewAroonOscWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *AroonOsc, err error) {
 	ind, err := NewAroonOsc(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
@@ -104,7 +104,7 @@ func NewAroonOscWithKnownSourceLength(sourceLength int, timePeriod int) (indicat
 func NewDefaultAroonOscWithKnownSourceLength(sourceLength int) (indicator *AroonOsc, err error) {
 
 	ind, err := NewDefaultAroonOsc()
-	ind.Data = make([]float64, 0, sourceLength)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
 }
 

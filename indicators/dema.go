@@ -13,27 +13,23 @@ type DEMAWithoutStorage struct {
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
-	ema1                 *EMA
-	ema2                 *EMA
+	ema1                 *EMAWithoutStorage
+	ema2                 *EMAWithoutStorage
 	currentEMA           float64
 }
 
-func NewDEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *DEMAWithoutStorage, err error) {
+func NewDEMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *DEMAWithoutStorage, err error) {
 	newDEMA := DEMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(2 * (timePeriod - 1)),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
-	newDEMA.selectData = selectData
+
 	newDEMA.valueAvailableAction = valueAvailableAction
 
-	newDEMA.ema1, _ = NewEMA(timePeriod, selectData)
-
-	newDEMA.ema1.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	newDEMA.ema1, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newDEMA.currentEMA = dataItem
 		newDEMA.ema2.ReceiveTick(dataItem, streamBarIndex)
-	}
+	})
 
-	newDEMA.ema2, _ = NewEMA(timePeriod, selectData)
-
-	newDEMA.ema2.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	newDEMA.ema2, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newDEMA.dataLength += 1
 		if newDEMA.validFromBar == -1 {
 			newDEMA.validFromBar = streamBarIndex
@@ -51,7 +47,7 @@ func NewDEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc,
 		}
 
 		newDEMA.valueAvailableAction(dema, streamBarIndex)
-	}
+	})
 
 	return &newDEMA, nil
 }
@@ -59,6 +55,7 @@ func NewDEMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc,
 // A Double Exponential Moving Average Indicator
 type DEMA struct {
 	*DEMAWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -68,8 +65,8 @@ type DEMA struct {
 // specified timePeriod. The DEMA results are stored in the DATA field.
 func NewDEMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *DEMA, err error) {
 
-	newDEMA := DEMA{}
-	newDEMA.DEMAWithoutStorage, err = NewDEMAWithoutStorage(timePeriod, selectData,
+	newDEMA := DEMA{selectData: selectData}
+	newDEMA.DEMAWithoutStorage, err = NewDEMAWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newDEMA.Data = append(newDEMA.Data, dataItem)
 		})
@@ -83,7 +80,7 @@ func NewDEMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectD
 	return newDEMA, err
 }
 
-func (dema *DEMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (dema *DEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = dema.selectData(tickData)
 	dema.ReceiveTick(selectedData, streamBarIndex)
 }

@@ -6,14 +6,15 @@ import (
 
 type LinearRegIntercept struct {
 	*LinearRegWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 func NewLinearRegIntercept(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinearRegIntercept, err error) {
-	newInd := LinearRegIntercept{}
-	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod, selectData,
+	newInd := LinearRegIntercept{selectData: selectData}
+	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := intercept
 
@@ -35,4 +36,9 @@ func NewLinearRegInterceptForStream(priceStream *gotrade.DOHLCVStream, timePerio
 	newInd, err := NewLinearRegIntercept(timePeriod, selectData)
 	priceStream.AddTickSubscription(newInd)
 	return newInd, err
+}
+
+func (ind *LinearRegIntercept) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ind.selectData(tickData)
+	ind.ReceiveTick(selectedData, streamBarIndex)
 }

@@ -15,13 +15,12 @@ type ROCR100WithoutStorage struct {
 	periodHistory        *list.List
 }
 
-func NewROCR100WithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCR100WithoutStorage, err error) {
+func NewROCR100WithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCR100WithoutStorage, err error) {
 	newROCR100 := ROCR100WithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1),
 		periodHistory:               list.New()}
 
-	newROCR100.selectData = selectData
 	newROCR100.valueAvailableAction = valueAvailableAction
 
 	return &newROCR100, err
@@ -30,6 +29,7 @@ func NewROCR100WithoutStorage(timePeriod int, selectData gotrade.DataSelectionFu
 // A Relative Strength Indicator
 type ROCR100 struct {
 	*ROCR100WithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -38,8 +38,8 @@ type ROCR100 struct {
 // NewROCR100 returns a new Rate of change ratio (100 scale)(ROCR100) configured with the
 // specified timePeriod. The ROCR100 results are stored in the DATA field.
 func NewROCR100(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *ROCR100, err error) {
-	newROCR100 := ROCR100{}
-	newROCR100.ROCR100WithoutStorage, err = NewROCR100WithoutStorage(timePeriod, selectData,
+	newROCR100 := ROCR100{selectData: selectData}
+	newROCR100.ROCR100WithoutStorage, err = NewROCR100WithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newROCR100.Data = append(newROCR100.Data, dataItem)
 		})
@@ -56,7 +56,7 @@ func NewROCR100ForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, sele
 	return newROCR100, err
 }
 
-func (ind *ROCR100WithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *ROCR100) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

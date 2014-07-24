@@ -1,5 +1,5 @@
 // Chainkin Oscillator (ChainkinOsc)
-// this should be as simple as EMA(ADL,3) - EMA(ADL,10), however it seems the emas are intialised with the
+// this should be as simple as EMA(Adl,3) - EMA(Adl,10), however it seems the emas are intialised with the
 // first adl value and not offset like the macd to conincide, they are both calculated from the 2nd bar and used before their
 // lookback period is reached - so the emas are calcualted inline and not using the general EMAWithoutStorage
 package indicators
@@ -15,7 +15,7 @@ type ChainkinOscWithoutStorage struct {
 	fastTimePeriod       int
 	slowTimePeriod       int
 	valueAvailableAction ValueAvailableActionFloat
-	adl                  *ADLWithoutStorage
+	adl                  *AdlWithoutStorage
 	emaFast              float64
 	emaSlow              float64
 	emaFastMultiplier    float64
@@ -35,7 +35,7 @@ func NewChainkinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueA
 
 	newChainkinOsc.valueAvailableAction = valueAvailableAction
 
-	newChainkinOsc.adl, err = NewADLWithoutStorage(func(dataItem float64, streamBarIndex int) {
+	newChainkinOsc.adl, err = NewAdlWithoutStorage(func(dataItem float64, streamBarIndex int) {
 		newChainkinOsc.periodCounter += 1
 
 		if !newChainkinOsc.isInitialised {

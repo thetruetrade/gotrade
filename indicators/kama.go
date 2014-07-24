@@ -28,7 +28,7 @@ type KAMAWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The KAMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewKAMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *KAMAWithoutStorage, err error) {
+func NewKAMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *KAMAWithoutStorage, err error) {
 	newKAMA := KAMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod + 1) * -1,
@@ -38,7 +38,6 @@ func NewKAMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc,
 		periodROC:                   0.0,
 		periodHistory:               list.New(),
 		previousClose:               math.SmallestNonzeroFloat64}
-	newKAMA.selectData = selectData
 	newKAMA.valueAvailableAction = valueAvailableAction
 
 	return &newKAMA, nil
@@ -47,6 +46,7 @@ func NewKAMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc,
 // A Simple Moving Average Indicator
 type KAMA struct {
 	*KAMAWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -55,8 +55,8 @@ type KAMA struct {
 // NewKAMA returns a new Simple Moving Average (KAMA) configured with the
 // specified timePeriod. The KAMA results are stored in the Data field.
 func NewKAMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *KAMA, err error) {
-	newKAMA := KAMA{}
-	newKAMA.KAMAWithoutStorage, err = NewKAMAWithoutStorage(timePeriod, selectData, func(dataItem float64, streamBarIndex int) {
+	newKAMA := KAMA{selectData: selectData}
+	newKAMA.KAMAWithoutStorage, err = NewKAMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newKAMA.Data = append(newKAMA.Data, dataItem)
 	})
 
@@ -69,7 +69,7 @@ func NewKAMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectD
 	return newKama, err
 }
 
-func (ind *KAMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *KAMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

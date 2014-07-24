@@ -13,7 +13,7 @@ type CCIWithoutStorage struct {
 	// private variables
 	valueAvailableAction   ValueAvailableActionFloat
 	periodCounter          int
-	typicalPriceAvg        *SMAWithoutStorage
+	typicalPriceAvg        *SmaWithoutStorage
 	factor                 float64
 	typicalPriceHistory    *list.List
 	currentAvgTypicalPrice float64
@@ -34,7 +34,7 @@ func NewCCIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 		timePeriod:           timePeriod,
 	}
 
-	ind.typicalPriceAvg, err = NewSMAWithoutStorage(timePeriod, nil, func(dataItem float64, streamBarIndex int) {
+	ind.typicalPriceAvg, err = NewSmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		currentTypicalPriceAvg := dataItem
 
 		var meanDeviation float64 = 0.0

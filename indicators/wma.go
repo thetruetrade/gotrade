@@ -22,7 +22,7 @@ type WMAWithoutStorage struct {
 // specified timePeriod, this version is intended for use by other indicators.
 // The WMA results are not stored in a local field but made available though the
 // configured valueAvailableAction for storage by the parent indicator.
-func NewWMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *WMAWithoutStorage, err error) {
+func NewWMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *WMAWithoutStorage, err error) {
 	newWMA := WMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               timePeriod * -1,
@@ -34,7 +34,6 @@ func NewWMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, 
 	}
 	newWMA.periodWeightTotal = weightedTotal
 
-	newWMA.selectData = selectData
 	newWMA.valueAvailableAction = valueAvailableAction
 	return &newWMA, nil
 }
@@ -42,6 +41,7 @@ func NewWMAWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, 
 // A Simple Moving Average Indicator
 type WMA struct {
 	*WMAWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -50,8 +50,8 @@ type WMA struct {
 // NewWMA returns a new Simple Moving Average (WMA) configured with the
 // specified timePeriod. The WMA results are stored in the DATA field.
 func NewWMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
-	newWMA := WMA{}
-	newWMA.WMAWithoutStorage, err = NewWMAWithoutStorage(timePeriod, selectData,
+	newWMA := WMA{selectData: selectData}
+	newWMA.WMAWithoutStorage, err = NewWMAWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newWMA.Data = append(newWMA.Data, dataItem)
 		})
@@ -64,7 +64,7 @@ func NewWMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectDa
 	return newWma, err
 }
 
-func (wma *WMAWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (wma *WMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = wma.selectData(tickData)
 	wma.ReceiveTick(selectedData, streamBarIndex)
 }

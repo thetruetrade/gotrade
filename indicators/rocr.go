@@ -15,13 +15,12 @@ type ROCRWithoutStorage struct {
 	periodHistory        *list.List
 }
 
-func NewROCRWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCRWithoutStorage, err error) {
+func NewROCRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCRWithoutStorage, err error) {
 	newROCR := ROCRWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
 		periodCounter:               (timePeriod * -1),
 		periodHistory:               list.New()}
 
-	newROCR.selectData = selectData
 	newROCR.valueAvailableAction = valueAvailableAction
 
 	return &newROCR, err
@@ -30,6 +29,7 @@ func NewROCRWithoutStorage(timePeriod int, selectData gotrade.DataSelectionFunc,
 // A Relative Strength Indicator
 type ROCR struct {
 	*ROCRWithoutStorage
+	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
@@ -38,8 +38,8 @@ type ROCR struct {
 // NewROCR returns a new Rate of change ratio (ROCR) configured with the
 // specified timePeriod. The ROCR results are stored in the DATA field.
 func NewROCR(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *ROCR, err error) {
-	newROCR := ROCR{}
-	newROCR.ROCRWithoutStorage, err = NewROCRWithoutStorage(timePeriod, selectData,
+	newROCR := ROCR{selectData: selectData}
+	newROCR.ROCRWithoutStorage, err = NewROCRWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newROCR.Data = append(newROCR.Data, dataItem)
 		})
@@ -56,7 +56,7 @@ func NewROCRForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectD
 	return newROCR, err
 }
 
-func (ind *ROCRWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+func (ind *ROCR) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }
