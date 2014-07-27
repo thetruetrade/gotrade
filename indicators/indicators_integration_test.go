@@ -117,7 +117,7 @@ var _ = Describe("when executing the gotrade weighted moving average with a year
 
 var _ = Describe("when executing the gotrade double exponential moving average with a years data and known output", func() {
 	var (
-		dema            *indicators.DEMA
+		dema            *indicators.Dema
 		period          int
 		expectedResults []float64
 		err             error
@@ -134,7 +134,7 @@ var _ = Describe("when executing the gotrade double exponential moving average w
 
 		BeforeEach(func() {
 			period = 10
-			dema, err = indicators.NewDEMA(period, gotrade.UseClosePrice)
+			dema, err = indicators.NewDema(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(dema)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

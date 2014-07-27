@@ -1,15 +1,16 @@
-// Double Exponential Moving Average (DEMA)
 package indicators
 
-// DEMA(X) = (2 * EMA(X, CLOSE)) - (EMA(X, EMA(X, CLOSE)))
+// Dema(X) = (2 * EMA(X, CLOSE)) - (EMA(X, EMA(X, CLOSE)))
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-type DEMAWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// An Average True Range Indicator (Dema), no storage, for use in other indicators
+type DemaWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
@@ -18,73 +19,143 @@ type DEMAWithoutStorage struct {
 	currentEMA           float64
 }
 
-func NewDEMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *DEMAWithoutStorage, err error) {
-	newDEMA := DEMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(2 * (timePeriod - 1)),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
+// NewDemaWithoutStorage creates a Double Exponential Moving Average Indicator (Dema) without storage
+func NewDemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *DemaWithoutStorage, err error) {
 
-	newDEMA.valueAvailableAction = valueAvailableAction
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
 
-	newDEMA.ema1, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newDEMA.currentEMA = dataItem
-		newDEMA.ema2.ReceiveTick(dataItem, streamBarIndex)
+	// the minimum timeperiod for a Dema indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := 2 * (timePeriod - 1)
+	ind := DemaWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		valueAvailableAction: valueAvailableAction,
+	}
+
+	ind.ema1, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.currentEMA = dataItem
+		ind.ema2.ReceiveTick(dataItem, streamBarIndex)
 	})
 
-	newDEMA.ema2, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newDEMA.dataLength += 1
-		if newDEMA.validFromBar == -1 {
-			newDEMA.validFromBar = streamBarIndex
+	ind.ema2, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
-		// DEMA(X) = (2 * EMA(X, CLOSE)) - (EMA(X, EMA(X, CLOSE)))
-		dema := (2 * newDEMA.currentEMA) - dataItem
+		// Dema(X) = (2 * EMA(X, CLOSE)) - (EMA(X, EMA(X, CLOSE)))
+		dema := (2 * ind.currentEMA) - dataItem
 
-		if dema > newDEMA.maxValue {
-			newDEMA.maxValue = dema
+		// update the maximum result value
+		if dema > ind.maxValue {
+			ind.maxValue = dema
 		}
 
-		if dema < newDEMA.minValue {
-			newDEMA.minValue = dema
+		// update the minimum result value
+		if dema < ind.minValue {
+			ind.minValue = dema
 		}
 
-		newDEMA.valueAvailableAction(dema, streamBarIndex)
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(dema, streamBarIndex)
 	})
 
-	return &newDEMA, nil
+	return &ind, nil
 }
 
-// A Double Exponential Moving Average Indicator
-type DEMA struct {
-	*DEMAWithoutStorage
+// A Double Exponential Moving Average Indicator (Dema)
+type Dema struct {
+	*DemaWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-// NewDEMA returns a new Double Exponential Moving Average (DEMA) configured with the
-// specified timePeriod. The DEMA results are stored in the DATA field.
-func NewDEMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *DEMA, err error) {
+// NewDema creates a Double Exponential Moving Average (Dema) for online usage
+func NewDema(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
 
-	newDEMA := DEMA{selectData: selectData}
-	newDEMA.DEMAWithoutStorage, err = NewDEMAWithoutStorage(timePeriod,
+	newDema := Dema{selectData: selectData}
+	newDema.DemaWithoutStorage, err = NewDemaWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newDEMA.Data = append(newDEMA.Data, dataItem)
+			newDema.Data = append(newDema.Data, dataItem)
 		})
 
-	return &newDEMA, err
+	return &newDema, err
 }
 
-func NewDEMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *DEMA, err error) {
-	newDEMA, err := NewDEMA(timePeriod, selectData)
-	priceStream.AddTickSubscription(newDEMA)
-	return newDEMA, err
+// NewDefaultDema creates a Double Exponential Moving Average (Dema) for online usage with default parameters
+//	- timePeriod: 30
+//  - selectData: useClosePrice
+func NewDefaultDema() (indicator *Dema, err error) {
+	timePeriod := 30
+	selectData := gotrade.UseClosePrice
+	return NewDema(timePeriod, selectData)
 }
 
-func (dema *DEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewDemaWithKnownSourceLength creates a Double Exponential Moving Average (Dema) for offline usage
+func NewDemaWithKnownSourceLength(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
+	ind, err := NewDema(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultDemaWithKnownSourceLength creates a Double Exponential Moving Average (Dema) for offline usage with default parameters
+func NewDefaultDemaWithKnownSourceLength(sourceLength int) (indicator *Dema, err error) {
+	ind, err := NewDefaultDema()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewDemaForStream creates a Double Exponential Moving Average (Dema) for online usage with a source data stream
+func NewDemaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
+	newDema, err := NewDema(timePeriod, selectData)
+	priceStream.AddTickSubscription(newDema)
+	return newDema, err
+}
+
+// NewDefaultDemaForStream creates a Double Exponential Moving Average (Dema) for online usage with a source data stream
+func NewDefaultDemaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Dema, err error) {
+	ind, err := NewDefaultDema()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDemaForStreamWithKnownSourceLength creates a Double Exponential Moving Average (Dema) for offline usage with a source data stream
+func NewDemaForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
+	ind, err := NewDemaWithKnownSourceLength(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultDemaForStreamWithKnownSourceLength creates a Double Exponential Moving Average (Dema) for offline usage with a source data stream
+func NewDefaultDemaForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Dema, err error) {
+	ind, err := NewDefaultDemaWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (dema *Dema) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = dema.selectData(tickData)
 	dema.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (dema *DEMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+func (dema *DemaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	dema.ema1.ReceiveTick(tickData, streamBarIndex)
 }
