@@ -9,12 +9,12 @@ var _ = Describe("when calculating the chaikin oscillator (chaikinosc) with DOHL
 	var (
 		fastPeriod int = 3
 		slowPeriod int = 10
-		indicator  *indicators.ChainkinOsc
+		indicator  *indicators.ChaikinOsc
 		inputs     IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewChainkinOsc(fastPeriod, slowPeriod)
+		indicator, _ = indicators.NewChaikinOsc(fastPeriod, slowPeriod)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

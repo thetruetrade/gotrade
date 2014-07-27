@@ -8,12 +8,12 @@ import (
 var _ = Describe("when calculating an commodity channel index (cci) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *indicators.CCI
+		indicator *indicators.Cci
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewCCI(period)
+		indicator, _ = indicators.NewCci(period)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

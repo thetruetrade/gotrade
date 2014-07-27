@@ -511,7 +511,7 @@ var _ = Describe("when executing the gotrade accumulation distribution line with
 
 var _ = Describe("when executing the gotrade chaikin oscilator with a years data and known output", func() {
 	var (
-		chaikinOsc      *indicators.ChainkinOsc
+		chaikinOsc      *indicators.ChaikinOsc
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -530,7 +530,7 @@ var _ = Describe("when executing the gotrade chaikin oscilator with a years data
 	Describe("using no a fast Time Period of 3 and a slow Time Period of 10", func() {
 
 		BeforeEach(func() {
-			chaikinOsc, err = indicators.NewChainkinOsc(3, 10)
+			chaikinOsc, err = indicators.NewChaikinOsc(3, 10)
 			priceStream.AddTickSubscription(chaikinOsc)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1829,9 +1829,9 @@ var _ = Describe("when executing the gotrade stochastic oscillator with a years 
 // 	})
 // })
 
-var _ = Describe("when executing the gotrade commodity channel index (CCI) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade commodity channel index (Cci) with a years data and known output", func() {
 	var (
-		ind             *indicators.CCI
+		ind             *indicators.Cci
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1846,7 +1846,7 @@ var _ = Describe("when executing the gotrade commodity channel index (CCI) with 
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewCCI(14)
+			ind, err = indicators.NewCci(14)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

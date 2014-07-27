@@ -5,7 +5,7 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-// An Average True Range (Atr), no storage, for use in other indicators
+// An Average True Range Indicator (Atr), no storage, for use in other indicators
 type AtrWithoutStorage struct {
 	*baseIndicator
 	*baseFloatBounds
@@ -19,7 +19,7 @@ type AtrWithoutStorage struct {
 	timePeriod           int
 }
 
-// NewAtrWithoutStorage creates an Average True Range (Atr) without storage
+// NewAtrWithoutStorage creates an Average True Range Indicator (Atr) without storage
 func NewAtrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *AtrWithoutStorage, err error) {
 
 	// an indicator without storage MUST have a value available action
@@ -103,7 +103,7 @@ func NewAtrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 	return &ind, nil
 }
 
-// An Average True Range Indicator
+// An Average True Range Indicator (Atr)
 type Atr struct {
 	*AtrWithoutStorage
 

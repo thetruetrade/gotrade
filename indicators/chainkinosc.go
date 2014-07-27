@@ -1,15 +1,14 @@
-// Chainkin Oscillator (ChainkinOsc)
-// this should be as simple as EMA(Adl,3) - EMA(Adl,10), however it seems the emas are intialised with the
-// first adl value and not offset like the macd to conincide, they are both calculated from the 2nd bar and used before their
-// lookback period is reached - so the emas are calcualted inline and not using the general EMAWithoutStorage
 package indicators
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-type ChainkinOscWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
+// A Chaikin Oscillator Indicator (ChaikinOsc), no storage, for use in other indicators
+type ChaikinOscWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	fastTimePeriod       int
@@ -24,81 +23,160 @@ type ChainkinOscWithoutStorage struct {
 	isInitialised        bool
 }
 
-func NewChainkinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ChainkinOscWithoutStorage, err error) {
-	newChainkinOsc := ChainkinOscWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(slowTimePeriod - 1),
-		slowTimePeriod:    slowTimePeriod,
-		fastTimePeriod:    fastTimePeriod,
-		emaFastMultiplier: float64(2.0 / float64(fastTimePeriod+1.0)),
-		emaSlowMultiplier: float64(2.0 / float64(slowTimePeriod+1.0)),
-		periodCounter:     slowTimePeriod * -1,
-		isInitialised:     false}
+// NewChaikinOscWithoutStorage creates a Chaikin Oscillator Indicator (ChaikinOsc) without storage
+// This should be as simple as EMA(Adl,3) - EMA(Adl,10), however it seems the TA-Lib emas are intialised with the
+// first adl value and not offset like the macd to conincide, they are both calculated from the 2nd bar and used before their
+// lookback period is reached - so the emas are calculated inline and not using the general EmaWithoutStorage
+func NewChaikinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ChaikinOscWithoutStorage, err error) {
 
-	newChainkinOsc.valueAvailableAction = valueAvailableAction
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
 
-	newChainkinOsc.adl, err = NewAdlWithoutStorage(func(dataItem float64, streamBarIndex int) {
-		newChainkinOsc.periodCounter += 1
+	// the minimum fastTimePeriod for a Chaikin Oscillator Indicator is 2
+	if fastTimePeriod < 2 {
+		return nil, errors.New("fastTimePeriod is less than the minimum (2)")
+	}
 
-		if !newChainkinOsc.isInitialised {
-			newChainkinOsc.emaFast = dataItem
-			newChainkinOsc.emaSlow = dataItem
-			newChainkinOsc.isInitialised = true
+	// the minimum slowTimePeriod for a Chaikin Oscillator Indicator is 2
+	if slowTimePeriod < 2 {
+		return nil, errors.New("slowTimePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum fastTimePeriod
+	if fastTimePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("fastTimePeriod is greater than the maximum (100000)")
+	}
+
+	// check the maximum slowTimePeriod
+	if slowTimePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("slowTimePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := slowTimePeriod - 1
+	ind := ChaikinOscWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		slowTimePeriod:       slowTimePeriod,
+		fastTimePeriod:       fastTimePeriod,
+		emaFastMultiplier:    float64(2.0 / float64(fastTimePeriod+1.0)),
+		emaSlowMultiplier:    float64(2.0 / float64(slowTimePeriod+1.0)),
+		periodCounter:        slowTimePeriod * -1,
+		isInitialised:        false,
+		valueAvailableAction: valueAvailableAction,
+	}
+
+	ind.adl, err = NewAdlWithoutStorage(func(dataItem float64, streamBarIndex int) {
+		ind.periodCounter += 1
+
+		if !ind.isInitialised {
+			ind.emaFast = dataItem
+			ind.emaSlow = dataItem
+			ind.isInitialised = true
 		}
-		if newChainkinOsc.periodCounter < 0 {
-			newChainkinOsc.emaFast = (dataItem-newChainkinOsc.emaFast)*newChainkinOsc.emaFastMultiplier + newChainkinOsc.emaFast
-			newChainkinOsc.emaSlow = (dataItem-newChainkinOsc.emaSlow)*newChainkinOsc.emaSlowMultiplier + newChainkinOsc.emaSlow
+		if ind.periodCounter < 0 {
+			ind.emaFast = (dataItem-ind.emaFast)*ind.emaFastMultiplier + ind.emaFast
+			ind.emaSlow = (dataItem-ind.emaSlow)*ind.emaSlowMultiplier + ind.emaSlow
 		}
 
-		if newChainkinOsc.periodCounter >= 0 {
-			newChainkinOsc.dataLength += 1
-			if newChainkinOsc.validFromBar == -1 {
-				newChainkinOsc.validFromBar = streamBarIndex
+		if ind.periodCounter >= 0 {
+			// increment the number of results this indicator can be expected to return
+			ind.dataLength += 1
+
+			if ind.validFromBar == -1 {
+				// set the streamBarIndex from which this indicator returns valid results
+				ind.validFromBar = streamBarIndex
 			}
 
-			newChainkinOsc.emaFast = (dataItem-newChainkinOsc.emaFast)*newChainkinOsc.emaFastMultiplier + newChainkinOsc.emaFast
-			newChainkinOsc.emaSlow = (dataItem-newChainkinOsc.emaSlow)*newChainkinOsc.emaSlowMultiplier + newChainkinOsc.emaSlow
-			chaikinOsc := newChainkinOsc.emaFast - newChainkinOsc.emaSlow
+			ind.emaFast = (dataItem-ind.emaFast)*ind.emaFastMultiplier + ind.emaFast
+			ind.emaSlow = (dataItem-ind.emaSlow)*ind.emaSlowMultiplier + ind.emaSlow
+			chaikinOsc := ind.emaFast - ind.emaSlow
 
-			if chaikinOsc > newChainkinOsc.maxValue {
-				newChainkinOsc.maxValue = chaikinOsc
+			// update the maximum result value
+			if chaikinOsc > ind.maxValue {
+				ind.maxValue = chaikinOsc
 			}
 
-			if chaikinOsc < newChainkinOsc.minValue {
-				newChainkinOsc.minValue = chaikinOsc
+			// update the minimum result value
+			if chaikinOsc < ind.minValue {
+				ind.minValue = chaikinOsc
 			}
-			newChainkinOsc.valueAvailableAction(chaikinOsc, streamBarIndex)
+
+			// notify of a new result value though the value available action
+			ind.valueAvailableAction(chaikinOsc, streamBarIndex)
 		}
 	})
 
-	return &newChainkinOsc, nil
+	return &ind, err
 }
 
-// A Double Exponential Moving Average Indicator
-type ChainkinOsc struct {
-	*ChainkinOscWithoutStorage
+// A Chaikin Oscillator Indicator (ChaikinOsc)
+type ChaikinOsc struct {
+	*ChaikinOscWithoutStorage
 
 	// public variables
 	Data []float64
 }
 
-// NewChainkinOsc returns a new Double Exponential Moving Average (ChainkinOsc) configured with the
-// specified timePeriod. The ChainkinOsc results are stored in the DATA field.
-func NewChainkinOsc(fastTimePeriod int, slowTimePeriod int) (indicator *ChainkinOsc, err error) {
+// NewChaikinOsc creates a Chaikin Oscillator (ChaikinOsc) for online usage
+func NewChaikinOsc(fastTimePeriod int, slowTimePeriod int) (indicator *ChaikinOsc, err error) {
 
-	newChainkinOsc := ChainkinOsc{}
-	newChainkinOsc.ChainkinOscWithoutStorage, err = NewChainkinOscWithoutStorage(fastTimePeriod, slowTimePeriod,
+	newChaikinOsc := ChaikinOsc{}
+	newChaikinOsc.ChaikinOscWithoutStorage, err = NewChaikinOscWithoutStorage(fastTimePeriod, slowTimePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newChainkinOsc.Data = append(newChainkinOsc.Data, dataItem)
+			newChaikinOsc.Data = append(newChaikinOsc.Data, dataItem)
 		})
 
-	return &newChainkinOsc, err
+	return &newChaikinOsc, err
 }
 
-func NewChainkinOscForStream(priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int) (indicator *ChainkinOsc, err error) {
-	newChainkinOsc, err := NewChainkinOsc(fastTimePeriod, slowTimePeriod)
-	priceStream.AddTickSubscription(newChainkinOsc)
-	return newChainkinOsc, err
+// NewDefaultChaikinOsc creates a Chaikin Oscillator (ChaikinOsc) for online usage with default parameters
+//	- fastTimePeriod: 3
+//  - slowTimePeriod: 10
+func NewDefaultChaikinOsc() (indicator *ChaikinOsc, err error) {
+	fastTimePeriod := 3
+	slowTimePeriod := 10
+	return NewChaikinOsc(fastTimePeriod, slowTimePeriod)
 }
 
-func (ind *ChainkinOscWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewChaikinOscWithKnownSourceLength creates a Chaikin Oscillator (ChaikinOsc) for offline usage
+func NewChaikinOscWithKnownSourceLength(sourceLength int, fastTimePeriod int, slowTimePeriod int) (indicator *ChaikinOsc, err error) {
+	ind, err := NewChaikinOsc(fastTimePeriod, slowTimePeriod)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultChaikinOscWithKnownSourceLength creates a Chaikin Oscillator (ChaikinOsc) for offline usage with default parameters
+func NewDefaultChaikinOscWithKnownSourceLength(sourceLength int) (indicator *ChaikinOsc, err error) {
+	ind, err := NewDefaultChaikinOsc()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewChaikinOscForStream creates a Chaikin Oscillator (ChaikinOsc) for online usage with a source data stream
+func NewChaikinOscForStream(priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int) (indicator *ChaikinOsc, err error) {
+	newChaikinOsc, err := NewChaikinOsc(fastTimePeriod, slowTimePeriod)
+	priceStream.AddTickSubscription(newChaikinOsc)
+	return newChaikinOsc, err
+}
+
+// NewChaikinOscForStreamWithKnownSourceLength creates a Chaikin Oscillator (ChaikinOsc) for offline usage with a source data stream
+func NewChaikinOscForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int) (indicator *ChaikinOsc, err error) {
+	ind, err := NewChaikinOscWithKnownSourceLength(sourceLength, fastTimePeriod, slowTimePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultChaikinOscForStreamWithKnownSourceLength creates a Chaikin Oscillator (ChaikinOsc) for offline usage with a source data stream
+func NewDefaultChaikinOscForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *ChaikinOsc, err error) {
+	ind, err := NewDefaultChaikinOscWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *ChaikinOsc) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.adl.ReceiveDOHLCVTick(tickData, streamBarIndex)
 }
