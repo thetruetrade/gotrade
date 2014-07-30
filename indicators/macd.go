@@ -5,9 +5,9 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-// MACD Line: (12-day EMA - 26-day EMA)
+// MACD Line: (12-day EmaWithoutStorage - 26-day EmaWithoutStorage)
 
-// Signal Line: 9-day EMA of MACD Line
+// Signal Line: 9-day EmaWithoutStorage of MACD Line
 
 // MACD Histogram: MACD Line - Signal Line
 
@@ -20,9 +20,9 @@ type MACD struct {
 	fastTimePeriod       int
 	slowTimePeriod       int
 	signalTimePeriod     int
-	emaFast              *EMA
-	emaSlow              *EMA
-	emaSignal            *EMA
+	emaFast              *EmaWithoutStorage
+	emaSlow              *EmaWithoutStorage
+	emaSignal            *EmaWithoutStorage
 	currentFastEMA       float64
 	currentSlowEMA       float64
 	currentMACD          float64
@@ -45,33 +45,27 @@ func NewMACD(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selec
 
 	// shift the fast ema up so that it has valid data at the same time as the slow emas
 	newMACD.emaSlowSkip = slowTimePeriod - fastTimePeriod
-	newMACD.emaFast, _ = NewEMA(fastTimePeriod, selectData)
-
-	newMACD.emaFast.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	newMACD.emaFast, _ = NewEmaWithoutStorage(fastTimePeriod, func(dataItem float64, streamBarIndex int) {
 		newMACD.currentFastEMA = dataItem
-	}
+	})
 
-	newMACD.emaSlow, _ = NewEMA(slowTimePeriod, selectData)
-
-	newMACD.emaSlow.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	newMACD.emaSlow, _ = NewEmaWithoutStorage(slowTimePeriod, func(dataItem float64, streamBarIndex int) {
 		newMACD.currentSlowEMA = dataItem
 
 		newMACD.currentMACD = newMACD.currentFastEMA - newMACD.currentSlowEMA
 
 		newMACD.emaSignal.ReceiveTick(newMACD.currentMACD, streamBarIndex)
-	}
+	})
 
-	newMACD.emaSignal, _ = NewEMA(signalTimePeriod, selectData)
-
-	newMACD.emaSignal.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+	newMACD.emaSignal, _ = NewEmaWithoutStorage(signalTimePeriod, func(dataItem float64, streamBarIndex int) {
 		newMACD.dataLength += 1
 		if newMACD.validFromBar == -1 {
 			newMACD.validFromBar = streamBarIndex
 		}
 
-		// MACD Line: (12-day EMA - 26-day EMA)
+		// MACD Line: (12-day EmaWithoutStorage - 26-day EmaWithoutStorage)
 
-		// Signal Line: 9-day EMA of MACD Line
+		// Signal Line: 9-day EmaWithoutStorage of MACD Line
 
 		// MACD Histogram: MACD Line - Signal Line
 
@@ -107,7 +101,7 @@ func NewMACD(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selec
 			newMACD.minValue = histogram
 		}
 		newMACD.valueAvailableAction(macd, signal, histogram, streamBarIndex)
-	}
+	})
 
 	newMACD.selectData = selectData
 	newMACD.valueAvailableAction = func(dataItemMACD float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int) {

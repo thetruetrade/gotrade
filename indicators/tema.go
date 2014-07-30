@@ -13,9 +13,9 @@ type TEMAWithoutStorage struct {
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
-	ema1                 *EMAWithoutStorage
-	ema2                 *EMAWithoutStorage
-	ema3                 *EMAWithoutStorage
+	ema1                 *EmaWithoutStorage
+	ema2                 *EmaWithoutStorage
+	ema3                 *EmaWithoutStorage
 	currentEMA           float64
 	currentEMA2          float64
 }
@@ -25,17 +25,17 @@ func NewTEMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
 	newTEMA.valueAvailableAction = valueAvailableAction
 
-	newTEMA.ema1, err = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+	newTEMA.ema1, err = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newTEMA.currentEMA = dataItem
 		newTEMA.ema2.ReceiveTick(dataItem, streamBarIndex)
 	})
 
-	newTEMA.ema2, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+	newTEMA.ema2, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newTEMA.currentEMA2 = dataItem
 		newTEMA.ema3.ReceiveTick(dataItem, streamBarIndex)
 	})
 
-	newTEMA.ema3, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+	newTEMA.ema3, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		newTEMA.dataLength += 1
 		if newTEMA.validFromBar == -1 {
 			newTEMA.validFromBar = streamBarIndex

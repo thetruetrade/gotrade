@@ -45,7 +45,7 @@ var _ = Describe("when executing the gotrade simple moving average with a years 
 
 var _ = Describe("when executing the gotrade exponential moving average with a years data and known output", func() {
 	var (
-		ema             *indicators.EMA
+		ema             *indicators.Ema
 		period          int
 		expectedResults []float64
 		err             error
@@ -62,7 +62,7 @@ var _ = Describe("when executing the gotrade exponential moving average with a y
 
 		BeforeEach(func() {
 			period = 10
-			ema, err = indicators.NewEMA(period, gotrade.UseClosePrice)
+			ema, err = indicators.NewEma(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ema)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -957,7 +957,7 @@ var _ = Describe("when executing the gotrade minus directional indicator (14) wi
 
 var _ = Describe("when executing the gotrade directional movement indicator (14) with a years data and known output", func() {
 	var (
-		dx              *indicators.DX
+		dx              *indicators.Dx
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -972,7 +972,7 @@ var _ = Describe("when executing the gotrade directional movement indicator (14)
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			dx, err = indicators.NewDX(14)
+			dx, err = indicators.NewDx(14)
 			priceStream.AddTickSubscription(dx)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1613,9 +1613,9 @@ var _ = Describe("when executing the gotrade williams percent r (WILLR) with a y
 	})
 })
 
-var _ = Describe("when executing the gotrade highest high value (HHV) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade highest high value (Hhv) with a years data and known output", func() {
 	var (
-		ind             *indicators.HHV
+		ind             *indicators.Hhv
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1630,7 +1630,7 @@ var _ = Describe("when executing the gotrade highest high value (HHV) with a yea
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewHHV(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewHhv(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

@@ -1,16 +1,17 @@
-// Directional Movement Index (DX)
 package indicators
 
 // DX = ( (+DI)-(-DI) ) / ( (+DI) + (-DI) )
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 	"math"
 )
 
-type DXWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// An Directional Movement Index Indicator (Dx), no storage, for use in other indicators
+type DxWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
@@ -18,88 +19,158 @@ type DXWithoutStorage struct {
 	plusDI               *PlusDI
 	currentPlusDI        float64
 	currentMinusDI       float64
+	timePeriod           int
 }
 
-func NewDXWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *DXWithoutStorage, err error) {
-	var lookback int = 2
+// NewDxWithoutStorage creates a Directional Movement Index Indicator (Dx) without storage
+func NewDxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *DxWithoutStorage, err error) {
+
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for this indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := 2
 	if timePeriod > 1 {
 		lookback = timePeriod
 	}
 
-	newDX := DXWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		currentPlusDI:               0.0,
-		currentMinusDI:              0.0}
-
-	newDX.valueAvailableAction = valueAvailableAction
-
-	newDX.minusDI, _ = NewMinusDI(timePeriod)
-
-	newDX.minusDI.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newDX.currentMinusDI = dataItem
+	ind := DxWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		currentPlusDI:        0.0,
+		currentMinusDI:       0.0,
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
 	}
 
-	newDX.plusDI, _ = NewPlusDI(timePeriod)
+	ind.minusDI, err = NewMinusDI(timePeriod)
 
-	newDX.plusDI.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newDX.currentPlusDI = dataItem
+	ind.minusDI.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+		ind.currentMinusDI = dataItem
+	}
+
+	ind.plusDI, err = NewPlusDI(timePeriod)
+
+	ind.plusDI.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+		ind.currentPlusDI = dataItem
 
 		var result float64
-		tmp := newDX.currentMinusDI + newDX.currentPlusDI
+		tmp := ind.currentMinusDI + ind.currentPlusDI
 		if tmp != 0.0 {
-			result = 100.0 * (math.Abs(newDX.currentMinusDI-newDX.currentPlusDI) / tmp)
+			result = 100.0 * (math.Abs(ind.currentMinusDI-ind.currentPlusDI) / tmp)
 		} else {
 			result = 0.0
 		}
 
-		newDX.dataLength += 1
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
 
-		if newDX.validFromBar == -1 {
-			newDX.validFromBar = streamBarIndex
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
-		if result > newDX.maxValue {
-			newDX.maxValue = result
+		// update the maximum result value
+		if result > ind.maxValue {
+			ind.maxValue = result
 		}
 
-		if result < newDX.minValue {
-			newDX.minValue = result
+		// update the minimum result value
+		if result < ind.minValue {
+			ind.minValue = result
 		}
-		newDX.valueAvailableAction(result, streamBarIndex)
+
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(result, streamBarIndex)
 
 	}
 
-	return &newDX, nil
+	return &ind, err
 }
 
-// A Directional Movement Indicator
-type DX struct {
-	*DXWithoutStorage
+// A Directional Movement Index Indicator (Dx)
+type Dx struct {
+	*DxWithoutStorage
 
 	// public variables
 	Data []float64
 }
 
-// NewDX returns a new Directional Movement Indicator (DX) configured with the
-// specified timePeriod. The DX results are stored in the DATA field.
-func NewDX(timePeriod int) (indicator *DX, err error) {
+// NewDx creates a Directional Movement Index Indicator (Dx) for online usage
+func NewDx(timePeriod int) (indicator *Dx, err error) {
 
-	newDX := DX{}
-	newDX.DXWithoutStorage, err = NewDXWithoutStorage(timePeriod,
+	ind := Dx{}
+	ind.DxWithoutStorage, err = NewDxWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newDX.Data = append(newDX.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
 
-	return &newDX, err
+	return &ind, err
 }
 
-func NewDXForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *DX, err error) {
-	newDX, err := NewDX(timePeriod)
-	priceStream.AddTickSubscription(newDX)
-	return newDX, err
+// NewDefaultDx creates a Directional Movement Index (Dx) for online usage with default parameters
+//	- timePeriod: 14
+func NewDefaultDx() (indicator *Dx, err error) {
+	timePeriod := 14
+	return NewDx(timePeriod)
 }
 
-func (ind *DXWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewDxWithKnownSourceLength creates a Directional Movement Index (Dx) for offline usage
+func NewDxWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Dx, err error) {
+	ind, err := NewDx(timePeriod)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultDxWithKnownSourceLength creates a Directional Movement Index (Dx) for offline usage with default parameters
+func NewDefaultDxWithKnownSourceLength(sourceLength int) (indicator *Dx, err error) {
+	ind, err := NewDefaultDx()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewDxForStream creates a Directional Movement Index (Dx) for online usage with a source data stream
+func NewDxForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Dx, err error) {
+	ind, err := NewDx(timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultDxForStream creates a Directional Movement Index (Dx) for online usage with a source data stream
+func NewDefaultDxForStream(priceStream *gotrade.DOHLCVStream) (indicator *Dx, err error) {
+	ind, err := NewDefaultDx()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDxForStreamWithKnownSourceLength creates a Directional Movement Index (Dx) for offline usage with a source data stream
+func NewDxForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Dx, err error) {
+	ind, err := NewDxWithKnownSourceLength(sourceLength, timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultDxForStreamWithKnownSourceLength creates a Directional Movement Index (Dx) for offline usage with a source data stream
+func NewDefaultDxForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Dx, err error) {
+	ind, err := NewDefaultDxWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *DxWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.minusDI.ReceiveDOHLCVTick(tickData, streamBarIndex)
 	ind.plusDI.ReceiveDOHLCVTick(tickData, streamBarIndex)
 }

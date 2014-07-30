@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating an exponential moving average (ema) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *EMA
+		indicator *Ema
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewEMA(period, gotrade.UseClosePrice)
+		indicator, _ = NewEma(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

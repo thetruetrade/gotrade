@@ -14,8 +14,8 @@ type DemaWithoutStorage struct {
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
-	ema1                 *EMAWithoutStorage
-	ema2                 *EMAWithoutStorage
+	ema1                 *EmaWithoutStorage
+	ema2                 *EmaWithoutStorage
 	currentEMA           float64
 }
 
@@ -44,12 +44,12 @@ func NewDemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 		valueAvailableAction: valueAvailableAction,
 	}
 
-	ind.ema1, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+	ind.ema1, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentEMA = dataItem
 		ind.ema2.ReceiveTick(dataItem, streamBarIndex)
 	})
 
-	ind.ema2, _ = NewEMAWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+	ind.ema2, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		// increment the number of results this indicator can be expected to return
 		ind.dataLength += 1
 		if ind.validFromBar == -1 {

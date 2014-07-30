@@ -13,7 +13,7 @@ type StochasticOscWithoutStorage struct {
 	periodCounter        int
 	slowKMA              *SmaWithoutStorage
 	slowDMA              *SmaWithoutStorage
-	hhv                  *HHVWithoutStorage
+	hhv                  *HhvWithoutStorage
 	llv                  *LLVWithoutStorage
 	currentPeriodHigh    float64
 	currentPeriodLow     float64
@@ -59,7 +59,7 @@ func NewStochasticOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, sl
 	ind.baseIndicatorWithFloatBounds = newBaseIndicatorWithFloatBounds(timePeriod)
 	ind.slowKMA = tmpSlowKMA
 	ind.slowDMA = tmpSlowDMA
-	ind.hhv, err = NewHHVWithoutStorage(fastKTimePeriod, func(dataItem float64, streamBarIndex int) {
+	ind.hhv, err = NewHhvWithoutStorage(fastKTimePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentPeriodHigh = dataItem
 	})
 	ind.llv, err = NewLLVWithoutStorage(fastKTimePeriod, func(dataItem float64, streamBarIndex int) {

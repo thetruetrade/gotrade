@@ -13,7 +13,7 @@ type AdxWithoutStorage struct {
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
-	dx                   *DXWithoutStorage
+	dx                   *DxWithoutStorage
 	currentDX            float64
 	sumDX                float64
 	previousAdx          float64
@@ -50,7 +50,7 @@ func NewAdxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 		valueAvailableAction: valueAvailableAction,
 	}
 
-	ind.dx, err = NewDXWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+	ind.dx, err = NewDxWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 
 		ind.currentDX = dataItem
 
