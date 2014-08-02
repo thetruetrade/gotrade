@@ -1341,9 +1341,9 @@ var _ = Describe("when executing the gotrade parabolic stop and reverse (SAR) wi
 	})
 })
 
-var _ = Describe("when executing the gotrade linearregression (LinearReg) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade linearregression (LinReg) with a years data and known output", func() {
 	var (
-		ind             *indicators.LinearReg
+		ind             *indicators.LinReg
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1358,7 +1358,7 @@ var _ = Describe("when executing the gotrade linearregression (LinearReg) with a
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewLinearReg(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewLinReg(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1375,9 +1375,9 @@ var _ = Describe("when executing the gotrade linearregression (LinearReg) with a
 	})
 })
 
-var _ = Describe("when executing the gotrade linearregression slope (LinearRegSlope) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade linearregression slope (LinRegSlp) with a years data and known output", func() {
 	var (
-		ind             *indicators.LinearRegSlope
+		ind             *indicators.LinRegSlp
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1392,7 +1392,7 @@ var _ = Describe("when executing the gotrade linearregression slope (LinearRegSl
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewLinearRegSlope(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewLinRegSlp(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1409,9 +1409,9 @@ var _ = Describe("when executing the gotrade linearregression slope (LinearRegSl
 	})
 })
 
-var _ = Describe("when executing the gotrade linearregression intercept (LinearRegIntercept) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade linearregression intercept (LinRegInt) with a years data and known output", func() {
 	var (
-		ind             *indicators.LinearRegIntercept
+		ind             *indicators.LinRegInt
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1426,7 +1426,7 @@ var _ = Describe("when executing the gotrade linearregression intercept (LinearR
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewLinearRegIntercept(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewLinRegInt(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1443,9 +1443,9 @@ var _ = Describe("when executing the gotrade linearregression intercept (LinearR
 	})
 })
 
-var _ = Describe("when executing the gotrade linearregression angle (LinearRegAngle) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade linearregression angle (LinRegAng) with a years data and known output", func() {
 	var (
-		ind             *indicators.LinearRegAngle
+		ind             *indicators.LinRegAng
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1460,7 +1460,7 @@ var _ = Describe("when executing the gotrade linearregression angle (LinearRegAn
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewLinearRegAngle(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewLinRegAng(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1511,9 +1511,9 @@ var _ = Describe("when executing the gotrade time series forecast (TSF) with a y
 	})
 })
 
-var _ = Describe("when executing the gotrade kaufman adaptive moving average (KAMA) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade kaufman adaptive moving average (Kama) with a years data and known output", func() {
 	var (
-		ind             *indicators.KAMA
+		ind             *indicators.Kama
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1528,7 +1528,7 @@ var _ = Describe("when executing the gotrade kaufman adaptive moving average (KA
 	Describe("using a time period of 30", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewKAMA(30, gotrade.UseClosePrice)
+			ind, err = indicators.NewKama(30, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1681,9 +1681,9 @@ var _ = Describe("when executing the gotrade lowest low value (LLV) with a years
 	})
 })
 
-var _ = Describe("when executing the gotrade highest high bars (HHVBars) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade highest high bars (HhvBars) with a years data and known output", func() {
 	var (
-		ind             *indicators.HHVBars
+		ind             *indicators.HhvBars
 		expectedResults []int64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1698,7 +1698,7 @@ var _ = Describe("when executing the gotrade highest high bars (HHVBars) with a 
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewHHVBars(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewHhvBars(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

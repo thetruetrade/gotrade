@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a kaufmann adaptive moving average (kama) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *KAMA
+		indicator *Kama
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewKAMA(period, gotrade.UseClosePrice)
+		indicator, _ = NewKama(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

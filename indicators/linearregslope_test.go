@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a linear regression slope (linearregslope) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *LinearRegSlope
+		indicator *LinRegSlp
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewLinearRegSlope(period, gotrade.UseClosePrice)
+		indicator, _ = NewLinRegSlp(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

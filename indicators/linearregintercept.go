@@ -4,41 +4,90 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type LinearRegIntercept struct {
-	*LinearRegWithoutStorage
+// A Linear Regression Intercept Indicator (LinRegInt)
+type LinRegInt struct {
+	*LinRegWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-func NewLinearRegIntercept(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinearRegIntercept, err error) {
-	newInd := LinearRegIntercept{selectData: selectData}
-	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod,
+// NewLinRegInt creates a Linear Regression Intercept Indicator (LinRegInt) for online usage
+func NewLinRegInt(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegInt, err error) {
+	ind := LinRegInt{selectData: selectData}
+	ind.LinRegWithoutStorage, err = NewLinRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := intercept
 
-			if result > newInd.LinearRegWithoutStorage.maxValue {
-				newInd.LinearRegWithoutStorage.maxValue = result
+			// update the maximum result value
+			if result > ind.LinRegWithoutStorage.maxValue {
+				ind.LinRegWithoutStorage.maxValue = result
 			}
 
-			if result < newInd.LinearRegWithoutStorage.minValue {
-				newInd.LinearRegWithoutStorage.minValue = result
+			// update the minimum result value
+			if result < ind.LinRegWithoutStorage.minValue {
+				ind.LinRegWithoutStorage.minValue = result
 			}
 
-			newInd.Data = append(newInd.Data, result)
+			ind.Data = append(ind.Data, result)
 		})
 
-	return &newInd, err
+	return &ind, err
 }
 
-func NewLinearRegInterceptForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinearRegIntercept, err error) {
-	newInd, err := NewLinearRegIntercept(timePeriod, selectData)
-	priceStream.AddTickSubscription(newInd)
-	return newInd, err
+// NewDefaultLinRegInt creates a Linear Regression Intercept Indicator (LinRegInt) for online usage with default parameters
+//	- timePeriod: 14
+func NewDefaultLinRegInt() (indicator *LinRegInt, err error) {
+	timePeriod := 14
+	return NewLinRegInt(timePeriod, gotrade.UseClosePrice)
 }
 
-func (ind *LinearRegIntercept) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewLinRegIntWithKnownSourceLength creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage
+func NewLinRegIntWithKnownSourceLength(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegInt, err error) {
+	ind, err := NewLinRegInt(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultLinRegIntWithKnownSourceLength creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with default parameters
+func NewDefaultLinRegIntWithKnownSourceLength(sourceLength int) (indicator *LinRegInt, err error) {
+	ind, err := NewDefaultLinRegInt()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewLinRegIntForStream creates a Linear Regression Intercept Indicator (LinRegInt) for online usage with a source data stream
+func NewLinRegIntForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegInt, err error) {
+	ind, err := NewLinRegInt(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultLinRegIntForStream creates a Linear Regression Intercept Indicator (LinRegInt) for online usage with a source data stream
+func NewDefaultLinRegIntForStream(priceStream *gotrade.DOHLCVStream) (indicator *LinRegInt, err error) {
+	ind, err := NewDefaultLinRegInt()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewLinRegIntForStreamWithKnownSourceLength creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with a source data stream
+func NewLinRegIntForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegInt, err error) {
+	ind, err := NewLinRegIntWithKnownSourceLength(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultLinRegIntForStreamWithKnownSourceLength creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with a source data stream
+func NewDefaultLinRegIntForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LinRegInt, err error) {
+	ind, err := NewDefaultLinRegIntWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *LinRegInt) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }

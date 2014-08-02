@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a linear regression (linearreg) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *LinearReg
+		indicator *LinReg
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewLinearReg(period, gotrade.UseClosePrice)
+		indicator, _ = NewLinReg(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

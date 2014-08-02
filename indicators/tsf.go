@@ -5,7 +5,7 @@ import (
 )
 
 type TSF struct {
-	*LinearRegWithoutStorage
+	*LinRegWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
@@ -14,16 +14,16 @@ type TSF struct {
 
 func NewTSF(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TSF, err error) {
 	newInd := TSF{selectData: selectData}
-	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod,
+	newInd.LinRegWithoutStorage, err = NewLinRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := intercept + slope*float64(timePeriod)
 
-			if result > newInd.LinearRegWithoutStorage.maxValue {
-				newInd.LinearRegWithoutStorage.maxValue = result
+			if result > newInd.LinRegWithoutStorage.maxValue {
+				newInd.LinRegWithoutStorage.maxValue = result
 			}
 
-			if result < newInd.LinearRegWithoutStorage.minValue {
-				newInd.LinearRegWithoutStorage.minValue = result
+			if result < newInd.LinRegWithoutStorage.minValue {
+				newInd.LinRegWithoutStorage.minValue = result
 			}
 
 			newInd.Data = append(newInd.Data, result)

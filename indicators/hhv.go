@@ -22,7 +22,7 @@ type HhvWithoutStorage struct {
 	timePeriod           int
 }
 
-// NewEmaWithoutStorage creates an Exponential Moving Average Indicator (Ema) without storage
+// NewHhvWithoutStorage creates a Highest High Value Indicator Indicator (Hhv) without storage
 func NewHhvWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *HhvWithoutStorage, err error) {
 
 	// an indicator without storage MUST have a value available action
@@ -63,20 +63,64 @@ type Hhv struct {
 	Data []float64
 }
 
-// NewHhv creates a new Highest High Value Indicator (Hhv) for online usage
+// NewHhv creates a Highest High Value Indicator (Hhv) for online usage
 func NewHhv(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Hhv, err error) {
-	newHhv := Hhv{selectData: selectData}
-	newHhv.HhvWithoutStorage, err = NewHhvWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newHhv.Data = append(newHhv.Data, dataItem)
+	ind := Hhv{selectData: selectData}
+	ind.HhvWithoutStorage, err = NewHhvWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	})
 
-	return &newHhv, err
+	return &ind, err
 }
 
+// NewDefaultHhv creates a Highest High Value Indicator (Hhv) for online usage with default parameters
+//	- timePeriod: 25
+func NewDefaultHhv() (indicator *Hhv, err error) {
+	timePeriod := 25
+	return NewHhv(timePeriod, gotrade.UseClosePrice)
+}
+
+// NewHhvWithKnownSourceLength creates a Highest High Value Indicator (Hhv)for offline usage
+func NewHhvWithKnownSourceLength(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Hhv, err error) {
+	ind, err := NewHhv(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultHhvWithKnownSourceLength creates a Highest High Value Indicator (Hhv)for offline usage with default parameters
+func NewDefaultHhvWithKnownSourceLength(sourceLength int) (indicator *Hhv, err error) {
+	ind, err := NewDefaultHhv()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewHhvForStream creates a Highest High Value Indicator (Hhv)for online usage with a source data stream
 func NewHhvForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Hhv, err error) {
-	newSma, err := NewHhv(timePeriod, selectData)
-	priceStream.AddTickSubscription(newSma)
-	return newSma, err
+	ind, err := NewHhv(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultHhvForStream creates a Highest High Value Indicator (Hhv)for online usage with a source data stream
+func NewDefaultHhvForStream(priceStream *gotrade.DOHLCVStream) (indicator *Hhv, err error) {
+	ind, err := NewDefaultHhv()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewHhvForStreamWithKnownSourceLength creates a Highest High Value Indicator (Hhv)for offline usage with a source data stream
+func NewHhvForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Hhv, err error) {
+	ind, err := NewHhvWithKnownSourceLength(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultHhvForStreamWithKnownSourceLength creates a Highest High Value Indicator (Hhv)for offline usage with a source data stream
+func NewDefaultHhvForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Hhv, err error) {
+	ind, err := NewDefaultHhvWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
 }
 
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick
@@ -88,6 +132,7 @@ func (ind *Hhv) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 func (ind *HhvWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	ind.periodHistory.PushBack(tickData)
 
+	// resize the history
 	if ind.periodHistory.Len() > ind.timePeriod {
 		first := ind.periodHistory.Front()
 		ind.periodHistory.Remove(first)

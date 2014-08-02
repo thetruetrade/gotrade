@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a highest high value bars (hhvbars) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *HHVBars
+		indicator *HhvBars
 		inputs    IndicatorWithIntBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewHHVBars(period, gotrade.UseClosePrice)
+		indicator, _ = NewHhvBars(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithIntBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() int64 {

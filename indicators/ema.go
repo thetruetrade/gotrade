@@ -131,6 +131,7 @@ func (ema *EmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 	if ema.periodCounter < 0 {
 		ema.periodTotal += tickData
 	} else if ema.periodCounter == 0 {
+
 		// increment the number of results this indicator can be expected to return
 		ema.dataLength += 1
 

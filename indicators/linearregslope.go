@@ -4,41 +4,90 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-type LinearRegSlope struct {
-	*LinearRegWithoutStorage
+// A Linear Regression Intercept Indicator (LinRegInt)
+type LinRegSlp struct {
+	*LinRegWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-func NewLinearRegSlope(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinearRegSlope, err error) {
-	newInd := LinearRegSlope{selectData: selectData}
-	newInd.LinearRegWithoutStorage, err = NewLinearRegWithoutStorage(timePeriod,
+// NewLinRegSlp creates a Linear Regression Slope Indicator (LinRegSlp) for online usage
+func NewLinRegSlp(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
+	ind := LinRegSlp{selectData: selectData}
+	ind.LinRegWithoutStorage, err = NewLinRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := slope
 
-			if result > newInd.LinearRegWithoutStorage.maxValue {
-				newInd.LinearRegWithoutStorage.maxValue = result
+			// update the maximum result value
+			if result > ind.LinRegWithoutStorage.maxValue {
+				ind.LinRegWithoutStorage.maxValue = result
 			}
 
-			if result < newInd.LinearRegWithoutStorage.minValue {
-				newInd.LinearRegWithoutStorage.minValue = result
+			// update the minimum result value
+			if result < ind.LinRegWithoutStorage.minValue {
+				ind.LinRegWithoutStorage.minValue = result
 			}
 
-			newInd.Data = append(newInd.Data, result)
+			ind.Data = append(ind.Data, result)
 		})
 
-	return &newInd, err
+	return &ind, err
 }
 
-func NewLinearRegSlopeForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinearRegSlope, err error) {
-	newInd, err := NewLinearRegSlope(timePeriod, selectData)
-	priceStream.AddTickSubscription(newInd)
-	return newInd, err
+// NewDefaultLinRegSlp creates a Linear Regression Slope Indicator (LinRegSlp) for online usage with default parameters
+//	- timePeriod: 14
+func NewDefaultLinRegSlp() (indicator *LinRegSlp, err error) {
+	timePeriod := 14
+	return NewLinRegSlp(timePeriod, gotrade.UseClosePrice)
 }
 
-func (ind *LinearRegSlope) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewLinRegSlpWithKnownSourceLength creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage
+func NewLinRegSlpWithKnownSourceLength(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
+	ind, err := NewLinRegSlp(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultLinRegSlpWithKnownSourceLength creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage with default parameters
+func NewDefaultLinRegSlpWithKnownSourceLength(sourceLength int) (indicator *LinRegSlp, err error) {
+	ind, err := NewDefaultLinRegSlp()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewLinRegSlpForStream creates a Linear Regression Slope Indicator (LinRegSlp) for online usage with a source data stream
+func NewLinRegSlpForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
+	ind, err := NewLinRegSlp(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultLinRegSlpForStream creates a Linear Regression Slope Indicator (LinRegSlp) for online usage with a source data stream
+func NewDefaultLinRegSlpForStream(priceStream *gotrade.DOHLCVStream) (indicator *LinRegSlp, err error) {
+	ind, err := NewDefaultLinRegSlp()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewLinRegSlpForStreamWithKnownSourceLength creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage with a source data stream
+func NewLinRegSlpForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
+	ind, err := NewLinRegSlpWithKnownSourceLength(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultLinRegSlpForStreamWithKnownSourceLength creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage with a source data stream
+func NewDefaultLinRegSlpForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LinRegSlp, err error) {
+	ind, err := NewDefaultLinRegSlpWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *LinRegSlp) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }
