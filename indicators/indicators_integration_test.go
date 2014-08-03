@@ -1647,9 +1647,9 @@ var _ = Describe("when executing the gotrade highest high value (Hhv) with a yea
 	})
 })
 
-var _ = Describe("when executing the gotrade lowest low value (LLV) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade lowest low value (Llv) with a years data and known output", func() {
 	var (
-		ind             *indicators.LLV
+		ind             *indicators.Llv
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1664,7 +1664,7 @@ var _ = Describe("when executing the gotrade lowest low value (LLV) with a years
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewLLV(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewLlv(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1715,9 +1715,9 @@ var _ = Describe("when executing the gotrade highest high bars (HhvBars) with a 
 	})
 })
 
-var _ = Describe("when executing the gotrade lowest low bars (LLVBars) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade lowest low bars (LlvBars) with a years data and known output", func() {
 	var (
-		ind             *indicators.LLVBars
+		ind             *indicators.LlvBars
 		expectedResults []int64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1732,7 +1732,7 @@ var _ = Describe("when executing the gotrade lowest low bars (LLVBars) with a ye
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewLLVBars(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewLlvBars(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

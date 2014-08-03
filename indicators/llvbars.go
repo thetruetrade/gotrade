@@ -1,83 +1,146 @@
 package indicators
 
-// lowest low value in period indicator
-
 import (
 	"container/list"
+	"errors"
 	"github.com/thetruetrade/gotrade"
 	"math"
 )
 
-// A Lowest Low Value In Period Indicator
-type LLVBarsWithoutStorage struct {
-	*baseIndicatorWithIntBounds
-	*baseIndicatorWithTimePeriod
+// A Lowest Low Value Bars Indicator (LlvBars), no storage, for use in other indicators
+type LlvBarsWithoutStorage struct {
+	*baseIndicator
+	*baseIntBounds
 
 	// private variables
 	periodHistory        *list.List
 	valueAvailableAction ValueAvailableActionInt
 	currentLow           float64
 	currentLowIndex      int64
+	timePeriod           int
 }
 
-// NewLLVBarsWithoutStorage returns a new Lowest Low Value (LLVBars) configured with the
-// specified timePeriod, this version is intended for use by other indicators.
-// The LLVBars results are not stored in a local field but made available though the
-// configured valueAvailableAction for storage by the parent indicator.
-func NewLLVBarsWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionInt) (indicator *LLVBarsWithoutStorage, err error) {
-	newLLVBars := LLVBarsWithoutStorage{baseIndicatorWithIntBounds: newBaseIndicatorWithIntBounds(timePeriod - 1),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		currentLow:                  math.MaxFloat64,
-		currentLowIndex:             0,
-		periodHistory:               list.New()}
-	newLLVBars.valueAvailableAction = valueAvailableAction
+// NewLlvBarsWithoutStorage creates a Lowest Low Value Bars Indicator Indicator (LlvBars) without storage
+func NewLlvBarsWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionInt) (indicator *LlvBarsWithoutStorage, err error) {
 
-	return &newLLVBars, nil
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for this indicator is 1
+	if timePeriod < 1 {
+		return nil, errors.New("timePeriod is less than the minimum (1)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod - 1
+
+	ind := LlvBarsWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseIntBounds:        newBaseIntBounds(),
+		currentLow:           math.MaxFloat64,
+		currentLowIndex:      0,
+		periodHistory:        list.New(),
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
+
+	return &ind, nil
 }
 
-// A Lowest Low Value Indicator
-type LLVBars struct {
-	*LLVBarsWithoutStorage
+// A Lowest Low Value Bars Indicator (LlvBars)
+type LlvBars struct {
+	*LlvBarsWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []int64
 }
 
-// NewLLVBars returns a new Lowest Low Value (LLVBars) configured with the
-// specified timePeriod. The LLVBars results are stored in the Data field.
-func NewLLVBars(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LLVBars, err error) {
-	newLLVBars := LLVBars{selectData: selectData}
-	newLLVBars.LLVBarsWithoutStorage, err = NewLLVBarsWithoutStorage(timePeriod, func(dataItem int64, streamBarIndex int) {
-		newLLVBars.Data = append(newLLVBars.Data, dataItem)
+// NewLlvBars creates a Lowest Low Value Bars Indicator (LlvBars) for online usage
+func NewLlvBars(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
+	ind := LlvBars{selectData: selectData}
+	ind.LlvBarsWithoutStorage, err = NewLlvBarsWithoutStorage(timePeriod, func(dataItem int64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	})
 
-	return &newLLVBars, err
+	return &ind, err
 }
 
-func NewLLVBarsForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LLVBars, err error) {
-	newSma, err := NewLLVBars(timePeriod, selectData)
-	priceStream.AddTickSubscription(newSma)
-	return newSma, err
+// NewDefaultLlvBars creates a Lowest Low Value Indicator (LlvBars) for online usage with default parameters
+//	- timePeriod: 25
+func NewDefaultLlvBars() (indicator *LlvBars, err error) {
+	timePeriod := 25
+	return NewLlvBars(timePeriod, gotrade.UseClosePrice)
 }
 
-func (ind *LLVBars) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewLlvBarsWithKnownSourceLength creates a Lowest Low Value Indicator (LlvBars)for offline usage
+func NewLlvBarsWithKnownSourceLength(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
+	ind, err := NewLlvBars(timePeriod, selectData)
+	ind.Data = make([]int64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultLlvBarsWithKnownSourceLength creates a Lowest Low Value Indicator (LlvBars)for offline usage with default parameters
+func NewDefaultLlvBarsWithKnownSourceLength(sourceLength int) (indicator *LlvBars, err error) {
+	ind, err := NewDefaultLlvBars()
+	ind.Data = make([]int64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewLlvBarsForStream creates a Lowest Low Value Indicator (LlvBars)for online usage with a source data stream
+func NewLlvBarsForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
+	ind, err := NewLlvBars(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultLlvBarsForStream creates a Lowest Low Value Indicator (LlvBars)for online usage with a source data stream
+func NewDefaultLlvBarsForStream(priceStream *gotrade.DOHLCVStream) (indicator *LlvBars, err error) {
+	ind, err := NewDefaultLlvBars()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewLlvBarsForStreamWithKnownSourceLength creates a Lowest Low Value Indicator (LlvBars)for offline usage with a source data stream
+func NewLlvBarsForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
+	ind, err := NewLlvBarsWithKnownSourceLength(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultLlvBarsForStreamWithKnownSourceLength creates a Lowest Low Value Indicator (LlvBars)for offline usage with a source data stream
+func NewDefaultLlvBarsForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LlvBars, err error) {
+	ind, err := NewDefaultLlvBarsWithKnownSourceLength(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *LlvBars) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (ind *LLVBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+func (ind *LlvBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	ind.periodHistory.PushBack(tickData)
 
-	if ind.periodHistory.Len() > ind.GetTimePeriod() {
+	// resize the history
+	if ind.periodHistory.Len() > ind.timePeriod {
 		first := ind.periodHistory.Front()
 		ind.periodHistory.Remove(first)
 
 		// make sure we haven't just removed the current low
-		if ind.currentLowIndex == int64(ind.GetTimePeriod()-1) {
+		if ind.currentLowIndex == int64(ind.timePeriod-1) {
 			ind.currentLow = math.MaxFloat64
 			// we have we need to find the new low in the history
-			var i int = ind.GetTimePeriod() - 1
+			var i int = ind.timePeriod - 1
 			for e := ind.periodHistory.Front(); e != nil; e = e.Next() {
 				value := e.Value.(float64)
 				if value < ind.currentLow {
@@ -97,20 +160,25 @@ func (ind *LLVBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 
 		var result = ind.currentLowIndex
 
+		// increment the number of results this indicator can be expected to return
 		ind.dataLength += 1
 
 		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
 			ind.validFromBar = streamBarIndex
 		}
 
+		// update the maximum result value
 		if result > ind.maxValue {
 			ind.maxValue = result
 		}
 
+		// update the minimum result value
 		if result < ind.minValue {
 			ind.minValue = result
 		}
 
+		// notify of a new result value though the value available action
 		ind.valueAvailableAction(result, streamBarIndex)
 
 	} else {
@@ -121,23 +189,28 @@ func (ind *LLVBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 			ind.currentLowIndex += 1
 		}
 
-		if ind.periodHistory.Len() == ind.GetTimePeriod() {
+		if ind.periodHistory.Len() == ind.timePeriod {
 			var result = ind.currentLowIndex
 
+			// increment the number of results this indicator can be expected to return
 			ind.dataLength += 1
 
 			if ind.validFromBar == -1 {
+				// set the streamBarIndex from which this indicator returns valid results
 				ind.validFromBar = streamBarIndex
 			}
 
+			// update the maximum result value
 			if result > ind.maxValue {
 				ind.maxValue = result
 			}
 
+			// update the minimum result value
 			if result < ind.minValue {
 				ind.minValue = result
 			}
 
+			// notify of a new result value though the value available action
 			ind.valueAvailableAction(result, streamBarIndex)
 		}
 	}

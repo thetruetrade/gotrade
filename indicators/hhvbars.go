@@ -1,7 +1,5 @@
 package indicators
 
-// highest high value in period indicator
-
 import (
 	"container/list"
 	"errors"

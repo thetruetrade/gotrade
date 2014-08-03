@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a lowest low value (llv) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *LLV
+		indicator *Llv
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewLLV(period, gotrade.UseClosePrice)
+		indicator, _ = NewLlv(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {
