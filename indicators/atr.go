@@ -128,16 +128,16 @@ func NewDefaultAtr() (indicator *Atr, err error) {
 	return NewAtr(timePeriod)
 }
 
-// NewAtrWithKnownSourceLength creates an Average True Range (Atr) for offline usage
-func NewAtrWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Atr, err error) {
+// NewAtrWithSrcLen creates an Average True Range (Atr) for offline usage
+func NewAtrWithSrcLen(sourceLength int, timePeriod int) (indicator *Atr, err error) {
 	ind, err := NewAtr(timePeriod)
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
-// NewDefaultAtrWithKnownSourceLength creates an Average True Range (Atr) for offline usage with default parameters
-func NewDefaultAtrWithKnownSourceLength(sourceLength int) (indicator *Atr, err error) {
+// NewDefaultAtrWithSrcLen creates an Average True Range (Atr) for offline usage with default parameters
+func NewDefaultAtrWithSrcLen(sourceLength int) (indicator *Atr, err error) {
 	ind, err := NewDefaultAtr()
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
@@ -157,16 +157,16 @@ func NewDefaultAtrForStream(priceStream *gotrade.DOHLCVStream) (indicator *Atr, 
 	return ind, err
 }
 
-// NewAtrForStreamWithKnownSourceLength creates an Average True Range (Atr) for offline usage with a source data stream
-func NewAtrForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Atr, err error) {
-	ind, err := NewAtrWithKnownSourceLength(sourceLength, timePeriod)
+// NewAtrForStreamWithSrcLen creates an Average True Range (Atr) for offline usage with a source data stream
+func NewAtrForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Atr, err error) {
+	ind, err := NewAtrWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
-// NewDefaultAtrForStreamWithKnownSourceLength creates an Average True Range (Atr) for offline usage with a source data stream
-func NewDefaultAtrForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Atr, err error) {
-	ind, err := NewDefaultAtrWithKnownSourceLength(sourceLength)
+// NewDefaultAtrForStreamWithSrcLen creates an Average True Range (Atr) for offline usage with a source data stream
+func NewDefaultAtrForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Atr, err error) {
+	ind, err := NewDefaultAtrWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }

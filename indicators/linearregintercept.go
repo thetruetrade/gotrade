@@ -43,16 +43,16 @@ func NewDefaultLinRegInt() (indicator *LinRegInt, err error) {
 	return NewLinRegInt(timePeriod, gotrade.UseClosePrice)
 }
 
-// NewLinRegIntWithKnownSourceLength creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage
-func NewLinRegIntWithKnownSourceLength(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegInt, err error) {
+// NewLinRegIntWithSrcLen creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage
+func NewLinRegIntWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegInt, err error) {
 	ind, err := NewLinRegInt(timePeriod, selectData)
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
-// NewDefaultLinRegIntWithKnownSourceLength creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with default parameters
-func NewDefaultLinRegIntWithKnownSourceLength(sourceLength int) (indicator *LinRegInt, err error) {
+// NewDefaultLinRegIntWithSrcLen creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with default parameters
+func NewDefaultLinRegIntWithSrcLen(sourceLength int) (indicator *LinRegInt, err error) {
 	ind, err := NewDefaultLinRegInt()
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
@@ -72,16 +72,16 @@ func NewDefaultLinRegIntForStream(priceStream *gotrade.DOHLCVStream) (indicator 
 	return ind, err
 }
 
-// NewLinRegIntForStreamWithKnownSourceLength creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with a source data stream
-func NewLinRegIntForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegInt, err error) {
-	ind, err := NewLinRegIntWithKnownSourceLength(sourceLength, timePeriod, selectData)
+// NewLinRegIntForStreamWithSrcLen creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with a source data stream
+func NewLinRegIntForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegInt, err error) {
+	ind, err := NewLinRegIntWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
-// NewDefaultLinRegIntForStreamWithKnownSourceLength creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with a source data stream
-func NewDefaultLinRegIntForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LinRegInt, err error) {
-	ind, err := NewDefaultLinRegIntWithKnownSourceLength(sourceLength)
+// NewDefaultLinRegIntForStreamWithSrcLen creates a Linear Regression Intercept Indicator (LinRegInt) for offline usage with a source data stream
+func NewDefaultLinRegIntForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LinRegInt, err error) {
+	ind, err := NewDefaultLinRegIntWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }

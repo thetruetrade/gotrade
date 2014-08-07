@@ -15,10 +15,10 @@ type DxWithoutStorage struct {
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
-	minusDI              *MinusDI
+	minusDI              *MinusDi
 	plusDI               *PlusDI
 	currentPlusDI        float64
-	currentMinusDI       float64
+	currentMinusDi       float64
 	timePeriod           int
 }
 
@@ -49,15 +49,15 @@ func NewDxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActi
 		baseIndicator:        newBaseIndicator(lookback),
 		baseFloatBounds:      newBaseFloatBounds(),
 		currentPlusDI:        0.0,
-		currentMinusDI:       0.0,
+		currentMinusDi:       0.0,
 		valueAvailableAction: valueAvailableAction,
 		timePeriod:           timePeriod,
 	}
 
-	ind.minusDI, err = NewMinusDI(timePeriod)
+	ind.minusDI, err = NewMinusDi(timePeriod)
 
 	ind.minusDI.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		ind.currentMinusDI = dataItem
+		ind.currentMinusDi = dataItem
 	}
 
 	ind.plusDI, err = NewPlusDI(timePeriod)
@@ -66,9 +66,9 @@ func NewDxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActi
 		ind.currentPlusDI = dataItem
 
 		var result float64
-		tmp := ind.currentMinusDI + ind.currentPlusDI
+		tmp := ind.currentMinusDi + ind.currentPlusDI
 		if tmp != 0.0 {
-			result = 100.0 * (math.Abs(ind.currentMinusDI-ind.currentPlusDI) / tmp)
+			result = 100.0 * (math.Abs(ind.currentMinusDi-ind.currentPlusDI) / tmp)
 		} else {
 			result = 0.0
 		}
@@ -126,16 +126,16 @@ func NewDefaultDx() (indicator *Dx, err error) {
 	return NewDx(timePeriod)
 }
 
-// NewDxWithKnownSourceLength creates a Directional Movement Index (Dx) for offline usage
-func NewDxWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Dx, err error) {
+// NewDxWithSrcLen creates a Directional Movement Index (Dx) for offline usage
+func NewDxWithSrcLen(sourceLength int, timePeriod int) (indicator *Dx, err error) {
 	ind, err := NewDx(timePeriod)
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
-// NewDefaultDxWithKnownSourceLength creates a Directional Movement Index (Dx) for offline usage with default parameters
-func NewDefaultDxWithKnownSourceLength(sourceLength int) (indicator *Dx, err error) {
+// NewDefaultDxWithSrcLen creates a Directional Movement Index (Dx) for offline usage with default parameters
+func NewDefaultDxWithSrcLen(sourceLength int) (indicator *Dx, err error) {
 	ind, err := NewDefaultDx()
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
@@ -155,16 +155,16 @@ func NewDefaultDxForStream(priceStream *gotrade.DOHLCVStream) (indicator *Dx, er
 	return ind, err
 }
 
-// NewDxForStreamWithKnownSourceLength creates a Directional Movement Index (Dx) for offline usage with a source data stream
-func NewDxForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Dx, err error) {
-	ind, err := NewDxWithKnownSourceLength(sourceLength, timePeriod)
+// NewDxForStreamWithSrcLen creates a Directional Movement Index (Dx) for offline usage with a source data stream
+func NewDxForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Dx, err error) {
+	ind, err := NewDxWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
-// NewDefaultDxForStreamWithKnownSourceLength creates a Directional Movement Index (Dx) for offline usage with a source data stream
-func NewDefaultDxForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Dx, err error) {
-	ind, err := NewDefaultDxWithKnownSourceLength(sourceLength)
+// NewDefaultDxForStreamWithSrcLen creates a Directional Movement Index (Dx) for offline usage with a source data stream
+func NewDefaultDxForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Dx, err error) {
+	ind, err := NewDefaultDxWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }

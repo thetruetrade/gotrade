@@ -1,15 +1,15 @@
-// Average True Range (MFI)
 package indicators
 
 import (
 	"container/list"
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-// A plus DM Indicator
-type MFIWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// A Money Flow Index Indicator (Mfi), no storage, for use in other indicators
+type MfiWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
@@ -21,141 +21,213 @@ type MFIWithoutStorage struct {
 	negativeHistory      *list.List
 	previousTypicalPrice float64
 	currentVolume        float64
+	timePeriod           int
 }
 
-// NewMFIWithoutStorage returns a new Money Flow Index (MFI) configured with the
-// specified timePeriod, this version is intended for use by other indicators.
-// The MFI results are not stored in a local field but made available though the
-// configured valueAvailableAction for storage by the parent indicator.
-func NewMFIWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MFIWithoutStorage, err error) {
-	newMFI := MFIWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               (timePeriod * -1) - 1,
-		positiveHistory:             list.New(),
-		negativeHistory:             list.New(),
-		positiveMoneyFlow:           0.0,
-		negativeMoneyFlow:           0.0,
-		currentVolume:               0.0,
-		previousTypicalPrice:        0.0}
-	newMFI.typicalPrice, err = NewTypicalPriceWithoutStorage(func(dataItem float64, streamBarIndex int) {
-		newMFI.periodCounter += 1
+// NewMfiWithoutStorage creates a Money Flow Index Indicator (Mfi) without storage
+func NewMfiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MfiWithoutStorage, err error) {
 
-		if newMFI.periodCounter > (newMFI.GetTimePeriod() * -1) {
-			moneyFlow := dataItem * newMFI.currentVolume
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
 
-			if newMFI.periodCounter <= 0 {
-				if dataItem > newMFI.previousTypicalPrice {
-					newMFI.positiveMoneyFlow += moneyFlow
-					newMFI.positiveHistory.PushBack(moneyFlow)
-					newMFI.negativeHistory.PushBack(0.0)
-				} else if dataItem < newMFI.previousTypicalPrice {
-					newMFI.negativeMoneyFlow += moneyFlow
-					newMFI.positiveHistory.PushBack(0.0)
-					newMFI.negativeHistory.PushBack(moneyFlow)
+	// the minimum timeperiod for this indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod
+	ind := MfiWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		periodCounter:        (timePeriod * -1) - 1,
+		positiveHistory:      list.New(),
+		negativeHistory:      list.New(),
+		positiveMoneyFlow:    0.0,
+		negativeMoneyFlow:    0.0,
+		currentVolume:        0.0,
+		previousTypicalPrice: 0.0,
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
+
+	ind.typicalPrice, err = NewTypicalPriceWithoutStorage(func(dataItem float64, streamBarIndex int) {
+		ind.periodCounter += 1
+
+		if ind.periodCounter > (ind.timePeriod * -1) {
+			moneyFlow := dataItem * ind.currentVolume
+
+			if ind.periodCounter <= 0 {
+				if dataItem > ind.previousTypicalPrice {
+					ind.positiveMoneyFlow += moneyFlow
+					ind.positiveHistory.PushBack(moneyFlow)
+					ind.negativeHistory.PushBack(0.0)
+				} else if dataItem < ind.previousTypicalPrice {
+					ind.negativeMoneyFlow += moneyFlow
+					ind.positiveHistory.PushBack(0.0)
+					ind.negativeHistory.PushBack(moneyFlow)
 				} else {
-					newMFI.positiveHistory.PushBack(0.0)
-					newMFI.negativeHistory.PushBack(0.0)
+					ind.positiveHistory.PushBack(0.0)
+					ind.negativeHistory.PushBack(0.0)
 				}
 			}
 
-			if newMFI.periodCounter == 0 {
+			if ind.periodCounter == 0 {
 
-				result := 100.0 * (newMFI.positiveMoneyFlow / (newMFI.positiveMoneyFlow + newMFI.negativeMoneyFlow))
+				result := 100.0 * (ind.positiveMoneyFlow / (ind.positiveMoneyFlow + ind.negativeMoneyFlow))
 
-				newMFI.dataLength += 1
-				if newMFI.validFromBar == -1 {
-					newMFI.validFromBar = streamBarIndex
+				// increment the number of results this indicator can be expected to return
+				ind.dataLength += 1
+				if ind.validFromBar == -1 {
+					// set the streamBarIndex from which this indicator returns valid results
+					ind.validFromBar = streamBarIndex
 				}
 
-				if result > newMFI.maxValue {
-					newMFI.maxValue = result
+				// update the maximum result value
+				if result > ind.maxValue {
+					ind.maxValue = result
 				}
 
-				if result < newMFI.minValue {
-					newMFI.minValue = result
+				// update the minimum result value
+				if result < ind.minValue {
+					ind.minValue = result
 				}
 
-				newMFI.valueAvailableAction(result, streamBarIndex)
+				// notify of a new result value though the value available action
+				ind.valueAvailableAction(result, streamBarIndex)
 			}
-			if newMFI.periodCounter > 0 {
-				firstPositive := newMFI.positiveHistory.Front().Value.(float64)
-				newMFI.positiveMoneyFlow -= firstPositive
+			if ind.periodCounter > 0 {
+				firstPositive := ind.positiveHistory.Front().Value.(float64)
+				ind.positiveMoneyFlow -= firstPositive
 
-				firstNegative := newMFI.negativeHistory.Front().Value.(float64)
-				newMFI.negativeMoneyFlow -= firstNegative
+				firstNegative := ind.negativeHistory.Front().Value.(float64)
+				ind.negativeMoneyFlow -= firstNegative
 
-				if dataItem > newMFI.previousTypicalPrice {
-					newMFI.positiveMoneyFlow += moneyFlow
-					newMFI.positiveHistory.PushBack(moneyFlow)
-					newMFI.negativeHistory.PushBack(0.0)
-				} else if dataItem < newMFI.previousTypicalPrice {
-					newMFI.negativeMoneyFlow += moneyFlow
-					newMFI.positiveHistory.PushBack(0.0)
-					newMFI.negativeHistory.PushBack(moneyFlow)
+				if dataItem > ind.previousTypicalPrice {
+					ind.positiveMoneyFlow += moneyFlow
+					ind.positiveHistory.PushBack(moneyFlow)
+					ind.negativeHistory.PushBack(0.0)
+				} else if dataItem < ind.previousTypicalPrice {
+					ind.negativeMoneyFlow += moneyFlow
+					ind.positiveHistory.PushBack(0.0)
+					ind.negativeHistory.PushBack(moneyFlow)
 				} else {
-					newMFI.positiveHistory.PushBack(0.0)
-					newMFI.negativeHistory.PushBack(0.0)
+					ind.positiveHistory.PushBack(0.0)
+					ind.negativeHistory.PushBack(0.0)
 				}
 
-				result := 100.0 * (newMFI.positiveMoneyFlow / (newMFI.positiveMoneyFlow + newMFI.negativeMoneyFlow))
+				result := 100.0 * (ind.positiveMoneyFlow / (ind.positiveMoneyFlow + ind.negativeMoneyFlow))
 
-				newMFI.dataLength += 1
+				// increment the number of results this indicator can be expected to return
+				ind.dataLength += 1
 
-				if result > newMFI.maxValue {
-					newMFI.maxValue = result
+				// update the maximum result value
+				if result > ind.maxValue {
+					ind.maxValue = result
 				}
 
-				if result < newMFI.minValue {
-					newMFI.minValue = result
+				// update the minimum result value
+				if result < ind.minValue {
+					ind.minValue = result
 				}
 
-				newMFI.valueAvailableAction(result, streamBarIndex)
+				// notify of a new result value though the value available action
+				ind.valueAvailableAction(result, streamBarIndex)
 			}
 
 		}
-		newMFI.previousTypicalPrice = dataItem
+		ind.previousTypicalPrice = dataItem
 
-		if newMFI.positiveHistory.Len() > newMFI.GetTimePeriod() {
-			first := newMFI.positiveHistory.Front()
-			newMFI.positiveHistory.Remove(first)
+		if ind.positiveHistory.Len() > ind.timePeriod {
+			first := ind.positiveHistory.Front()
+			ind.positiveHistory.Remove(first)
 		}
 
-		if newMFI.negativeHistory.Len() > newMFI.GetTimePeriod() {
-			first := newMFI.negativeHistory.Front()
-			newMFI.negativeHistory.Remove(first)
+		if ind.negativeHistory.Len() > ind.timePeriod {
+			first := ind.negativeHistory.Front()
+			ind.negativeHistory.Remove(first)
 		}
 	})
-	newMFI.valueAvailableAction = valueAvailableAction
 
-	return &newMFI, nil
+	return &ind, err
 }
 
-// An Average True Range Indicator
-type MFI struct {
-	*MFIWithoutStorage
+// A Money Flow Index Indicator (Mfi)
+type Mfi struct {
+	*MfiWithoutStorage
 
 	// public variables
 	Data []float64
 }
 
-// NewMFI returns a new Money Flow Index (MFI) configured with the
-// specified timePeriod. The MFI results are stored in the Data field.
-func NewMFI(timePeriod int) (indicator *MFI, err error) {
-	newMFI := MFI{}
-	newMFI.MFIWithoutStorage, err = NewMFIWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newMFI.Data = append(newMFI.Data, dataItem)
+// NewMfi creates a Money Flow Index Indicator (Mfi) for online usage
+func NewMfi(timePeriod int) (indicator *Mfi, err error) {
+	ind := Mfi{}
+	ind.MfiWithoutStorage, err = NewMfiWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	})
 
-	return &newMFI, err
+	return &ind, err
 }
 
-func NewMFIForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *MFI, err error) {
-	newMFI, err := NewMFI(timePeriod)
-	priceStream.AddTickSubscription(newMFI)
-	return newMFI, err
+// NewDefaultMfi creates a Money Flow Index Indicator (Mfi) for online usage with default parameters
+//	- timePeriod: 25
+func NewDefaultMfi() (indicator *Mfi, err error) {
+	timePeriod := 25
+	return NewMfi(timePeriod)
 }
 
-func (ind *MFIWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewMfiWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage
+func NewMfiWithSrcLen(sourceLength int, timePeriod int) (indicator *Mfi, err error) {
+	ind, err := NewMfi(timePeriod)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultMfiWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage with default parameters
+func NewDefaultMfiWithSrcLen(sourceLength int) (indicator *Mfi, err error) {
+	ind, err := NewDefaultMfi()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewMfiForStream creates a Money Flow Index Indicator (Mfi) for online usage with a source data stream
+func NewMfiForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Mfi, err error) {
+	ind, err := NewMfi(timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultMfiForStream creates a Money Flow Index Indicator (Mfi) for online usage with a source data stream
+func NewDefaultMfiForStream(priceStream *gotrade.DOHLCVStream) (indicator *Mfi, err error) {
+	ind, err := NewDefaultMfi()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewMfiForStreamWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage with a source data stream
+func NewMfiForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Mfi, err error) {
+	ind, err := NewMfiWithSrcLen(sourceLength, timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultMfiForStreamWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage with a source data stream
+func NewDefaultMfiForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Mfi, err error) {
+	ind, err := NewDefaultMfiWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *MfiWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.currentVolume = tickData.V()
 	ind.typicalPrice.ReceiveDOHLCVTick(tickData, streamBarIndex)
 }

@@ -109,16 +109,16 @@ func NewDefaultAdxr() (indicator *Adxr, err error) {
 	return NewAdxr(timePeriod)
 }
 
-// NewAdxrWithKnownSourceLength creates an Average Directional Index Rating (Adxr) for offline usage
-func NewAdxrWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Adxr, err error) {
+// NewAdxrWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage
+func NewAdxrWithSrcLen(sourceLength int, timePeriod int) (indicator *Adxr, err error) {
 	ind, err := NewAdxr(timePeriod)
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
-// NewDefaultAdxrWithKnownSourceLength creates an Average Directional Index Rating (Adxr) for offline usage with default parameters
-func NewDefaultAdxrWithKnownSourceLength(sourceLength int) (indicator *Adxr, err error) {
+// NewDefaultAdxrWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with default parameters
+func NewDefaultAdxrWithSrcLen(sourceLength int) (indicator *Adxr, err error) {
 
 	ind, err := NewDefaultAdxr()
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
@@ -131,16 +131,16 @@ func NewAdxrForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indica
 	return newAdxr, err
 }
 
-// NewAdxrForStreamWithKnownSourceLength creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
-func NewAdxrForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Adxr, err error) {
-	ind, err := NewAdxrWithKnownSourceLength(sourceLength, timePeriod)
+// NewAdxrForStreamWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
+func NewAdxrForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Adxr, err error) {
+	ind, err := NewAdxrWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
-// NewDefaultAdxrForStreamWithKnownSourceLength creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
-func NewDefaultAdxrForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Adxr, err error) {
-	ind, err := NewDefaultAdxrWithKnownSourceLength(sourceLength)
+// NewDefaultAdxrForStreamWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
+func NewDefaultAdxrForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Adxr, err error) {
+	ind, err := NewDefaultAdxrWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }

@@ -299,22 +299,22 @@ var _ = Describe("when executing the gotrade bollinger bands with a years data a
 
 var _ = Describe("when executing the gotrade macd with a years data and known output", func() {
 	var (
-		macd            *indicators.MACD
-		expectedResults []MACDData
+		macd            *indicators.Macd
+		expectedResults []MacdData
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
 	)
 
 	BeforeEach(func() {
 		// load the expected results data
-		expectedResults, _ = LoadCSVMACDPriceDataFromFile("macd_12_26_9_expectedresult.data")
+		expectedResults, _ = LoadCSVMacdPriceDataFromFile("macd_12_26_9_expectedresult.data")
 		priceStream = gotrade.NewDailyDOHLCVStream()
 	})
 
 	Describe("using a lookback periods of 12, 26, 9", func() {
 
 		BeforeEach(func() {
-			macd, err = indicators.NewMACD(12, 26, 9, gotrade.UseClosePrice)
+			macd, err = indicators.NewMacd(12, 26, 9, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(macd)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -325,7 +325,7 @@ var _ = Describe("when executing the gotrade macd with a years data and known ou
 
 		It("it should have correctly calculated the macd, signal and histogram for each item in the result set accurate to two decimal places", func() {
 			for k := range expectedResults {
-				Expect(expectedResults[k].M()).To(BeNumerically("~", macd.MACD[k], 0.01))
+				Expect(expectedResults[k].M()).To(BeNumerically("~", macd.Macd[k], 0.01))
 				Expect(expectedResults[k].S()).To(BeNumerically("~", macd.Signal[k], 0.01))
 				Expect(expectedResults[k].H()).To(BeNumerically("~", macd.Histogram[k], 0.01))
 			}
@@ -889,7 +889,7 @@ var _ = Describe("when executing the gotrade plus directional indicator (14) wit
 
 var _ = Describe("when executing the gotrade minus directional indicator (1) with a years data and known output", func() {
 	var (
-		minusDI         *indicators.MinusDI
+		minusDI         *indicators.MinusDi
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -904,7 +904,7 @@ var _ = Describe("when executing the gotrade minus directional indicator (1) wit
 	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			minusDI, err = indicators.NewMinusDI(1)
+			minusDI, err = indicators.NewMinusDi(1)
 			priceStream.AddTickSubscription(minusDI)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -923,7 +923,7 @@ var _ = Describe("when executing the gotrade minus directional indicator (1) wit
 
 var _ = Describe("when executing the gotrade minus directional indicator (14) with a years data and known output", func() {
 	var (
-		minusDI         *indicators.MinusDI
+		minusDI         *indicators.MinusDi
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -938,7 +938,7 @@ var _ = Describe("when executing the gotrade minus directional indicator (14) wi
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			minusDI, err = indicators.NewMinusDI(14)
+			minusDI, err = indicators.NewMinusDi(14)
 			priceStream.AddTickSubscription(minusDI)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1275,7 +1275,7 @@ var _ = Describe("when executing the gotrade rate of change ratio 100 scale with
 
 var _ = Describe("when executing the gotrade money flow index (14) with a years data and known output", func() {
 	var (
-		ind             *indicators.MFI
+		ind             *indicators.Mfi
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1290,7 +1290,7 @@ var _ = Describe("when executing the gotrade money flow index (14) with a years 
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewMFI(14)
+			ind, err = indicators.NewMfi(14)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

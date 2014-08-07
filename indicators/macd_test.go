@@ -11,19 +11,19 @@ var _ = Describe("when calculating a moving average convergence divergence (macd
 		shortPeriod  int = 3
 		longPeriod   int = 6
 		signalPeriod int = 2
-		indicator    *MACD
+		indicator    *Macd
 		inputs       IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewMACD(shortPeriod, longPeriod, signalPeriod, gotrade.UseClosePrice)
+		indicator, _ = NewMacd(shortPeriod, longPeriod, signalPeriod, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {
-				return GetDataMaxMACD(indicator.MACD, indicator.Signal, indicator.Histogram)
+				return GetDataMaxMacd(indicator.Macd, indicator.Signal, indicator.Histogram)
 			},
 			func() float64 {
-				return GetDataMinMACD(indicator.MACD, indicator.Signal, indicator.Histogram)
+				return GetDataMinMacd(indicator.Macd, indicator.Signal, indicator.Histogram)
 			})
 	})
 

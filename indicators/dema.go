@@ -107,16 +107,16 @@ func NewDefaultDema() (indicator *Dema, err error) {
 	return NewDema(timePeriod, selectData)
 }
 
-// NewDemaWithKnownSourceLength creates a Double Exponential Moving Average (Dema) for offline usage
-func NewDemaWithKnownSourceLength(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
+// NewDemaWithSrcLen creates a Double Exponential Moving Average (Dema) for offline usage
+func NewDemaWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
 	ind, err := NewDema(timePeriod, selectData)
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
-// NewDefaultDemaWithKnownSourceLength creates a Double Exponential Moving Average (Dema) for offline usage with default parameters
-func NewDefaultDemaWithKnownSourceLength(sourceLength int) (indicator *Dema, err error) {
+// NewDefaultDemaWithSrcLen creates a Double Exponential Moving Average (Dema) for offline usage with default parameters
+func NewDefaultDemaWithSrcLen(sourceLength int) (indicator *Dema, err error) {
 	ind, err := NewDefaultDema()
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
@@ -136,16 +136,16 @@ func NewDefaultDemaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Dema
 	return ind, err
 }
 
-// NewDemaForStreamWithKnownSourceLength creates a Double Exponential Moving Average (Dema) for offline usage with a source data stream
-func NewDemaForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
-	ind, err := NewDemaWithKnownSourceLength(sourceLength, timePeriod, selectData)
+// NewDemaForStreamWithSrcLen creates a Double Exponential Moving Average (Dema) for offline usage with a source data stream
+func NewDemaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
+	ind, err := NewDemaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
-// NewDefaultDemaForStreamWithKnownSourceLength creates a Double Exponential Moving Average (Dema) for offline usage with a source data stream
-func NewDefaultDemaForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Dema, err error) {
-	ind, err := NewDefaultDemaWithKnownSourceLength(sourceLength)
+// NewDefaultDemaForStreamWithSrcLen creates a Double Exponential Moving Average (Dema) for offline usage with a source data stream
+func NewDefaultDemaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Dema, err error) {
+	ind, err := NewDefaultDemaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }

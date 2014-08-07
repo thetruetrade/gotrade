@@ -1,129 +1,215 @@
-// Moving Average Convergence and Divergence (MACD)
+// Moving Average Convergence and Divergence (Macd)
 package indicators
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-// MACD Line: (12-day EmaWithoutStorage - 26-day EmaWithoutStorage)
-
-// Signal Line: 9-day EmaWithoutStorage of MACD Line
-
-// MACD Histogram: MACD Line - Signal Line
-
-// A Moving Average Convergence-Divergence (MACD) Indicator
-type MACD struct {
-	*baseIndicatorWithFloatBounds
+// A Moving Average Convergence-Divergence (Macd) Indicator
+type Macd struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionMACD
+	valueAvailableAction ValueAvailableActionMacd
 	fastTimePeriod       int
 	slowTimePeriod       int
 	signalTimePeriod     int
 	emaFast              *EmaWithoutStorage
 	emaSlow              *EmaWithoutStorage
 	emaSignal            *EmaWithoutStorage
-	currentFastEMA       float64
-	currentSlowEMA       float64
-	currentMACD          float64
+	currentFastEma       float64
+	currentSlowEma       float64
+	currentMacd          float64
 	emaSlowSkip          int
 	selectData           gotrade.DataSelectionFunc
 
 	// public variables
-	MACD      []float64
+	Macd      []float64
 	Signal    []float64
 	Histogram []float64
 }
 
-// NewMACD returns a new Moving Average Convergence-Divergence (MACD) Indicator configured with the
-// specified timePeriod. The MACD results are stored in the DATA field.
-func NewMACD(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *MACD, err error) {
-	newMACD := MACD{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(slowTimePeriod + signalTimePeriod - 2),
+// NewMacd creates a Moving Average Convergence Divergence Indicator (Macd) for online usage
+func NewMacd(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+
+	// the minimum fastTimePeriod for this indicator is 2
+	if fastTimePeriod < 2 {
+		return nil, errors.New("fastTimePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum fastTimePeriod
+	if fastTimePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("fastTimePeriod is greater than the maximum (100000)")
+	}
+
+	// the minimum slowTimePeriod for this indicator is 2
+	if slowTimePeriod < 2 {
+		return nil, errors.New("slowTimePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum slowTimePeriod
+	if slowTimePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("slowTimePeriod is greater than the maximum (100000)")
+	}
+
+	// the minimum signalTimePeriod for this indicator is 2
+	if signalTimePeriod < 1 {
+		return nil, errors.New("signalTimePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum slowTimePeriod
+	if signalTimePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("signalTimePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := slowTimePeriod + signalTimePeriod - 2
+	ind := Macd{
+		baseIndicator:    newBaseIndicator(lookback),
+		baseFloatBounds:  newBaseFloatBounds(),
 		fastTimePeriod:   fastTimePeriod,
 		slowTimePeriod:   slowTimePeriod,
-		signalTimePeriod: signalTimePeriod}
+		signalTimePeriod: signalTimePeriod,
+	}
 
 	// shift the fast ema up so that it has valid data at the same time as the slow emas
-	newMACD.emaSlowSkip = slowTimePeriod - fastTimePeriod
-	newMACD.emaFast, _ = NewEmaWithoutStorage(fastTimePeriod, func(dataItem float64, streamBarIndex int) {
-		newMACD.currentFastEMA = dataItem
+	ind.emaSlowSkip = slowTimePeriod - fastTimePeriod
+	ind.emaFast, err = NewEmaWithoutStorage(fastTimePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.currentFastEma = dataItem
 	})
 
-	newMACD.emaSlow, _ = NewEmaWithoutStorage(slowTimePeriod, func(dataItem float64, streamBarIndex int) {
-		newMACD.currentSlowEMA = dataItem
+	ind.emaSlow, err = NewEmaWithoutStorage(slowTimePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.currentSlowEma = dataItem
 
-		newMACD.currentMACD = newMACD.currentFastEMA - newMACD.currentSlowEMA
+		ind.currentMacd = ind.currentFastEma - ind.currentSlowEma
 
-		newMACD.emaSignal.ReceiveTick(newMACD.currentMACD, streamBarIndex)
+		ind.emaSignal.ReceiveTick(ind.currentMacd, streamBarIndex)
 	})
 
-	newMACD.emaSignal, _ = NewEmaWithoutStorage(signalTimePeriod, func(dataItem float64, streamBarIndex int) {
-		newMACD.dataLength += 1
-		if newMACD.validFromBar == -1 {
-			newMACD.validFromBar = streamBarIndex
+	ind.emaSignal, err = NewEmaWithoutStorage(signalTimePeriod, func(dataItem float64, streamBarIndex int) {
+
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
-		// MACD Line: (12-day EmaWithoutStorage - 26-day EmaWithoutStorage)
+		// Macd Line: (12-day EmaWithoutStorage - 26-day EmaWithoutStorage)
 
-		// Signal Line: 9-day EmaWithoutStorage of MACD Line
+		// Signal Line: 9-day EmaWithoutStorage of Macd Line
 
-		// MACD Histogram: MACD Line - Signal Line
+		// Macd Histogram: Macd Line - Signal Line
 
-		macd := newMACD.currentFastEMA - newMACD.currentSlowEMA
+		macd := ind.currentFastEma - ind.currentSlowEma
 		signal := dataItem
 		histogram := macd - signal
 
-		// MAX
-
-		if macd > newMACD.maxValue {
-			newMACD.maxValue = macd
+		// update the maximum result value
+		if macd > ind.maxValue {
+			ind.maxValue = macd
 		}
 
-		if signal > newMACD.maxValue {
-			newMACD.maxValue = signal
+		if signal > ind.maxValue {
+			ind.maxValue = signal
 		}
 
-		if histogram > newMACD.maxValue {
-			newMACD.maxValue = histogram
+		if histogram > ind.maxValue {
+			ind.maxValue = histogram
 		}
 
-		// MIN
-
-		if macd < newMACD.minValue {
-			newMACD.minValue = macd
+		// update the minimum result value
+		if macd < ind.minValue {
+			ind.minValue = macd
 		}
 
-		if signal < newMACD.minValue {
-			newMACD.minValue = signal
+		if signal < ind.minValue {
+			ind.minValue = signal
 		}
 
-		if histogram < newMACD.minValue {
-			newMACD.minValue = histogram
+		if histogram < ind.minValue {
+			ind.minValue = histogram
 		}
-		newMACD.valueAvailableAction(macd, signal, histogram, streamBarIndex)
+
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(macd, signal, histogram, streamBarIndex)
 	})
 
-	newMACD.selectData = selectData
-	newMACD.valueAvailableAction = func(dataItemMACD float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int) {
-		newMACD.MACD = append(newMACD.MACD, dataItemMACD)
-		newMACD.Signal = append(newMACD.Signal, dataItemSignal)
-		newMACD.Histogram = append(newMACD.Histogram, dataItemHistogram)
+	ind.selectData = selectData
+	ind.valueAvailableAction = func(dataItemMacd float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int) {
+		ind.Macd = append(ind.Macd, dataItemMacd)
+		ind.Signal = append(ind.Signal, dataItemSignal)
+		ind.Histogram = append(ind.Histogram, dataItemHistogram)
 	}
-	return &newMACD, nil
+	return &ind, err
 }
 
-func NewMACDForStream(priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *MACD, err error) {
-	newMACD, err := NewMACD(fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
-	priceStream.AddTickSubscription(newMACD)
-	return newMACD, err
+// NewDefaultMacd creates a Moving Average Convergence Divergence Indicator (Macd) for online usage with default parameters
+//	fastTimePeriod - 12
+//	slowTimePeriod - 26
+//	signalTimePeriod - 9
+func NewDefaultMacd() (indicator *Macd, err error) {
+	fastTimePeriod := 12
+	slowTimePeriod := 26
+	signalTimePeriod := 9
+	return NewMacd(fastTimePeriod, slowTimePeriod, signalTimePeriod, gotrade.UseClosePrice)
 }
 
-func (ind *MACD) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewMacdWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage
+func NewMacdWithSrcLen(sourceLength int, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+	ind, err := NewMacd(fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
+	ind.Macd = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	ind.Signal = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	ind.Histogram = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultMacdWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with default parameters
+func NewDefaultMacdWithSrcLen(sourceLength int) (indicator *Macd, err error) {
+	ind, err := NewDefaultMacd()
+	ind.Macd = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	ind.Signal = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	ind.Histogram = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewMacdForStream creates a Moving Average Convergence Divergence Indicator (Macd) for online usage with a source data stream
+func NewMacdForStream(priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+	ind, err := NewMacd(fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultMacdForStream creates a Moving Average Convergence Divergence Indicator (Macd) for online usage with a source data stream
+func NewDefaultMacdForStream(priceStream *gotrade.DOHLCVStream) (indicator *Macd, err error) {
+	ind, err := NewDefaultMacd()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewMacdForStreamWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with a source data stream
+func NewMacdForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+	ind, err := NewMacdWithSrcLen(sourceLength, fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultMacdForStreamWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with a source data stream
+func NewDefaultMacdForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Macd, err error) {
+	ind, err := NewDefaultMacdWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *Macd) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (ind *MACD) ReceiveTick(tickData float64, streamBarIndex int) {
+func (ind *Macd) ReceiveTick(tickData float64, streamBarIndex int) {
 	if streamBarIndex > ind.emaSlowSkip {
 		ind.emaFast.ReceiveTick(tickData, streamBarIndex)
 	}

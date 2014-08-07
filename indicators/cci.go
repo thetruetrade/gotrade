@@ -115,16 +115,16 @@ func NewDefaultCci() (indicator *Cci, err error) {
 	return NewCci(timePeriod)
 }
 
-// NewCciWithKnownSourceLength creates a Commodity Channel Index (Cci) for offline usage
-func NewCciWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Cci, err error) {
+// NewCciWithSrcLen creates a Commodity Channel Index (Cci) for offline usage
+func NewCciWithSrcLen(sourceLength int, timePeriod int) (indicator *Cci, err error) {
 	ind, err := NewCci(timePeriod)
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
-// NewDefaultCciWithKnownSourceLength creates a Commodity Channel Index (Cci) for offline usage with default parameters
-func NewDefaultCciWithKnownSourceLength(sourceLength int) (indicator *Cci, err error) {
+// NewDefaultCciWithSrcLen creates a Commodity Channel Index (Cci) for offline usage with default parameters
+func NewDefaultCciWithSrcLen(sourceLength int) (indicator *Cci, err error) {
 	ind, err := NewDefaultCci()
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
@@ -144,16 +144,16 @@ func NewDefaultCciForStream(priceStream *gotrade.DOHLCVStream) (indicator *Cci, 
 	return ind, err
 }
 
-// NewCciForStreamWithKnownSourceLength creates a Commodity Channel Index (Cci) for offline usage with a source data stream
-func NewCciForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Cci, err error) {
-	ind, err := NewCciWithKnownSourceLength(sourceLength, timePeriod)
+// NewCciForStreamWithSrcLen creates a Commodity Channel Index (Cci) for offline usage with a source data stream
+func NewCciForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Cci, err error) {
+	ind, err := NewCciWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
-// NewDefaultCciForStreamWithKnownSourceLength creates a Commodity Channel Index (Cci) for offline usage with a source data stream
-func NewDefaultCciForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Cci, err error) {
-	ind, err := NewDefaultCciWithKnownSourceLength(sourceLength)
+// NewDefaultCciForStreamWithSrcLen creates a Commodity Channel Index (Cci) for offline usage with a source data stream
+func NewDefaultCciForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Cci, err error) {
+	ind, err := NewDefaultCciWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }

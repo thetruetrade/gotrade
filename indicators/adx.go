@@ -134,16 +134,16 @@ func NewDefaultAdx() (indicator *Adx, err error) {
 	return NewAdx(timePeriod)
 }
 
-// NewAdxWithKnownSourceLength creates an Average Directional Index (Adx) for offline usage
-func NewAdxWithKnownSourceLength(sourceLength int, timePeriod int) (indicator *Adx, err error) {
+// NewAdxWithSrcLen creates an Average Directional Index (Adx) for offline usage
+func NewAdxWithSrcLen(sourceLength int, timePeriod int) (indicator *Adx, err error) {
 	ind, err := NewAdx(timePeriod)
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
-// NewDefaultAdxWithKnownSourceLength creates an Average Directional Index (Adx) for offline usage with default parameters
-func NewDefaultAdxWithKnownSourceLength(sourceLength int) (indicator *Adx, err error) {
+// NewDefaultAdxWithSrcLen creates an Average Directional Index (Adx) for offline usage with default parameters
+func NewDefaultAdxWithSrcLen(sourceLength int) (indicator *Adx, err error) {
 
 	ind, err := NewDefaultAdx()
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
@@ -164,16 +164,16 @@ func NewDefaultAdxForStream(priceStream *gotrade.DOHLCVStream) (indicator *Adx, 
 	return ind, err
 }
 
-// NewAdxForStreamWithKnownSourceLength creates an Average Directional Index (Adx) for offline usage with a source data stream
-func NewAdxForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Adx, err error) {
-	ind, err := NewAdxWithKnownSourceLength(sourceLength, timePeriod)
+// NewAdxForStreamWithSrcLen creates an Average Directional Index (Adx) for offline usage with a source data stream
+func NewAdxForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Adx, err error) {
+	ind, err := NewAdxWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
-// NewDefaultAdxForStreamWithKnownSourceLength creates an Average Directional Index (Adx) for offline usage with a source data stream
-func NewDefaultAdxForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Adx, err error) {
-	ind, err := NewDefaultAdxWithKnownSourceLength(sourceLength)
+// NewDefaultAdxForStreamWithSrcLen creates an Average Directional Index (Adx) for offline usage with a source data stream
+func NewDefaultAdxForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Adx, err error) {
+	ind, err := NewDefaultAdxWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }

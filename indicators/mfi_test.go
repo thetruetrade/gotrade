@@ -8,12 +8,12 @@ import (
 var _ = Describe("when calculating a money flow index (mfi) with DOHLCV source data", func() {
 	var (
 		period    int = 14
-		indicator *indicators.MFI
+		indicator *indicators.Mfi
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewMFI(period)
+		indicator, _ = indicators.NewMfi(period)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

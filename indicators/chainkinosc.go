@@ -140,16 +140,16 @@ func NewDefaultChaikinOsc() (indicator *ChaikinOsc, err error) {
 	return NewChaikinOsc(fastTimePeriod, slowTimePeriod)
 }
 
-// NewChaikinOscWithKnownSourceLength creates a Chaikin Oscillator (ChaikinOsc) for offline usage
-func NewChaikinOscWithKnownSourceLength(sourceLength int, fastTimePeriod int, slowTimePeriod int) (indicator *ChaikinOsc, err error) {
+// NewChaikinOscWithSrcLen creates a Chaikin Oscillator (ChaikinOsc) for offline usage
+func NewChaikinOscWithSrcLen(sourceLength int, fastTimePeriod int, slowTimePeriod int) (indicator *ChaikinOsc, err error) {
 	ind, err := NewChaikinOsc(fastTimePeriod, slowTimePeriod)
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 
 	return ind, err
 }
 
-// NewDefaultChaikinOscWithKnownSourceLength creates a Chaikin Oscillator (ChaikinOsc) for offline usage with default parameters
-func NewDefaultChaikinOscWithKnownSourceLength(sourceLength int) (indicator *ChaikinOsc, err error) {
+// NewDefaultChaikinOscWithSrcLen creates a Chaikin Oscillator (ChaikinOsc) for offline usage with default parameters
+func NewDefaultChaikinOscWithSrcLen(sourceLength int) (indicator *ChaikinOsc, err error) {
 	ind, err := NewDefaultChaikinOsc()
 	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
 	return ind, err
@@ -162,16 +162,16 @@ func NewChaikinOscForStream(priceStream *gotrade.DOHLCVStream, fastTimePeriod in
 	return newChaikinOsc, err
 }
 
-// NewChaikinOscForStreamWithKnownSourceLength creates a Chaikin Oscillator (ChaikinOsc) for offline usage with a source data stream
-func NewChaikinOscForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int) (indicator *ChaikinOsc, err error) {
-	ind, err := NewChaikinOscWithKnownSourceLength(sourceLength, fastTimePeriod, slowTimePeriod)
+// NewChaikinOscForStreamWithSrcLen creates a Chaikin Oscillator (ChaikinOsc) for offline usage with a source data stream
+func NewChaikinOscForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int) (indicator *ChaikinOsc, err error) {
+	ind, err := NewChaikinOscWithSrcLen(sourceLength, fastTimePeriod, slowTimePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
-// NewDefaultChaikinOscForStreamWithKnownSourceLength creates a Chaikin Oscillator (ChaikinOsc) for offline usage with a source data stream
-func NewDefaultChaikinOscForStreamWithKnownSourceLength(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *ChaikinOsc, err error) {
-	ind, err := NewDefaultChaikinOscWithKnownSourceLength(sourceLength)
+// NewDefaultChaikinOscForStreamWithSrcLen creates a Chaikin Oscillator (ChaikinOsc) for offline usage with a source data stream
+func NewDefaultChaikinOscForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *ChaikinOsc, err error) {
+	ind, err := NewDefaultChaikinOscWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }

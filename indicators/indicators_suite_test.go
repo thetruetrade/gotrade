@@ -332,7 +332,7 @@ func LoadCSVBollingerPriceDataFromFile(fileName string) (results []BollingerBand
 	return results, nil
 }
 
-func LoadCSVMACDPriceDataFromFile(fileName string) (results []MACDData, err error) {
+func LoadCSVMacdPriceDataFromFile(fileName string) (results []MacdData, err error) {
 	file, err := os.Open("../testdata/" + fileName)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -357,7 +357,7 @@ func LoadCSVMACDPriceDataFromFile(fileName string) (results []MACDData, err erro
 			fmt.Println("Error:", err)
 			return nil, err
 		}
-		results = append(results, NewMACDDataItem(macd, signal, histogram))
+		results = append(results, NewMacdDataItem(macd, signal, histogram))
 	}
 	return results, nil
 }
@@ -502,7 +502,7 @@ func GetDataMinDOHLCV(dohlcvArray []gotrade.DOHLCV, selectData gotrade.DataSelec
 	return min
 }
 
-func GetDataMaxMACD(macd []float64, signal []float64, histogram []float64) float64 {
+func GetDataMaxMacd(macd []float64, signal []float64, histogram []float64) float64 {
 	max := math.SmallestNonzeroFloat64
 
 	for i := range macd {
@@ -524,7 +524,7 @@ func GetDataMaxMACD(macd []float64, signal []float64, histogram []float64) float
 	return max
 }
 
-func GetDataMinMACD(macd []float64, signal []float64, histogram []float64) float64 {
+func GetDataMinMacd(macd []float64, signal []float64, histogram []float64) float64 {
 	min := math.MaxFloat64
 
 	for i := range macd {
@@ -582,8 +582,8 @@ func GetDataMinStoch(slowK []float64, slowD []float64) float64 {
 	return min
 }
 
-type MACDData interface {
-	// MACD
+type MacdData interface {
+	// Macd
 	M() float64
 	// Signal
 	S() float64
@@ -591,26 +591,26 @@ type MACDData interface {
 	H() float64
 }
 
-type MACDDataItem struct {
+type MacdDataItem struct {
 	macd      float64
 	signal    float64
 	histogram float64
 }
 
-func (data *MACDDataItem) M() float64 {
+func (data *MacdDataItem) M() float64 {
 	return data.macd
 }
 
-func (data *MACDDataItem) S() float64 {
+func (data *MacdDataItem) S() float64 {
 	return data.signal
 }
 
-func (data *MACDDataItem) H() float64 {
+func (data *MacdDataItem) H() float64 {
 	return data.histogram
 }
 
-func NewMACDDataItem(macd float64, signal float64, histogram float64) *MACDDataItem {
-	return &MACDDataItem{macd: macd, signal: signal, histogram: histogram}
+func NewMacdDataItem(macd float64, signal float64, histogram float64) *MacdDataItem {
+	return &MacdDataItem{macd: macd, signal: signal, histogram: histogram}
 }
 
 type BollingerBand interface {
