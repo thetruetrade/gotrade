@@ -2,91 +2,166 @@ package indicators
 
 import (
 	"container/list"
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-type MomentumWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// A Momentum Indicator (Mom), no storage, for use in other indicators
+type MomWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	periodHistory        *list.List
+	timePeriod           int
 }
 
-func NewMomentumWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MomentumWithoutStorage, err error) {
-	newMomentum := MomentumWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               (timePeriod * -1),
-		periodHistory:               list.New()}
+// NewMomWithoutStorage creates a Momentum Indicator (Mom) without storage
+func NewMomWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MomWithoutStorage, err error) {
 
-	newMomentum.valueAvailableAction = valueAvailableAction
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
 
-	return &newMomentum, err
+	// the minimum timeperiod for this indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod
+	ind := MomWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		periodCounter:        (timePeriod * -1),
+		periodHistory:        list.New(),
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
+
+	return &ind, err
 }
 
-// A Momentum Indicator
-type Momentum struct {
-	*MomentumWithoutStorage
+// A Momentum Indicator (Mom)
+type Mom struct {
+	*MomWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-// NewMomentum returns a new Momentum Indicator(Momentum) configured with the
-// specified timePeriod. The Momentum results are stored in the DATA field.
-func NewMomentum(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Momentum, err error) {
-	newMomentum := Momentum{selectData: selectData}
-	newMomentum.MomentumWithoutStorage, err = NewMomentumWithoutStorage(timePeriod,
+// NewMom creates a Momentum (Mom) for online usage
+func NewMom(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Mom, err error) {
+	ind := Mom{selectData: selectData}
+	ind.MomWithoutStorage, err = NewMomWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newMomentum.Data = append(newMomentum.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
 
-	newMomentum.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newMomentum.Data = append(newMomentum.Data, dataItem)
+	ind.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	}
-	return &newMomentum, err
+	return &ind, err
 }
 
-func NewMomentumForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Momentum, err error) {
-	newMomentum, err := NewMomentum(timePeriod, selectData)
-	priceStream.AddTickSubscription(newMomentum)
-	return newMomentum, err
+// NewDefaultMom creates a Momentum (Mom) for online usage with default parameters
+//	- timePeriod: 10
+//  - selectData: useClosePrice
+func NewDefaultMom() (indicator *Mom, err error) {
+	timePeriod := 10
+	selectData := gotrade.UseClosePrice
+	return NewMom(timePeriod, selectData)
 }
 
-func (ind *Momentum) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewMomWithSrcLen creates a Momentum (Mom) for offline usage
+func NewMomWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Mom, err error) {
+	ind, err := NewMom(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultMomWithSrcLen creates a Momentum (Mom) for offline usage with default parameters
+func NewDefaultMomWithSrcLen(sourceLength int) (indicator *Mom, err error) {
+	ind, err := NewDefaultMom()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewMomForStream creates a Momentum (Mom) for online usage with a source data stream
+func NewMomForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Mom, err error) {
+	newMom, err := NewMom(timePeriod, selectData)
+	priceStream.AddTickSubscription(newMom)
+	return newMom, err
+}
+
+// NewDefaultMomForStream creates a Momentum (Mom) for online usage with a source data stream
+func NewDefaultMomForStream(priceStream *gotrade.DOHLCVStream) (indicator *Mom, err error) {
+	ind, err := NewDefaultMom()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewMomForStreamWithSrcLen creates a Momentum (Mom) for offline usage with a source data stream
+func NewMomForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Mom, err error) {
+	ind, err := NewMomWithSrcLen(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultMomForStreamWithSrcLen creates a Momentum (Mom) for offline usage with a source data stream
+func NewDefaultMomForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Mom, err error) {
+	ind, err := NewDefaultMomWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *Mom) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (ind *MomentumWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+func (ind *MomWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	ind.periodCounter += 1
 	ind.periodHistory.PushBack(tickData)
 
 	if ind.periodCounter > 0 {
 
-		// Momentum = price - previousPrice
+		// Mom = price - previousPrice
 		previousPrice := ind.periodHistory.Front().Value.(float64)
+
+		// increment the number of results this indicator can be expected to return
 		ind.dataLength += 1
 		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
 			ind.validFromBar = streamBarIndex
 		}
 		var result float64 = tickData - previousPrice
 
+		// update the maximum result value
 		if result > ind.maxValue {
 			ind.maxValue = result
 		}
 
+		// update the minimum result value
 		if result < ind.minValue {
 			ind.minValue = result
 		}
 
+		// notify of a new result value though the value available action
 		ind.valueAvailableAction(result, streamBarIndex)
 	}
 
-	if ind.periodHistory.Len() > ind.GetTimePeriod() {
+	if ind.periodHistory.Len() > ind.timePeriod {
 		first := ind.periodHistory.Front()
 		ind.periodHistory.Remove(first)
 	}

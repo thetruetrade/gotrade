@@ -7,12 +7,12 @@ import (
 
 var _ = Describe("when calculating an on balance volume (obv) with DOHLCV source data", func() {
 	var (
-		indicator *indicators.OBV
+		indicator *indicators.Obv
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewOBV()
+		indicator, _ = indicators.NewObv()
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

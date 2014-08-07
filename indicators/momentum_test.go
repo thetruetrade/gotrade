@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a momentum indicator (momentum) with DOHLCV source data", func() {
 	var (
 		period    int = 7
-		indicator *Momentum
+		indicator *Mom
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewMomentum(period, gotrade.UseClosePrice)
+		indicator, _ = NewMom(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

@@ -7,7 +7,7 @@ import (
 	"github.com/thetruetrade/gotrade"
 )
 
-// An Average True Range Indicator (Dema), no storage, for use in other indicators
+// A Double Exponential Moving Average Indicator (Dema), no storage, for use in other indicators
 type DemaWithoutStorage struct {
 	*baseIndicator
 	*baseFloatBounds
@@ -89,13 +89,13 @@ type Dema struct {
 // NewDema creates a Double Exponential Moving Average (Dema) for online usage
 func NewDema(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
 
-	newDema := Dema{selectData: selectData}
-	newDema.DemaWithoutStorage, err = NewDemaWithoutStorage(timePeriod,
+	ind := Dema{selectData: selectData}
+	ind.DemaWithoutStorage, err = NewDemaWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newDema.Data = append(newDema.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
 
-	return &newDema, err
+	return &ind, err
 }
 
 // NewDefaultDema creates a Double Exponential Moving Average (Dema) for online usage with default parameters

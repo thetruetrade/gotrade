@@ -1,67 +1,128 @@
-// Average True Range (MinusDM)
 package indicators
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-// A minus DM Indicator
-type MinusDMWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// A Minus Directional Movement Indicator (MinusDm), no storage, for use in other indicators
+type MinusDmWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	previousHigh         float64
 	previousLow          float64
-	previousMinusDM      float64
+	previousMinusDm      float64
+	timePeriod           int
 }
 
-// NewMinusDMWithoutStorage returns a new Minus Directional Movement (MinusDM) configured with the
-// specified timePeriod, this version is intended for use by other indicators.
-// The MinusDM results are not stored in a local field but made available though the
-// configured valueAvailableAction for storage by the parent indicator.
-func NewMinusDMWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MinusDMWithoutStorage, err error) {
-	var lookback int = 1
+// NewMinusDmWithoutStorage creates a Minus Directional Movement Indicator (MinusDm) without storage
+func NewMinusDmWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *MinusDmWithoutStorage, err error) {
+
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for this indicator is 1
+	if timePeriod < 1 {
+		return nil, errors.New("timePeriod is less than the minimum (1)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := 1
 	if timePeriod > 1 {
 		lookback = timePeriod - 1
 	}
-	newMinusDM := MinusDMWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               -1,
-		previousMinusDM:             0.0}
-	newMinusDM.valueAvailableAction = valueAvailableAction
+	ind := MinusDmWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		periodCounter:        -1,
+		previousMinusDm:      0.0,
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
 
-	return &newMinusDM, nil
+	return &ind, nil
 }
 
-// An Average True Range Indicator
-type MinusDM struct {
-	*MinusDMWithoutStorage
+// A Minus Directional Movement Indicator (MinusDm)
+type MinusDm struct {
+	*MinusDmWithoutStorage
 
 	// public variables
 	Data []float64
 }
 
-// NewMinusDM returns a new Average True Range (MinusDM) configured with the
-// specified timePeriod. The MinusDM results are stored in the Data field.
-func NewMinusDM(timePeriod int) (indicator *MinusDM, err error) {
-	newMinusDM := MinusDM{}
-	newMinusDM.MinusDMWithoutStorage, err = NewMinusDMWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newMinusDM.Data = append(newMinusDM.Data, dataItem)
+// NewMinusDm creates a Minus Directional Movement Indicator (MinusDm) for online usage
+func NewMinusDm(timePeriod int) (indicator *MinusDm, err error) {
+	ind := MinusDm{}
+	ind.MinusDmWithoutStorage, err = NewMinusDmWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	})
 
-	return &newMinusDM, err
+	return &ind, err
 }
 
-func NewMinusDMForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *MinusDM, err error) {
-	newMinusDM, err := NewMinusDM(timePeriod)
-	priceStream.AddTickSubscription(newMinusDM)
-	return newMinusDM, err
+// NewDefaultMinusDm creates a Minus Directional Movement Indicator (MinusDm) for online usage with default parameters
+//	- timePeriod: 14
+func NewDefaultMinusDm() (indicator *MinusDm, err error) {
+	timePeriod := 14
+	return NewMinusDm(timePeriod)
 }
 
-func (ind *MinusDMWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewMinusDmWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage
+func NewMinusDmWithSrcLen(sourceLength int, timePeriod int) (indicator *MinusDm, err error) {
+	ind, err := NewMinusDm(timePeriod)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultMinusDmWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage with default parameters
+func NewDefaultMinusDmWithSrcLen(sourceLength int) (indicator *MinusDm, err error) {
+	ind, err := NewDefaultMinusDm()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewMinusDmForStream creates a Minus Directional Movement Indicator (MinusDm) for online usage with a source data stream
+func NewMinusDmForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *MinusDm, err error) {
+	ind, err := NewMinusDm(timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultMinusDmForStream creates a Minus Directional Movement Indicator (MinusDm) for online usage with a source data stream
+func NewDefaultMinusDmForStream(priceStream *gotrade.DOHLCVStream) (indicator *MinusDm, err error) {
+	ind, err := NewDefaultMinusDm()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewMinusDmForStreamWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage with a source data stream
+func NewMinusDmForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *MinusDm, err error) {
+	ind, err := NewMinusDmWithSrcLen(sourceLength, timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultMinusDmForStreamWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage with a source data stream
+func NewDefaultMinusDmForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *MinusDm, err error) {
+	ind, err := NewDefaultMinusDmWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *MinusDmWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.periodCounter += 1
 	high := tickData.H()
 	low := tickData.L()
@@ -78,71 +139,90 @@ func (ind *MinusDMWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, str
 				result = 0
 			}
 
+			// increment the number of results this indicator can be expected to return
 			ind.dataLength += 1
 
 			if ind.validFromBar == -1 {
+				// set the streamBarIndex from which this indicator returns valid results
 				ind.validFromBar = streamBarIndex
 			}
 
+			// update the maximum result value
 			if result > ind.maxValue {
 				ind.maxValue = result
 			}
 
+			// update the minimum result value
 			if result < ind.minValue {
 				ind.minValue = result
 			}
+
+			// notify of a new result value though the value available action
 			ind.valueAvailableAction(result, streamBarIndex)
 		}
 	} else {
 		if ind.periodCounter > 0 {
-			if ind.periodCounter < ind.GetTimePeriod() {
+			if ind.periodCounter < ind.timePeriod {
 				if (diffM > 0) && (diffP < diffM) {
-					ind.previousMinusDM += diffM
+					ind.previousMinusDm += diffM
 				}
 
-				if ind.periodCounter == ind.GetTimePeriod()-1 {
+				if ind.periodCounter == ind.timePeriod-1 {
 
-					result := ind.previousMinusDM
+					result := ind.previousMinusDm
+
+					// increment the number of results this indicator can be expected to return
 					ind.dataLength += 1
 
 					if ind.validFromBar == -1 {
+						// set the streamBarIndex from which this indicator returns valid results
 						ind.validFromBar = streamBarIndex
 					}
 
+					// update the maximum result value
 					if result > ind.maxValue {
 						ind.maxValue = result
 					}
 
+					// update the minimum result value
 					if result < ind.minValue {
 						ind.minValue = result
 					}
+
+					// notify of a new result value though the value available action
 					ind.valueAvailableAction(result, streamBarIndex)
 
 				}
 			} else {
 				var result float64
 				if (diffM > 0) && (diffP < diffM) {
-					result = ind.previousMinusDM - (ind.previousMinusDM / float64(ind.GetTimePeriod())) + diffM
+					result = ind.previousMinusDm - (ind.previousMinusDm / float64(ind.timePeriod)) + diffM
 				} else {
-					result = ind.previousMinusDM - (ind.previousMinusDM / float64(ind.GetTimePeriod()))
+					result = ind.previousMinusDm - (ind.previousMinusDm / float64(ind.timePeriod))
 				}
 
+				// increment the number of results this indicator can be expected to return
 				ind.dataLength += 1
 
 				if ind.validFromBar == -1 {
+					// set the streamBarIndex from which this indicator returns valid results
 					ind.validFromBar = streamBarIndex
 				}
 
+				// update the maximum result value
 				if result > ind.maxValue {
 					ind.maxValue = result
 				}
 
+				// update the minimum result value
 				if result < ind.minValue {
 					ind.minValue = result
 				}
+
+				// notify of a new result value though the value available action
 				ind.valueAvailableAction(result, streamBarIndex)
 
-				ind.previousMinusDM = result
+				ind.previousMinusDm = result
 			}
 		}
 	}

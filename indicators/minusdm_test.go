@@ -5,15 +5,15 @@ import (
 	. "github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when calculating a minus directional movement (MinusDM) with DOHLCV source data", func() {
+var _ = Describe("when calculating a minus directional movement (MinusDm) with DOHLCV source data", func() {
 	var (
 		period    int = 14
-		indicator *MinusDM
+		indicator *MinusDm
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewMinusDM(period)
+		indicator, _ = NewMinusDm(period)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

@@ -5,15 +5,15 @@ import (
 	. "github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when calculating a plus directional indicator (PlusDI) with DOHLCV source data", func() {
+var _ = Describe("when calculating a plus directional indicator (PlusDi) with DOHLCV source data", func() {
 	var (
 		period    int = 14
-		indicator *PlusDI
+		indicator *PlusDi
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewPlusDI(period)
+		indicator, _ = NewPlusDi(period)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

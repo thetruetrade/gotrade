@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating an rate of change percentage (rocp) with DOHLCV source data", func() {
 	var (
 		period    int = 7
-		indicator *ROCP
+		indicator *RocP
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewROCP(period, gotrade.UseClosePrice)
+		indicator, _ = NewRocP(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

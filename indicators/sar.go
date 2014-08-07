@@ -20,7 +20,7 @@ type SARWithoutStorage struct {
 	previousSAR           float64
 	previousHigh          float64
 	previousLow           float64
-	minusDM               *MinusDMWithoutStorage
+	minusDM               *MinusDmWithoutStorage
 	hasInitialDirection   bool
 }
 
@@ -40,7 +40,7 @@ func NewSARWithoutStorage(accelerationFactor float64, accelerationFactorMax floa
 		previousHigh:          0.0,
 		previousLow:           0.0,
 		acceleration:          accelerationFactor}
-	newSAR.minusDM, err = NewMinusDMWithoutStorage(1, func(dataItem float64, streamBarIndex int) {
+	newSAR.minusDM, err = NewMinusDmWithoutStorage(1, func(dataItem float64, streamBarIndex int) {
 		if dataItem > 0 {
 			newSAR.isLong = false
 		} else {

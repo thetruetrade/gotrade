@@ -16,8 +16,8 @@ type DxWithoutStorage struct {
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	minusDI              *MinusDi
-	plusDI               *PlusDI
-	currentPlusDI        float64
+	plusDI               *PlusDi
+	currentPlusDi        float64
 	currentMinusDi       float64
 	timePeriod           int
 }
@@ -48,7 +48,7 @@ func NewDxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActi
 	ind := DxWithoutStorage{
 		baseIndicator:        newBaseIndicator(lookback),
 		baseFloatBounds:      newBaseFloatBounds(),
-		currentPlusDI:        0.0,
+		currentPlusDi:        0.0,
 		currentMinusDi:       0.0,
 		valueAvailableAction: valueAvailableAction,
 		timePeriod:           timePeriod,
@@ -60,15 +60,15 @@ func NewDxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActi
 		ind.currentMinusDi = dataItem
 	}
 
-	ind.plusDI, err = NewPlusDI(timePeriod)
+	ind.plusDI, err = NewPlusDi(timePeriod)
 
 	ind.plusDI.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		ind.currentPlusDI = dataItem
+		ind.currentPlusDi = dataItem
 
 		var result float64
-		tmp := ind.currentMinusDi + ind.currentPlusDI
+		tmp := ind.currentMinusDi + ind.currentPlusDi
 		if tmp != 0.0 {
-			result = 100.0 * (math.Abs(ind.currentMinusDi-ind.currentPlusDI) / tmp)
+			result = 100.0 * (math.Abs(ind.currentMinusDi-ind.currentPlusDi) / tmp)
 		} else {
 			result = 0.0
 		}

@@ -549,7 +549,7 @@ var _ = Describe("when executing the gotrade chaikin oscilator with a years data
 
 var _ = Describe("when executing the gotrade on balance volume indicator with a years data and known output", func() {
 	var (
-		obv             *indicators.OBV
+		obv             *indicators.Obv
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -564,7 +564,7 @@ var _ = Describe("when executing the gotrade on balance volume indicator with a 
 	Describe("using no lookback period", func() {
 
 		BeforeEach(func() {
-			obv, err = indicators.NewOBV()
+			obv, err = indicators.NewObv()
 			priceStream.AddTickSubscription(obv)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -685,7 +685,7 @@ var _ = Describe("when executing the gotrade typical price indicator with a year
 
 var _ = Describe("when executing the gotrade plus directional movement indicator (1) with a years data and known output", func() {
 	var (
-		plusDM          *indicators.PlusDM
+		plusDM          *indicators.PlusDm
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -700,7 +700,7 @@ var _ = Describe("when executing the gotrade plus directional movement indicator
 	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			plusDM, err = indicators.NewPlusDM(1)
+			plusDM, err = indicators.NewPlusDm(1)
 			priceStream.AddTickSubscription(plusDM)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -719,7 +719,7 @@ var _ = Describe("when executing the gotrade plus directional movement indicator
 
 var _ = Describe("when executing the gotrade plus directional movement indicator (14) with a years data and known output", func() {
 	var (
-		plusDM          *indicators.PlusDM
+		plusDM          *indicators.PlusDm
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -734,7 +734,7 @@ var _ = Describe("when executing the gotrade plus directional movement indicator
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			plusDM, err = indicators.NewPlusDM(14)
+			plusDM, err = indicators.NewPlusDm(14)
 			priceStream.AddTickSubscription(plusDM)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -753,7 +753,7 @@ var _ = Describe("when executing the gotrade plus directional movement indicator
 
 var _ = Describe("when executing the gotrade minus directional movement indicator (1) with a years data and known output", func() {
 	var (
-		minusDM         *indicators.MinusDM
+		minusDM         *indicators.MinusDm
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -768,7 +768,7 @@ var _ = Describe("when executing the gotrade minus directional movement indicato
 	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			minusDM, err = indicators.NewMinusDM(1)
+			minusDM, err = indicators.NewMinusDm(1)
 			priceStream.AddTickSubscription(minusDM)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -787,7 +787,7 @@ var _ = Describe("when executing the gotrade minus directional movement indicato
 
 var _ = Describe("when executing the gotrade minus directional movement indicator (14) with a years data and known output", func() {
 	var (
-		minusDM         *indicators.MinusDM
+		minusDM         *indicators.MinusDm
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -802,7 +802,7 @@ var _ = Describe("when executing the gotrade minus directional movement indicato
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			minusDM, err = indicators.NewMinusDM(14)
+			minusDM, err = indicators.NewMinusDm(14)
 			priceStream.AddTickSubscription(minusDM)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -821,7 +821,7 @@ var _ = Describe("when executing the gotrade minus directional movement indicato
 
 var _ = Describe("when executing the gotrade plus directional indicator (1) with a years data and known output", func() {
 	var (
-		plusDI          *indicators.PlusDI
+		plusDI          *indicators.PlusDi
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -836,7 +836,7 @@ var _ = Describe("when executing the gotrade plus directional indicator (1) with
 	Describe("using a time period of 1", func() {
 
 		BeforeEach(func() {
-			plusDI, err = indicators.NewPlusDI(1)
+			plusDI, err = indicators.NewPlusDi(1)
 			priceStream.AddTickSubscription(plusDI)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -855,7 +855,7 @@ var _ = Describe("when executing the gotrade plus directional indicator (1) with
 
 var _ = Describe("when executing the gotrade plus directional indicator (14) with a years data and known output", func() {
 	var (
-		plusDI          *indicators.PlusDI
+		plusDI          *indicators.PlusDi
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -870,7 +870,7 @@ var _ = Describe("when executing the gotrade plus directional indicator (14) wit
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			plusDI, err = indicators.NewPlusDI(14)
+			plusDI, err = indicators.NewPlusDi(14)
 			priceStream.AddTickSubscription(plusDI)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1095,7 +1095,7 @@ var _ = Describe("when executing the gotrade relative strength index with a year
 
 var _ = Describe("when executing the gotrade momentum with a years data and known output", func() {
 	var (
-		ind             *indicators.Momentum
+		ind             *indicators.Mom
 		period          int
 		expectedResults []float64
 		err             error
@@ -1112,7 +1112,7 @@ var _ = Describe("when executing the gotrade momentum with a years data and know
 
 		BeforeEach(func() {
 			period = 10
-			ind, err = indicators.NewMomentum(period, gotrade.UseClosePrice)
+			ind, err = indicators.NewMom(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1131,7 +1131,7 @@ var _ = Describe("when executing the gotrade momentum with a years data and know
 
 var _ = Describe("when executing the gotrade rate of change with a years data and known output", func() {
 	var (
-		ind             *indicators.ROC
+		ind             *indicators.Roc
 		period          int
 		expectedResults []float64
 		err             error
@@ -1148,7 +1148,7 @@ var _ = Describe("when executing the gotrade rate of change with a years data an
 
 		BeforeEach(func() {
 			period = 10
-			ind, err = indicators.NewROC(period, gotrade.UseClosePrice)
+			ind, err = indicators.NewRoc(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1167,7 +1167,7 @@ var _ = Describe("when executing the gotrade rate of change with a years data an
 
 var _ = Describe("when executing the gotrade rate of change percentage with a years data and known output", func() {
 	var (
-		ind             *indicators.ROCP
+		ind             *indicators.RocP
 		period          int
 		expectedResults []float64
 		err             error
@@ -1184,7 +1184,7 @@ var _ = Describe("when executing the gotrade rate of change percentage with a ye
 
 		BeforeEach(func() {
 			period = 10
-			ind, err = indicators.NewROCP(period, gotrade.UseClosePrice)
+			ind, err = indicators.NewRocP(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1203,7 +1203,7 @@ var _ = Describe("when executing the gotrade rate of change percentage with a ye
 
 var _ = Describe("when executing the gotrade rate of change ratio with a years data and known output", func() {
 	var (
-		ind             *indicators.ROCR
+		ind             *indicators.RocR
 		period          int
 		expectedResults []float64
 		err             error
@@ -1220,7 +1220,7 @@ var _ = Describe("when executing the gotrade rate of change ratio with a years d
 
 		BeforeEach(func() {
 			period = 10
-			ind, err = indicators.NewROCR(period, gotrade.UseClosePrice)
+			ind, err = indicators.NewRocR(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1239,7 +1239,7 @@ var _ = Describe("when executing the gotrade rate of change ratio with a years d
 
 var _ = Describe("when executing the gotrade rate of change ratio 100 scale with a years data and known output", func() {
 	var (
-		ind             *indicators.ROCR100
+		ind             *indicators.RocR100
 		period          int
 		expectedResults []float64
 		err             error
@@ -1256,7 +1256,7 @@ var _ = Describe("when executing the gotrade rate of change ratio 100 scale with
 
 		BeforeEach(func() {
 			period = 10
-			ind, err = indicators.NewROCR100(period, gotrade.UseClosePrice)
+			ind, err = indicators.NewRocR100(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

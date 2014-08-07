@@ -2,75 +2,145 @@ package indicators
 
 import (
 	"container/list"
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-type ROCPWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// A Rate of Change Percentage Indicator (RocP), no storage, for use in other indicators
+type RocPWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
 	periodHistory        *list.List
+	timePeriod           int
 }
 
-func NewROCPWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *ROCPWithoutStorage, err error) {
-	newROCP := ROCPWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               (timePeriod * -1),
-		periodHistory:               list.New()}
+// NewRocPWithoutStorage creates a Rate of Change Percentage Indicator (RocP) without storage
+func NewRocPWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *RocPWithoutStorage, err error) {
 
-	newROCP.valueAvailableAction = valueAvailableAction
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
 
-	return &newROCP, err
+	// the minimum timeperiod for this indicator is 1
+	if timePeriod < 1 {
+		return nil, errors.New("timePeriod is less than the minimum (1)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod
+	ind := RocPWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		periodCounter:        (timePeriod * -1),
+		periodHistory:        list.New(),
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
+
+	return &ind, err
 }
 
-// A Relative Strength Indicator
-type ROCP struct {
-	*ROCPWithoutStorage
+// A Rate of Change Percentage Indicator (RocP)
+type RocP struct {
+	*RocPWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-// NewROCP returns a new Rate of change percentage (ROCP) configured with the
-// specified timePeriod. The ROCP results are stored in the DATA field.
-func NewROCP(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *ROCP, err error) {
-	newROCP := ROCP{selectData: selectData}
-	newROCP.ROCPWithoutStorage, err = NewROCPWithoutStorage(timePeriod,
+// NewRocP creates a Rate of Change Percentage Indicator (RocP) for online usage
+func NewRocP(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocP, err error) {
+	ind := RocP{selectData: selectData}
+	ind.RocPWithoutStorage, err = NewRocPWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newROCP.Data = append(newROCP.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
 
-	newROCP.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newROCP.Data = append(newROCP.Data, dataItem)
+	ind.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	}
-	return &newROCP, err
+	return &ind, err
 }
 
-func NewROCPForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *ROCP, err error) {
-	newROCP, err := NewROCP(timePeriod, selectData)
-	priceStream.AddTickSubscription(newROCP)
-	return newROCP, err
+// NewDefaultRocP creates a Rate of Change Percentage Indicator (RocP) for online usage with default parameters
+//	- timePeriod: 10
+func NewDefaultRocP() (indicator *RocP, err error) {
+	timePeriod := 10
+	return NewRocP(timePeriod, gotrade.UseClosePrice)
 }
 
-func (ind *ROCP) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewRocPWithSrcLen creates a Rate of Change Percentage Indicator (RocP) for offline usage
+func NewRocPWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocP, err error) {
+	ind, err := NewRocP(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultRocPWithSrcLen creates a Rate of Change Percentage Indicator (RocP) for offline usage with default parameters
+func NewDefaultRocPWithSrcLen(sourceLength int) (indicator *RocP, err error) {
+	ind, err := NewDefaultRocP()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewRocPForStream creates a Rate of Change Percentage Indicator (RocP) for online usage with a source data stream
+func NewRocPForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocP, err error) {
+	ind, err := NewRocP(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultRocPForStream creates a Rate of Change Percentage Indicator (RocP) for online usage with a source data stream
+func NewDefaultRocPForStream(priceStream *gotrade.DOHLCVStream) (indicator *RocP, err error) {
+	ind, err := NewDefaultRocP()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewRocPForStreamWithSrcLen creates a Rate of Change Percentage Indicator (RocP) for offline usage with a source data stream
+func NewRocPForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocP, err error) {
+	ind, err := NewRocPWithSrcLen(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultRocPForStreamWithSrcLen creates a Rate of Change Percentage Indicator (RocP) for offline usage with a source data stream
+func NewDefaultRocPForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *RocP, err error) {
+	ind, err := NewDefaultRocPWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *RocP) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = ind.selectData(tickData)
 	ind.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (ind *ROCPWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+func (ind *RocPWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	ind.periodCounter += 1
 	ind.periodHistory.PushBack(tickData)
 
 	if ind.periodCounter > 0 {
 
-		//    ROCP = (price/previousPrice - 1) * 100
+		//    RocP = (price/previousPrice - 1) * 100
 		previousPrice := ind.periodHistory.Front().Value.(float64)
+
+		// increment the number of results this indicator can be expected to return
 		ind.dataLength += 1
 		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
 			ind.validFromBar = streamBarIndex
 		}
 		var result float64
@@ -91,7 +161,7 @@ func (ind *ROCPWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int)
 		ind.valueAvailableAction(result, streamBarIndex)
 	}
 
-	if ind.periodHistory.Len() > ind.GetTimePeriod() {
+	if ind.periodHistory.Len() > ind.timePeriod {
 		first := ind.periodHistory.Front()
 		ind.periodHistory.Remove(first)
 	}

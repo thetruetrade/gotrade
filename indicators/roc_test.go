@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating an rate of change (roc) with DOHLCV source data", func() {
 	var (
 		period    int = 7
-		indicator *ROC
+		indicator *Roc
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewROC(period, gotrade.UseClosePrice)
+		indicator, _ = NewRoc(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {
