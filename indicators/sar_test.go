@@ -5,14 +5,14 @@ import (
 	"github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when calculating the parabolic stop and reverse (SAR) with DOHLCV source data", func() {
+var _ = Describe("when calculating the parabolic stop and reverse (Sar) with DOHLCV source data", func() {
 	var (
-		indicator *indicators.SAR
+		indicator *indicators.Sar
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewSAR(0.02, 0.2)
+		indicator, _ = indicators.NewSar(0.02, 0.2)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

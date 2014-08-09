@@ -1307,9 +1307,9 @@ var _ = Describe("when executing the gotrade money flow index (14) with a years 
 	})
 })
 
-var _ = Describe("when executing the gotrade parabolic stop and reverse (SAR) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade parabolic stop and reverse (Sar) with a years data and known output", func() {
 	var (
-		ind             *indicators.SAR
+		ind             *indicators.Sar
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1324,7 +1324,7 @@ var _ = Describe("when executing the gotrade parabolic stop and reverse (SAR) wi
 	Describe("using an accelleration factor of 0.02", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewSAR(0.02, 0.20)
+			ind, err = indicators.NewSar(0.02, 0.20)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1333,7 +1333,7 @@ var _ = Describe("when executing the gotrade parabolic stop and reverse (SAR) wi
 			Expect(ind.Length()).To(Equal(len(priceStream.Data) - ind.GetLookbackPeriod()))
 		})
 
-		It("it should have correctly calculated the SAR for each item in the result set accurate to two decimal places", func() {
+		It("it should have correctly calculated the Sar for each item in the result set accurate to two decimal places", func() {
 			for k := range expectedResults {
 				Expect(expectedResults[k]).To(BeNumerically("~", ind.Data[k], 0.01))
 			}
