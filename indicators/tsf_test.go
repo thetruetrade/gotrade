@@ -6,15 +6,15 @@ import (
 	. "github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when calculating a time series forecast (TSF) with DOHLCV source data", func() {
+var _ = Describe("when calculating a time series forecast (Tsf) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *TSF
+		indicator *Tsf
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewTSF(period, gotrade.UseClosePrice)
+		indicator, _ = NewTsf(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

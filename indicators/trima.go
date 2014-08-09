@@ -1,25 +1,48 @@
 package indicators
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-type TRIMAWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// A Triangular Moving Average Indicator (Trima), no storage, for use in other indicators
+type TrimaWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	sma1                 *SmaWithoutStorage
 	sma2                 *SmaWithoutStorage
 	currentSma           float64
+	timePeriod           int
 }
 
-func NewTRIMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *TRIMAWithoutStorage, err error) {
-	newTRIMA := TRIMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
+// NewTrimaWithoutStorage creates a Triangular Moving Average Indicator (Trima) without storage
+func NewTrimaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *TrimaWithoutStorage, err error) {
 
-	newTRIMA.valueAvailableAction = valueAvailableAction
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for this indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod - 1
+	ind := TrimaWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
 
 	var sma1Period int
 	var sma2Period int
@@ -34,63 +57,113 @@ func NewTRIMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableA
 		sma2Period = (timePeriod + 1) / 2
 	}
 
-	newTRIMA.sma1, err = NewSmaWithoutStorage(sma1Period, func(dataItem float64, streamBarIndex int) {
-		newTRIMA.currentSma = dataItem
-		newTRIMA.sma2.ReceiveTick(dataItem, streamBarIndex)
+	ind.sma1, err = NewSmaWithoutStorage(sma1Period, func(dataItem float64, streamBarIndex int) {
+		ind.currentSma = dataItem
+		ind.sma2.ReceiveTick(dataItem, streamBarIndex)
 	})
 
-	newTRIMA.sma2, _ = NewSmaWithoutStorage(sma2Period, func(dataItem float64, streamBarIndex int) {
-		newTRIMA.dataLength += 1
-		if newTRIMA.validFromBar == -1 {
-			newTRIMA.validFromBar = streamBarIndex
+	ind.sma2, _ = NewSmaWithoutStorage(sma2Period, func(dataItem float64, streamBarIndex int) {
+
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
 		result := dataItem
 
-		if result > newTRIMA.maxValue {
-			newTRIMA.maxValue = result
+		// update the maximum result value
+		if result > ind.maxValue {
+			ind.maxValue = result
 		}
 
-		if result < newTRIMA.minValue {
-			newTRIMA.minValue = result
+		// update the minimum result value
+		if result < ind.minValue {
+			ind.minValue = result
 		}
 
-		newTRIMA.valueAvailableAction(result, streamBarIndex)
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(result, streamBarIndex)
 	})
 
-	return &newTRIMA, err
+	return &ind, err
 }
 
-// A Triangular Moving Average Indicator
-type TRIMA struct {
-	*TRIMAWithoutStorage
+// A Triangular Moving Average Indicator (Trima)
+type Trima struct {
+	*TrimaWithoutStorage
 	selectData gotrade.DataSelectionFunc
 	// public variables
 	Data []float64
 }
 
-// NewTRIMA returns a new TriangularMoving Average (TRIMA) configured with the
-// specified timePeriod. The TRIMA results are stored in the DATA field.
-func NewTRIMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TRIMA, err error) {
-	newTRIMA := TRIMA{selectData: selectData}
-	newTRIMA.TRIMAWithoutStorage, err = NewTRIMAWithoutStorage(timePeriod,
+// NewTrima creates a Triangular Moving Average Indicator (Trima) for online usage
+func NewTrima(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+	ind := Trima{selectData: selectData}
+	ind.TrimaWithoutStorage, err = NewTrimaWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newTRIMA.Data = append(newTRIMA.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
-	return &newTRIMA, err
+	return &ind, err
 }
 
-func NewTRIMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TRIMA, err error) {
-	newTRIMA, err := NewTRIMA(timePeriod, selectData)
-	priceStream.AddTickSubscription(newTRIMA)
-	return newTRIMA, err
+// NewDefaultTrima creates a Triangular Moving Average Indicator (Trima) for online usage with default parameters
+//	- timePeriod: 30
+func NewDefaultTrima() (indicator *Trima, err error) {
+	timePeriod := 30
+	return NewTrima(timePeriod, gotrade.UseClosePrice)
 }
 
-func (tema *TRIMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewTrimaWithSrcLen creates a Triangular Moving Average Indicator (Trima) for offline usage
+func NewTrimaWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+	ind, err := NewTrima(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultTrimaWithSrcLen creates a Triangular Moving Average Indicator (Trima) for offline usage with default parameters
+func NewDefaultTrimaWithSrcLen(sourceLength int) (indicator *Trima, err error) {
+	ind, err := NewDefaultTrima()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewTrimaForStream creates a Triangular Moving Average Indicator (Trima) for online usage with a source data stream
+func NewTrimaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+	ind, err := NewTrima(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultTrimaForStream creates a Triangular Moving Average Indicator (Trima) for online usage with a source data stream
+func NewDefaultTrimaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Trima, err error) {
+	ind, err := NewDefaultTrima()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewTrimaForStreamWithSrcLen creates a Triangular Moving Average Indicator (Trima) for offline usage with a source data stream
+func NewTrimaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+	ind, err := NewTrimaWithSrcLen(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultTrimaForStreamWithSrcLen creates a Triangular Moving Average Indicator (Trima) for offline usage with a source data stream
+func NewDefaultTrimaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Trima, err error) {
+	ind, err := NewDefaultTrimaWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (tema *Trima) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = tema.selectData(tickData)
 	tema.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (tema *TRIMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+func (tema *TrimaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	tema.sma1.ReceiveTick(tickData, streamBarIndex)
 }

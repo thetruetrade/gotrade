@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a triangular moving average (trima)", func() {
 	var (
 		period    int = 6
-		indicator *TRIMA
+		indicator *Trima
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewTRIMA(period, gotrade.UseClosePrice)
+		indicator, _ = NewTrima(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

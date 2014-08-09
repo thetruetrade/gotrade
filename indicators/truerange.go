@@ -9,8 +9,10 @@ import (
 // TrueLow = Min(Low[0], Close[-1])
 // TrueRange = TrueHigh = TrueLow
 
+// A True Range Indicator (TrueRange), no storage, for use in other indicators
 type TrueRangeWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	periodCounter        int
@@ -18,54 +20,92 @@ type TrueRangeWithoutStorage struct {
 	valueAvailableAction ValueAvailableActionFloat
 }
 
+// NewTrueRangeWithoutStorage creates a True Range Indicator (TrueRange) without storage
 func NewTrueRangeWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indicator *TrueRangeWithoutStorage, err error) {
-	ind := TrueRangeWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(1),
-		periodCounter: -1,
-		previousClose: 0.0}
+
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	lookback := 1
+	ind := TrueRangeWithoutStorage{
+		baseIndicator:   newBaseIndicator(lookback),
+		baseFloatBounds: newBaseFloatBounds(),
+		periodCounter:   -1,
+		previousClose:   0.0,
+	}
 	ind.valueAvailableAction = valueAvailableAction
 	return &ind, nil
 }
 
+// A True Range Indicator (TrueRange)
 type TrueRange struct {
 	*TrueRangeWithoutStorage
+
+	// public variables
 	Data []float64
 }
 
+// NewTrueRange creates a True Range Indicator (TrueRange) for online usage
 func NewTrueRange() (indicator *TrueRange, err error) {
-	newTrueRange := TrueRange{}
-	newTrueRange.TrueRangeWithoutStorage, err = NewTrueRangeWithoutStorage(func(dataItem float64, streamBarIndex int) {
-		newTrueRange.Data = append(newTrueRange.Data, dataItem)
+	ind := TrueRange{}
+	ind.TrueRangeWithoutStorage, err = NewTrueRangeWithoutStorage(func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	})
-	return &newTrueRange, err
+	return &ind, err
 }
 
+// NewTrueRangeWithSrcLen creates a True Range Indicator (TrueRange) for offline usage
+func NewTrueRangeWithSrcLen(sourceLength int) (indicator *TrueRange, err error) {
+	ind, err := NewTrueRange()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewTrueRangeForStream creates a True Range Indicator (TrueRange) for online usage with a source data stream
 func NewTrueRangeForStream(priceStream *gotrade.DOHLCVStream) (indicator *TrueRange, err error) {
 	ind, err := NewTrueRange()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
+// NewTrueRangeForStreamWithSrcLen creates a True Range Indicator (TrueRange) for offline usage with a source data stream
+func NewTrueRangeForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *TrueRange, err error) {
+	ind, err := NewTrueRangeWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *TrueRangeWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.periodCounter += 1
 
 	if ind.periodCounter > 0 {
+
+		// increment the number of results this indicator can be expected to return
 		ind.dataLength += 1
 
 		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
 			ind.validFromBar = streamBarIndex
 		}
 		high := math.Max(tickData.H(), ind.previousClose)
 		low := math.Min(tickData.L(), ind.previousClose)
 		trueRange := high - low
 
+		// update the maximum result value
 		if trueRange > ind.maxValue {
 			ind.maxValue = trueRange
 		}
 
+		// update the minimum result value
 		if trueRange < ind.minValue {
 			ind.minValue = trueRange
 		}
 
+		// notify of a new result value though the value available action
 		ind.valueAvailableAction(trueRange, streamBarIndex)
 	}
 	ind.previousClose = tickData.C()

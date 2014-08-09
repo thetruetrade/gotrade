@@ -81,7 +81,7 @@ var _ = Describe("when executing the gotrade exponential moving average with a y
 
 var _ = Describe("when executing the gotrade weighted moving average with a years data and known output", func() {
 	var (
-		wma             *indicators.WMA
+		wma             *indicators.Wma
 		period          int
 		expectedResults []float64
 		err             error
@@ -98,7 +98,7 @@ var _ = Describe("when executing the gotrade weighted moving average with a year
 
 		BeforeEach(func() {
 			period = 10
-			wma, err = indicators.NewWMA(period, gotrade.UseClosePrice)
+			wma, err = indicators.NewWma(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(wma)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -153,7 +153,7 @@ var _ = Describe("when executing the gotrade double exponential moving average w
 
 var _ = Describe("when executing the gotrade triple exponential moving average with a years data and known output", func() {
 	var (
-		tema            *indicators.TEMA
+		tema            *indicators.Tema
 		period          int
 		expectedResults []float64
 		err             error
@@ -170,7 +170,7 @@ var _ = Describe("when executing the gotrade triple exponential moving average w
 
 		BeforeEach(func() {
 			period = 10
-			tema, err = indicators.NewTEMA(period, gotrade.UseClosePrice)
+			tema, err = indicators.NewTema(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(tema)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -189,7 +189,7 @@ var _ = Describe("when executing the gotrade triple exponential moving average w
 
 var _ = Describe("when executing the gotrade variance with a years data and known output", func() {
 	var (
-		variance        *indicators.Variance
+		variance        *indicators.Var
 		period          int
 		expectedResults []float64
 		err             error
@@ -206,7 +206,7 @@ var _ = Describe("when executing the gotrade variance with a years data and know
 
 		BeforeEach(func() {
 			period = 10
-			variance, err = indicators.NewVariance(period, gotrade.UseClosePrice)
+			variance, err = indicators.NewVar(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(variance)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -225,7 +225,7 @@ var _ = Describe("when executing the gotrade variance with a years data and know
 
 var _ = Describe("when executing the gotrade standard deviation with a years data and known output", func() {
 	var (
-		stdDev          *indicators.StdDeviation
+		stdDev          *indicators.StdDev
 		period          int
 		expectedResults []float64
 		err             error
@@ -242,7 +242,7 @@ var _ = Describe("when executing the gotrade standard deviation with a years dat
 
 		BeforeEach(func() {
 			period = 10
-			stdDev, err = indicators.NewStdDeviation(period, gotrade.UseClosePrice)
+			stdDev, err = indicators.NewStdDev(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(stdDev)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -651,7 +651,7 @@ var _ = Describe("when executing the gotrade median price indicator with a years
 
 var _ = Describe("when executing the gotrade typical price indicator with a years data and known output", func() {
 	var (
-		typPrice        *indicators.TypicalPrice
+		typPrice        *indicators.TypPrice
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -666,7 +666,7 @@ var _ = Describe("when executing the gotrade typical price indicator with a year
 	Describe("using no lookback period", func() {
 
 		BeforeEach(func() {
-			typPrice, err = indicators.NewTypicalPrice()
+			typPrice, err = indicators.NewTypPrice()
 			priceStream.AddTickSubscription(typPrice)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1477,9 +1477,9 @@ var _ = Describe("when executing the gotrade linearregression angle (LinRegAng) 
 	})
 })
 
-var _ = Describe("when executing the gotrade time series forecast (TSF) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade time series forecast (Tsf) with a years data and known output", func() {
 	var (
-		ind             *indicators.TSF
+		ind             *indicators.Tsf
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1494,7 +1494,7 @@ var _ = Describe("when executing the gotrade time series forecast (TSF) with a y
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewTSF(14, gotrade.UseClosePrice)
+			ind, err = indicators.NewTsf(14, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1545,9 +1545,9 @@ var _ = Describe("when executing the gotrade kaufman adaptive moving average (Ka
 	})
 })
 
-var _ = Describe("when executing the gotrade triangular moving average (TRIMA) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade triangular moving average (Trima) with a years data and known output", func() {
 	var (
-		ind             *indicators.TRIMA
+		ind             *indicators.Trima
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1562,7 +1562,7 @@ var _ = Describe("when executing the gotrade triangular moving average (TRIMA) w
 	Describe("using a time period of 30", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewTRIMA(30, gotrade.UseClosePrice)
+			ind, err = indicators.NewTrima(30, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1579,9 +1579,9 @@ var _ = Describe("when executing the gotrade triangular moving average (TRIMA) w
 	})
 })
 
-var _ = Describe("when executing the gotrade williams percent r (WILLR) with a years data and known output", func() {
+var _ = Describe("when executing the gotrade williams percent r (WillR) with a years data and known output", func() {
 	var (
-		ind             *indicators.WILLR
+		ind             *indicators.WillR
 		expectedResults []float64
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1596,7 +1596,7 @@ var _ = Describe("when executing the gotrade williams percent r (WILLR) with a y
 	Describe("using a time period of 14", func() {
 
 		BeforeEach(func() {
-			ind, err = indicators.NewWILLR(14)
+			ind, err = indicators.NewWillR(14)
 			priceStream.AddTickSubscription(ind)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})
@@ -1751,7 +1751,7 @@ var _ = Describe("when executing the gotrade lowest low bars (LlvBars) with a ye
 
 var _ = Describe("when executing the gotrade stochastic oscillator with a years data and known output", func() {
 	var (
-		stoch           *indicators.StochasticOsc
+		stoch           *indicators.StochOsc
 		expectedResults []StochData
 		err             error
 		priceStream     *gotrade.InterDayDOHLCVStream
@@ -1766,7 +1766,7 @@ var _ = Describe("when executing the gotrade stochastic oscillator with a years 
 	Describe("using a lookback periods of 5,3,3", func() {
 
 		BeforeEach(func() {
-			stoch, err = indicators.NewStochasticOsc(5, 3, 3)
+			stoch, err = indicators.NewStochOsc(5, 3, 3)
 			priceStream.AddTickSubscription(stoch)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

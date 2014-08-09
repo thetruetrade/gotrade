@@ -14,12 +14,12 @@ type MfiWithoutStorage struct {
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
 	periodCounter        int
-	typicalPrice         *TypicalPriceWithoutStorage
+	typicalPrice         *TypPriceWithoutStorage
 	positiveMoneyFlow    float64
 	negativeMoneyFlow    float64
 	positiveHistory      *list.List
 	negativeHistory      *list.List
-	previousTypicalPrice float64
+	previousTypPrice     float64
 	currentVolume        float64
 	timePeriod           int
 }
@@ -52,23 +52,23 @@ func NewMfiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 		positiveMoneyFlow:    0.0,
 		negativeMoneyFlow:    0.0,
 		currentVolume:        0.0,
-		previousTypicalPrice: 0.0,
+		previousTypPrice:     0.0,
 		valueAvailableAction: valueAvailableAction,
 		timePeriod:           timePeriod,
 	}
 
-	ind.typicalPrice, err = NewTypicalPriceWithoutStorage(func(dataItem float64, streamBarIndex int) {
+	ind.typicalPrice, err = NewTypPriceWithoutStorage(func(dataItem float64, streamBarIndex int) {
 		ind.periodCounter += 1
 
 		if ind.periodCounter > (ind.timePeriod * -1) {
 			moneyFlow := dataItem * ind.currentVolume
 
 			if ind.periodCounter <= 0 {
-				if dataItem > ind.previousTypicalPrice {
+				if dataItem > ind.previousTypPrice {
 					ind.positiveMoneyFlow += moneyFlow
 					ind.positiveHistory.PushBack(moneyFlow)
 					ind.negativeHistory.PushBack(0.0)
-				} else if dataItem < ind.previousTypicalPrice {
+				} else if dataItem < ind.previousTypPrice {
 					ind.negativeMoneyFlow += moneyFlow
 					ind.positiveHistory.PushBack(0.0)
 					ind.negativeHistory.PushBack(moneyFlow)
@@ -109,11 +109,11 @@ func NewMfiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 				firstNegative := ind.negativeHistory.Front().Value.(float64)
 				ind.negativeMoneyFlow -= firstNegative
 
-				if dataItem > ind.previousTypicalPrice {
+				if dataItem > ind.previousTypPrice {
 					ind.positiveMoneyFlow += moneyFlow
 					ind.positiveHistory.PushBack(moneyFlow)
 					ind.negativeHistory.PushBack(0.0)
-				} else if dataItem < ind.previousTypicalPrice {
+				} else if dataItem < ind.previousTypPrice {
 					ind.negativeMoneyFlow += moneyFlow
 					ind.positiveHistory.PushBack(0.0)
 					ind.negativeHistory.PushBack(moneyFlow)
@@ -142,7 +142,7 @@ func NewMfiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 			}
 
 		}
-		ind.previousTypicalPrice = dataItem
+		ind.previousTypPrice = dataItem
 
 		if ind.positiveHistory.Len() > ind.timePeriod {
 			first := ind.positiveHistory.Front()

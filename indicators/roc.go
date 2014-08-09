@@ -46,7 +46,7 @@ func NewRocWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 		timePeriod:           timePeriod,
 	}
 
-	return &ind, err
+	return &ind, nil
 }
 
 // A Rate of Change Indicator (Roc)

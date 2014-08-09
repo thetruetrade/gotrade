@@ -8,12 +8,12 @@ import (
 var _ = Describe("when calculating a williams percent r (willr)", func() {
 	var (
 		period    int = 6
-		indicator *WILLR
+		indicator *WillR
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewWILLR(period)
+		indicator, _ = NewWillR(period)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

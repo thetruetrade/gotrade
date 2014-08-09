@@ -1,82 +1,157 @@
 package indicators
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 	"math"
 )
 
-type StdDeviationWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// A Standard Deviation Indicator (StdDev), no storage, for use in other indicators
+type StdDevWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
-	variance             *VarianceWithoutStorage
+	variance             *VarWithoutStorage
+	timePeriod           int
 }
 
-func NewStdDeviationWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *StdDeviationWithoutStorage, err error) {
-	newStdDev := StdDeviationWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
+func NewStdDevWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *StdDevWithoutStorage, err error) {
 
-	newStdDev.valueAvailableAction = valueAvailableAction
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
 
-	newStdDev.variance, err = NewVarianceWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newStdDev.dataLength += 1
-		if newStdDev.validFromBar == -1 {
-			newStdDev.validFromBar = streamBarIndex
+	// the minimum timeperiod for this indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod - 1
+
+	ind := StdDevWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
+
+	ind.valueAvailableAction = valueAvailableAction
+
+	ind.variance, err = NewVarWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
-		standardDeviation := math.Sqrt(dataItem)
+		result := math.Sqrt(dataItem)
 
-		if standardDeviation > newStdDev.maxValue {
-			newStdDev.maxValue = standardDeviation
+		// update the maximum result value
+		if result > ind.maxValue {
+			ind.maxValue = result
 		}
 
-		if standardDeviation < newStdDev.minValue {
-			newStdDev.minValue = standardDeviation
+		// update the minimum result value
+		if result < ind.minValue {
+			ind.minValue = result
 		}
 
-		newStdDev.valueAvailableAction(standardDeviation, streamBarIndex)
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(result, streamBarIndex)
 	})
 
-	return &newStdDev, err
+	return &ind, err
 }
 
-// A Standard Deviation Indicator
-type StdDeviation struct {
-	*StdDeviationWithoutStorage
+// A Standard Deviation Indicator (StdDev)
+type StdDev struct {
+	*StdDevWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-// NewStdDeviation returns a new Standard Deviation (STDEV) configured with the
-// specified timePeriod. The STDEV results are stored in the DATA field.
-func NewStdDeviation(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
-	newStdDev := StdDeviation{selectData: selectData}
-	newStdDev.StdDeviationWithoutStorage, err = NewStdDeviationWithoutStorage(timePeriod,
+// NewStdDev creates a Standard Deviation Indicator (StdDev) for online usage
+func NewStdDev(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
+	ind := StdDev{selectData: selectData}
+	ind.StdDevWithoutStorage, err = NewStdDevWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newStdDev.Data = append(newStdDev.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
 
-	newStdDev.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newStdDev.Data = append(newStdDev.Data, dataItem)
+	ind.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
+		ind.Data = append(ind.Data, dataItem)
 	}
-	return &newStdDev, err
+	return &ind, err
 }
 
-func NewStdDeviationForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDeviation, err error) {
-	newStdDev, err := NewStdDeviation(timePeriod, selectData)
-	priceStream.AddTickSubscription(newStdDev)
-	return newStdDev, err
+// NewDefaultStdDev creates a Standard Deviation Indicator (StdDev) for online usage with default parameters
+//	- timePeriod: 10
+func NewDefaultStdDev() (indicator *StdDev, err error) {
+	timePeriod := 10
+	return NewStdDev(timePeriod, gotrade.UseClosePrice)
 }
 
-func (stdDev *StdDeviation) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewStdDevWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage
+func NewStdDevWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
+	ind, err := NewStdDev(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultStdDevWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage with default parameters
+func NewDefaultStdDevWithSrcLen(sourceLength int) (indicator *StdDev, err error) {
+	ind, err := NewDefaultStdDev()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewStdDevForStream creates a Standard Deviation Indicator (StdDev) for online usage with a source data stream
+func NewStdDevForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
+	ind, err := NewStdDev(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultStdDevForStream creates a Standard Deviation Indicator (StdDev) for online usage with a source data stream
+func NewDefaultStdDevForStream(priceStream *gotrade.DOHLCVStream) (indicator *StdDev, err error) {
+	ind, err := NewDefaultStdDev()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewStdDevForStreamWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage with a source data stream
+func NewStdDevForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
+	ind, err := NewStdDevWithSrcLen(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultStdDevForStreamWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage with a source data stream
+func NewDefaultStdDevForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *StdDev, err error) {
+	ind, err := NewDefaultStdDevWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (stdDev *StdDev) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = stdDev.selectData(tickData)
 	stdDev.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (stdDev *StdDeviationWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+func (stdDev *StdDevWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	stdDev.variance.ReceiveTick(tickData, streamBarIndex)
 }

@@ -7,12 +7,12 @@ import (
 
 var _ = Describe("when calculating an typical price (typicalprice) with DOHLCV source data", func() {
 	var (
-		indicator *indicators.TypicalPrice
+		indicator *indicators.TypPrice
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewTypicalPrice()
+		indicator, _ = indicators.NewTypPrice()
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

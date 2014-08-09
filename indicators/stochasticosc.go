@@ -1,12 +1,15 @@
 package indicators
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 	"math"
 )
 
-type StochasticOscWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
+// A Stochastic Oscillator Indicator (StochOsc), no storage, for use in other indicators
+type StochOscWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionStoch
@@ -22,11 +25,51 @@ type StochasticOscWithoutStorage struct {
 	currentSlowDMA       float64
 }
 
-func NewStochasticOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int, valueAvailableAction ValueAvailableActionStoch) (indicator *StochasticOscWithoutStorage, err error) {
+// NewStochOscWithoutStorage creates a Stochastic Oscillator Indicator (StochOsc) without storage
+func NewStochOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int, valueAvailableAction ValueAvailableActionStoch) (indicator *StochOscWithoutStorage, err error) {
 
-	ind := StochasticOscWithoutStorage{currentSlowKMA: 0.0,
-		currentSlowDMA: 0.0,
-		periodCounter:  (fastKTimePeriod * -1)}
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum fastKTimePeriod for this indicator is 1
+	if fastKTimePeriod < 1 {
+		return nil, errors.New("fastKTimePeriod is less than the minimum (1)")
+	}
+
+	// check the maximum fastKTimePeriod
+	if fastKTimePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("fastKTimePeriod is greater than the maximum (100000)")
+	}
+
+	// the minimum slowKTimePeriod for this indicator is 1
+	if slowKTimePeriod < 1 {
+		return nil, errors.New("slowKTimePeriod is less than the minimum (1)")
+	}
+
+	// check the maximum slowKTimePeriod
+	if slowKTimePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("slowKTimePeriod is greater than the maximum (100000)")
+	}
+
+	// the minimum slowDTimePeriod for this indicator is 1
+	if slowDTimePeriod < 1 {
+		return nil, errors.New("slowDTimePeriod is less than the minimum (1)")
+	}
+
+	// check the maximum slowDTimePeriod
+	if slowDTimePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("slowDTimePeriod is greater than the maximum (100000)")
+	}
+
+	ind := StochOscWithoutStorage{
+		baseFloatBounds:      newBaseFloatBounds(),
+		currentSlowKMA:       0.0,
+		currentSlowDMA:       0.0,
+		periodCounter:        (fastKTimePeriod * -1),
+		valueAvailableAction: valueAvailableAction,
+	}
 
 	tmpSlowKMA, err := NewSmaWithoutStorage(slowKTimePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentSlowKMA = dataItem
@@ -35,28 +78,34 @@ func NewStochasticOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, sl
 
 	tmpSlowDMA, err := NewSmaWithoutStorage(slowDTimePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentSlowDMA = dataItem
+
+		// increment the number of results this indicator can be expected to return
 		ind.dataLength += 1
 		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
 			ind.validFromBar = streamBarIndex
 		}
 
 		var max = math.Max(ind.currentSlowKMA, ind.currentSlowDMA)
 		var min = math.Min(ind.currentSlowKMA, ind.currentSlowDMA)
 
+		// update the maximum result value
 		if max > ind.maxValue {
 			ind.maxValue = max
 		}
 
+		// update the minimum result value
 		if min < ind.minValue {
 			ind.minValue = min
 		}
 
+		// notify of a new result value though the value available action
 		ind.valueAvailableAction(ind.currentSlowKMA, ind.currentSlowDMA, streamBarIndex)
 	})
 
-	timePeriod := fastKTimePeriod - 1 + tmpSlowDMA.GetLookbackPeriod() + tmpSlowKMA.GetLookbackPeriod()
+	lookback := fastKTimePeriod - 1 + tmpSlowDMA.GetLookbackPeriod() + tmpSlowKMA.GetLookbackPeriod()
 
-	ind.baseIndicatorWithFloatBounds = newBaseIndicatorWithFloatBounds(timePeriod)
+	ind.baseIndicator = newBaseIndicator(lookback)
 	ind.slowKMA = tmpSlowKMA
 	ind.slowDMA = tmpSlowDMA
 	ind.hhv, err = NewHhvWithoutStorage(fastKTimePeriod, func(dataItem float64, streamBarIndex int) {
@@ -66,40 +115,87 @@ func NewStochasticOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, sl
 		ind.currentPeriodLow = dataItem
 	})
 
-	ind.valueAvailableAction = valueAvailableAction
-
 	return &ind, err
 }
 
-// A Relative Strength Indicator
-type StochasticOsc struct {
-	*StochasticOscWithoutStorage
+// A Stochastic Oscillator Indicator (StochOsc)
+type StochOsc struct {
+	*StochOscWithoutStorage
 
 	// public variables
 	SlowK []float64
 	SlowD []float64
 }
 
-// NewStochasticOsc returns a new Relative Strength Indicator(StochasticOsc) configured with the
-// specified timePeriod. The StochasticOsc results are stored in the DATA field.
-func NewStochasticOsc(fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochasticOsc, err error) {
-	newStochasticOsc := StochasticOsc{}
-	newStochasticOsc.StochasticOscWithoutStorage, err = NewStochasticOscWithoutStorage(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod,
+// NewStochOsc creates a Stochastic Oscillator Indicator (StochOsc) for online usage
+func NewStochOsc(fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
+	ind := StochOsc{}
+	ind.StochOscWithoutStorage, err = NewStochOscWithoutStorage(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod,
 		func(dataItemK float64, dataItemD float64, streamBarIndex int) {
-			newStochasticOsc.SlowK = append(newStochasticOsc.SlowK, dataItemK)
-			newStochasticOsc.SlowD = append(newStochasticOsc.SlowD, dataItemD)
+			ind.SlowK = append(ind.SlowK, dataItemK)
+			ind.SlowD = append(ind.SlowD, dataItemD)
 		})
 
-	return &newStochasticOsc, err
+	return &ind, err
 }
 
-func NewStochasticOscForStream(priceStream *gotrade.DOHLCVStream, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochasticOsc, err error) {
-	newStochasticOsc, err := NewStochasticOsc(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
-	priceStream.AddTickSubscription(newStochasticOsc)
-	return newStochasticOsc, err
+// NewDefaultStochOsc creates a Stochastic Oscillator Indicator (StochOsc) for online usage with default parameters
+//	- fastKTimePeriod : 5
+//  - slowKTimePeriod : 3
+//  - slowDTimePeriod : 3
+func NewDefaultStochOsc() (indicator *StochOsc, err error) {
+	fastKTimePeriod := 5
+	slowKTimePeriod := 3
+	slowDTimePeriod := 3
+	return NewStochOsc(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
 }
 
-func (ind *StochasticOscWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewStochOscWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage
+func NewStochOscWithSrcLen(sourceLength int, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
+	ind, err := NewStochOsc(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
+	ind.SlowK = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	ind.SlowD = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewDefaultStochOscWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage with default parameters
+func NewDefaultStochOscWithSrcLen(sourceLength int) (indicator *StochOsc, err error) {
+	ind, err := NewDefaultStochOsc()
+	ind.SlowK = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	ind.SlowD = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewStochOscForStream creates a Stochastic Oscillator Indicator (StochOsc) for online usage with a source data stream
+func NewStochOscForStream(priceStream *gotrade.DOHLCVStream, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
+	ind, err := NewStochOsc(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultStochOscForStream creates a Stochastic Oscillator Indicator (StochOsc) for online usage with a source data stream
+func NewDefaultStochOscForStream(priceStream *gotrade.DOHLCVStream) (indicator *StochOsc, err error) {
+	ind, err := NewDefaultStochOsc()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewStochOscForStreamWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage with a source data stream
+func NewStochOscForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
+	ind, err := NewStochOscWithSrcLen(sourceLength, fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultStochOscForStreamWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage with a source data stream
+func NewDefaultStochOscForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *StochOsc, err error) {
+	ind, err := NewDefaultStochOscWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *StochOscWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	ind.periodCounter += 1
 	ind.hhv.ReceiveTick(tickData.H(), streamBarIndex)
 	ind.llv.ReceiveTick(tickData.L(), streamBarIndex)

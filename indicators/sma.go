@@ -3,36 +3,55 @@ package indicators
 
 import (
 	"container/list"
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-// A Simple Moving Average Indicator
+// A Simple Moving Average Indicator (Sma), no storage, for use in other indicators
 type SmaWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	periodTotal          float64
 	periodHistory        *list.List
 	periodCounter        int
 	valueAvailableAction ValueAvailableActionFloat
+	timePeriod           int
 }
 
-// NewSmaWithoutStorage returns a new Simple Moving Average (Sma) configured with the
-// specified timePeriod, this version is intended for use by other indicators.
-// The Sma results are not stored in a local field but made available though the
-// configured valueAvailableAction for storage by the parent indicator.
+// NewSmaWithoutStorage creates a Simple Moving Average Indicator (Sma) without storage
 func NewSmaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *SmaWithoutStorage, err error) {
-	newSma := SmaWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               timePeriod * -1,
-		periodHistory:               list.New()}
-	newSma.valueAvailableAction = valueAvailableAction
 
-	return &newSma, nil
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for this indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod - 1
+	ind := SmaWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		periodCounter:        timePeriod * -1,
+		periodHistory:        list.New(),
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
+
+	return &ind, nil
 }
 
-// A Simple Moving Average Indicator
+// A Simple Moving Average Indicator (Sma)
 type Sma struct {
 	*SmaWithoutStorage
 	selectData gotrade.DataSelectionFunc
@@ -41,60 +60,110 @@ type Sma struct {
 	Data []float64
 }
 
-// NewSma returns a new Simple Moving Average (Sma) configured with the
-// specified timePeriod. The Sma results are stored in the Data field.
+// NewSma creates a Simple Moving Average Indicator (Sma) for online usage
 func NewSma(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
-	newSma := Sma{}
-	newSma.SmaWithoutStorage, err = NewSmaWithoutStorage(
+	ind := Sma{}
+	ind.SmaWithoutStorage, err = NewSmaWithoutStorage(
 		timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newSma.Data = append(newSma.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
-	newSma.selectData = selectData
+	ind.selectData = selectData
 
-	return &newSma, err
+	return &ind, err
 }
 
+// NewDefaultSma creates a Simple Moving Average Indicator (Sma) for online usage with default parameters
+//	- timePeriod: 10
+func NewDefaultSma() (indicator *Sma, err error) {
+	timePeriod := 10
+	return NewSma(timePeriod, gotrade.UseClosePrice)
+}
+
+// NewSmaWithSrcLen creates a Simple Moving Average Indicator (Sma) for offline usage
+func NewSmaWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+	ind, err := NewSma(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultSmaWithSrcLen creates a Simple Moving Average Indicator (Sma) for offline usage with default parameters
+func NewDefaultSmaWithSrcLen(sourceLength int) (indicator *Sma, err error) {
+	ind, err := NewDefaultSma()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewSmaForStream creates a Simple Moving Average Indicator (Sma) for online usage with a source data stream
 func NewSmaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
-	newSma, err := NewSma(timePeriod, selectData)
-	priceStream.AddTickSubscription(newSma)
-	return newSma, err
+	ind, err := NewSma(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
 }
 
-func (sma *Sma) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
-	var selectedData = sma.selectData(tickData)
-	sma.ReceiveTick(selectedData, streamBarIndex)
+// NewDefaultSmaForStream creates a Simple Moving Average Indicator (Sma) for online usage with a source data stream
+func NewDefaultSmaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Sma, err error) {
+	ind, err := NewDefaultSma()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
 }
 
-func (sma *SmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
-	sma.periodCounter += 1
-	sma.periodHistory.PushBack(tickData)
+// NewSmaForStreamWithSrcLen creates a Simple Moving Average Indicator (Sma) for offline usage with a source data stream
+func NewSmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+	ind, err := NewSmaWithSrcLen(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
 
-	if sma.periodCounter > 0 {
-		var valueToRemove = sma.periodHistory.Front()
-		sma.periodTotal -= valueToRemove.Value.(float64)
+// NewDefaultSmaForStreamWithSrcLen creates a Simple Moving Average Indicator (Sma) for offline usage with a source data stream
+func NewDefaultSmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Sma, err error) {
+	ind, err := NewDefaultSmaWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *Sma) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ind.selectData(tickData)
+	ind.ReceiveTick(selectedData, streamBarIndex)
+}
+
+func (ind *SmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+	ind.periodCounter += 1
+	ind.periodHistory.PushBack(tickData)
+
+	if ind.periodCounter > 0 {
+		var valueToRemove = ind.periodHistory.Front()
+		ind.periodTotal -= valueToRemove.Value.(float64)
 	}
-	if sma.periodHistory.Len() > sma.GetTimePeriod() {
-		var first = sma.periodHistory.Front()
-		sma.periodHistory.Remove(first)
+	if ind.periodHistory.Len() > ind.timePeriod {
+		var first = ind.periodHistory.Front()
+		ind.periodHistory.Remove(first)
 	}
-	sma.periodTotal += tickData
-	var result float64 = sma.periodTotal / float64(sma.GetTimePeriod())
-	if sma.periodCounter >= 0 {
-		sma.dataLength += 1
+	ind.periodTotal += tickData
+	var result float64 = ind.periodTotal / float64(ind.timePeriod)
+	if ind.periodCounter >= 0 {
 
-		if sma.validFromBar == -1 {
-			sma.validFromBar = streamBarIndex
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
+
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
-		if result > sma.maxValue {
-			sma.maxValue = result
+		// update the maximum result value
+		if result > ind.maxValue {
+			ind.maxValue = result
 		}
 
-		if result < sma.minValue {
-			sma.minValue = result
+		// update the minimum result value
+		if result < ind.minValue {
+			ind.minValue = result
 		}
 
-		sma.valueAvailableAction(result, streamBarIndex)
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(result, streamBarIndex)
 	}
 }

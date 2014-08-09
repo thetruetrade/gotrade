@@ -1,14 +1,15 @@
-// Weighted Moving Average (WMA)
 package indicators
 
 import (
 	"container/list"
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-type WMAWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// A Weighted Moving Average Indicator (Wma), no storage, for use in other indicators
+type WmaWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	periodTotal          float64
@@ -16,82 +17,147 @@ type WMAWithoutStorage struct {
 	periodCounter        int
 	periodWeightTotal    int
 	valueAvailableAction ValueAvailableActionFloat
+	timePeriod           int
 }
 
-// NewAttachedWMA returns a new Simple Moving Average (WMA) configured with the
-// specified timePeriod, this version is intended for use by other indicators.
-// The WMA results are not stored in a local field but made available though the
-// configured valueAvailableAction for storage by the parent indicator.
-func NewWMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *WMAWithoutStorage, err error) {
-	newWMA := WMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(timePeriod - 1),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod),
-		periodCounter:               timePeriod * -1,
-		periodHistory:               list.New()}
+// NewWmaWithoutStorage creates a Weighted Moving Average Indicator (Wma) without storage
+func NewWmaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *WmaWithoutStorage, err error) {
+
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for this indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := timePeriod - 1
+	ind := WmaWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		periodCounter:        timePeriod * -1,
+		periodHistory:        list.New(),
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
 
 	var weightedTotal int = 0
 	for i := 1; i <= timePeriod; i++ {
 		weightedTotal += i
 	}
-	newWMA.periodWeightTotal = weightedTotal
+	ind.periodWeightTotal = weightedTotal
 
-	newWMA.valueAvailableAction = valueAvailableAction
-	return &newWMA, nil
+	return &ind, nil
 }
 
-// A Simple Moving Average Indicator
-type WMA struct {
-	*WMAWithoutStorage
+// A Weighted Moving Average Indicator (Wma)
+type Wma struct {
+	*WmaWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-// NewWMA returns a new Simple Moving Average (WMA) configured with the
-// specified timePeriod. The WMA results are stored in the DATA field.
-func NewWMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
-	newWMA := WMA{selectData: selectData}
-	newWMA.WMAWithoutStorage, err = NewWMAWithoutStorage(timePeriod,
+// NewWma creates a Weighted Moving Average Indicator (Wma) for online usage
+func NewWma(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
+	ind := Wma{selectData: selectData}
+	ind.WmaWithoutStorage, err = NewWmaWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newWMA.Data = append(newWMA.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
-	return &newWMA, err
+	return &ind, err
 }
 
-func NewWMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *WMA, err error) {
-	newWma, err := NewWMA(timePeriod, selectData)
-	priceStream.AddTickSubscription(newWma)
-	return newWma, err
+// NewDefaultWma creates a Weighted Moving Average Indicator (Wma) for online usage with default parameters
+//	- timePeriod: 10
+func NewDefaultWma() (indicator *Wma, err error) {
+	timePeriod := 10
+	return NewWma(timePeriod, gotrade.UseClosePrice)
 }
 
-func (wma *WMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
-	var selectedData = wma.selectData(tickData)
-	wma.ReceiveTick(selectedData, streamBarIndex)
+// NewWmaWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage
+func NewWmaWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
+	ind, err := NewWma(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
 }
 
-func (wma *WMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
-	wma.periodCounter += 1
+// NewDefaultWmaWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage with default parameters
+func NewDefaultWmaWithSrcLen(sourceLength int) (indicator *Wma, err error) {
+	ind, err := NewDefaultWma()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
 
-	wma.periodHistory.PushBack(tickData)
+// NewWmaForStream creates a Weighted Moving Average Indicator (Wma) for online usage with a source data stream
+func NewWmaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
+	ind, err := NewWma(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
 
-	if wma.periodCounter > 0 {
+// NewDefaultWmaForStream creates a Weighted Moving Average Indicator (Wma) for online usage with a source data stream
+func NewDefaultWmaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Wma, err error) {
+	ind, err := NewDefaultWma()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewWmaForStreamWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage with a source data stream
+func NewWmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
+	ind, err := NewWmaWithSrcLen(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultWmaForStreamWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage with a source data stream
+func NewDefaultWmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Wma, err error) {
+	ind, err := NewDefaultWmaWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (ind *Wma) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ind.selectData(tickData)
+	ind.ReceiveTick(selectedData, streamBarIndex)
+}
+
+func (ind *WmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+	ind.periodCounter += 1
+
+	ind.periodHistory.PushBack(tickData)
+
+	if ind.periodCounter > 0 {
 
 	}
-	if wma.periodHistory.Len() > wma.GetTimePeriod() {
-		var first = wma.periodHistory.Front()
-		wma.periodHistory.Remove(first)
+	if ind.periodHistory.Len() > ind.timePeriod {
+		var first = ind.periodHistory.Front()
+		ind.periodHistory.Remove(first)
 	}
 
-	if wma.periodCounter >= 0 {
-		wma.dataLength += 1
-		if wma.validFromBar == -1 {
-			wma.validFromBar = streamBarIndex
+	if ind.periodCounter >= 0 {
+
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
-		// calculate the wma
+		// calculate the ind
 		var iter int = 1
 		var sum float64 = 0
-		for e := wma.periodHistory.Front(); e != nil; e = e.Next() {
+		for e := ind.periodHistory.Front(); e != nil; e = e.Next() {
 			var localSum float64 = 0
 			for i := 1; i <= iter; i++ {
 				localSum += e.Value.(float64)
@@ -99,16 +165,19 @@ func (wma *WMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 			sum += localSum
 			iter++
 		}
-		var result float64 = sum / float64(wma.periodWeightTotal)
+		var result float64 = sum / float64(ind.periodWeightTotal)
 
-		if result > wma.maxValue {
-			wma.maxValue = result
+		// update the maximum result value
+		if result > ind.maxValue {
+			ind.maxValue = result
 		}
 
-		if result < wma.minValue {
-			wma.minValue = result
+		// update the minimum result value
+		if result < ind.minValue {
+			ind.minValue = result
 		}
 
-		wma.valueAvailableAction(result, streamBarIndex)
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(result, streamBarIndex)
 	}
 }

@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a standard deviation (stdev) with DOHLCV source data", func() {
 	var (
 		period    int = 3
-		indicator *StdDeviation
+		indicator *StdDev
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewStdDeviation(period, gotrade.UseClosePrice)
+		indicator, _ = NewStdDev(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

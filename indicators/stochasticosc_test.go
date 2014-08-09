@@ -7,12 +7,12 @@ import (
 
 var _ = Describe("when calculating a stochastic oscillator (stoch) with DOHLCV source data", func() {
 	var (
-		indicator *indicators.StochasticOsc
+		indicator *indicators.StochOsc
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = indicators.NewStochasticOsc(5, 3, 3)
+		indicator, _ = indicators.NewStochOsc(5, 3, 3)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

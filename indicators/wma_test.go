@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a weighted moving average (wma)", func() {
 	var (
 		period    int = 3
-		indicator *WMA
+		indicator *Wma
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewWMA(period, gotrade.UseClosePrice)
+		indicator, _ = NewWma(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

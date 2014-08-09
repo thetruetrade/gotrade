@@ -13,7 +13,7 @@ type BollingerBandsWithoutStorage struct {
 	// private variables
 	valueAvailableAction ValueAvailableActionBollinger
 	sma                  *SmaWithoutStorage
-	stdDev               *StdDeviationWithoutStorage
+	stdDev               *StdDevWithoutStorage
 	currentSma           float64
 	timePeriod           int
 }
@@ -49,7 +49,7 @@ func NewBollingerBandsWithoutStorage(timePeriod int, valueAvailableAction ValueA
 		ind.currentSma = dataItem
 	})
 
-	ind.stdDev, err = NewStdDeviationWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+	ind.stdDev, err = NewStdDevWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 
 		// increment the number of results this indicator can be expected to return
 		ind.dataLength += 1

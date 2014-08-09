@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a variance(var)", func() {
 	var (
 		period    int = 3
-		indicator *Variance
+		indicator *Var
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewVariance(period, gotrade.UseClosePrice)
+		indicator, _ = NewVar(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {

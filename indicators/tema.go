@@ -1,15 +1,16 @@
-// Triple Exponential Moving Average (TEMA)
 package indicators
 
-// TEMA(X) = (2 * EMA(X, CLOSE)) - (EMA(X, EMA(X, CLOSE)))
+// Tema(X) = (2 * EMA(X, CLOSE)) - (EMA(X, EMA(X, CLOSE)))
 
 import (
+	"errors"
 	"github.com/thetruetrade/gotrade"
 )
 
-type TEMAWithoutStorage struct {
-	*baseIndicatorWithFloatBounds
-	*baseIndicatorWithTimePeriod
+// A Tripple Exponential Moving Average Indicator (Tema), no storage, for use in other indicators
+type TemaWithoutStorage struct {
+	*baseIndicator
+	*baseFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
@@ -18,77 +19,148 @@ type TEMAWithoutStorage struct {
 	ema3                 *EmaWithoutStorage
 	currentEMA           float64
 	currentEMA2          float64
+	timePeriod           int
 }
 
-func NewTEMAWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *TEMAWithoutStorage, err error) {
-	newTEMA := TEMAWithoutStorage{baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(3 * (timePeriod - 1)),
-		baseIndicatorWithTimePeriod: newBaseIndicatorWithTimePeriod(timePeriod)}
-	newTEMA.valueAvailableAction = valueAvailableAction
+func NewTemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *TemaWithoutStorage, err error) {
 
-	newTEMA.ema1, err = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newTEMA.currentEMA = dataItem
-		newTEMA.ema2.ReceiveTick(dataItem, streamBarIndex)
+	// an indicator without storage MUST have a value available action
+	if valueAvailableAction == nil {
+		return nil, ErrValueAvailableActionIsNil
+	}
+
+	// the minimum timeperiod for this indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
+
+	// check the maximum timeperiod
+	if timePeriod > MaximumLookbackPeriod {
+		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+	}
+
+	lookback := 3 * (timePeriod - 1)
+	ind := TemaWithoutStorage{
+		baseIndicator:        newBaseIndicator(lookback),
+		baseFloatBounds:      newBaseFloatBounds(),
+		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
+	}
+
+	ind.ema1, err = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.currentEMA = dataItem
+		ind.ema2.ReceiveTick(dataItem, streamBarIndex)
 	})
 
-	newTEMA.ema2, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newTEMA.currentEMA2 = dataItem
-		newTEMA.ema3.ReceiveTick(dataItem, streamBarIndex)
+	ind.ema2, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+		ind.currentEMA2 = dataItem
+		ind.ema3.ReceiveTick(dataItem, streamBarIndex)
 	})
 
-	newTEMA.ema3, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		newTEMA.dataLength += 1
-		if newTEMA.validFromBar == -1 {
-			newTEMA.validFromBar = streamBarIndex
+	ind.ema3, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
+
+		// increment the number of results this indicator can be expected to return
+		ind.dataLength += 1
+		if ind.validFromBar == -1 {
+			// set the streamBarIndex from which this indicator returns valid results
+			ind.validFromBar = streamBarIndex
 		}
 
-		//T-EMA = (3*EMA – 3*EMA(EMA)) + EMA(EMA(EMA))
-		tema := (3*newTEMA.currentEMA - 3*newTEMA.currentEMA2) + dataItem
+		//TEMA = (3*EMA – 3*EMA(EMA)) + EMA(EMA(EMA))
+		tema := (3*ind.currentEMA - 3*ind.currentEMA2) + dataItem
 
-		if tema > newTEMA.maxValue {
-			newTEMA.maxValue = tema
+		// update the maximum result value
+		if tema > ind.maxValue {
+			ind.maxValue = tema
 		}
 
-		if tema < newTEMA.minValue {
-			newTEMA.minValue = tema
+		// update the minimum result value
+		if tema < ind.minValue {
+			ind.minValue = tema
 		}
 
-		newTEMA.valueAvailableAction(tema, streamBarIndex)
+		// notify of a new result value though the value available action
+		ind.valueAvailableAction(tema, streamBarIndex)
 	})
 
-	return &newTEMA, err
+	return &ind, err
 }
 
-// A Double Exponential Moving Average Indicator
-type TEMA struct {
-	*TEMAWithoutStorage
+// A Tripple Exponential Moving Average Indicator (Tema)
+type Tema struct {
+	*TemaWithoutStorage
 	selectData gotrade.DataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
-// NewTEMA returns a new Double Exponential Moving Average (TEMA) configured with the
-// specified timePeriod. The TEMA results are stored in the DATA field.
-func NewTEMA(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
-	newTEMA := TEMA{selectData: selectData}
-	newTEMA.TEMAWithoutStorage, err = NewTEMAWithoutStorage(timePeriod,
+// NewTema creates a Tripple Exponential Moving Average Indicator (Tema) for online usage
+func NewTema(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+	ind := Tema{selectData: selectData}
+	ind.TemaWithoutStorage, err = NewTemaWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newTEMA.Data = append(newTEMA.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
-	return &newTEMA, err
+	return &ind, err
 }
 
-func NewTEMAForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *TEMA, err error) {
-	newTEMA, err := NewTEMA(timePeriod, selectData)
-	priceStream.AddTickSubscription(newTEMA)
-	return newTEMA, err
+// NewDefaultTema creates a Tripple Exponential Moving Average Indicator (Tema) for online usage with default parameters
+//	- timePeriod: 30
+func NewDefaultTema() (indicator *Tema, err error) {
+	timePeriod := 30
+	return NewTema(timePeriod, gotrade.UseClosePrice)
 }
 
-func (tema *TEMA) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+// NewTemaWithSrcLen creates a Tripple Exponential Moving Average Indicator (Tema) for offline usage
+func NewTemaWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+	ind, err := NewTema(timePeriod, selectData)
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	return ind, err
+}
+
+// NewDefaultTemaWithSrcLen creates a Tripple Exponential Moving Average Indicator (Tema) for offline usage with default parameters
+func NewDefaultTemaWithSrcLen(sourceLength int) (indicator *Tema, err error) {
+	ind, err := NewDefaultTema()
+	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+	return ind, err
+}
+
+// NewTemaForStream creates a Tripple Exponential Moving Average Indicator (Tema) for online usage with a source data stream
+func NewTemaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+	ind, err := NewTema(timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultTemaForStream creates a Tripple Exponential Moving Average Indicator (Tema) for online usage with a source data stream
+func NewDefaultTemaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Tema, err error) {
+	ind, err := NewDefaultTema()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewTemaForStreamWithSrcLen creates a Tripple Exponential Moving Average Indicator (Tema) for offline usage with a source data stream
+func NewTemaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+	ind, err := NewTemaWithSrcLen(sourceLength, timePeriod, selectData)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultTemaForStreamWithSrcLen creates a Tripple Exponential Moving Average Indicator (Tema) for offline usage with a source data stream
+func NewDefaultTemaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Tema, err error) {
+	ind, err := NewDefaultTemaWithSrcLen(sourceLength)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// ReceiveDOHLCVTick consumes a source data DOHLCV price tick
+func (tema *Tema) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	var selectedData = tema.selectData(tickData)
 	tema.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (tema *TEMAWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+func (tema *TemaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
 	tema.ema1.ReceiveTick(tickData, streamBarIndex)
 }

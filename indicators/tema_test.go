@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating a triple exponential moving average (tema)", func() {
 	var (
 		period    int = 3
-		indicator *TEMA
+		indicator *Tema
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewTEMA(period, gotrade.UseClosePrice)
+		indicator, _ = NewTema(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {
