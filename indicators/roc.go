@@ -150,14 +150,17 @@ func (ind *RocWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 			result = 0.0
 		}
 
+		// update the maximum result value
 		if result > ind.maxValue {
 			ind.maxValue = result
 		}
 
+		// update the minimum result value
 		if result < ind.minValue {
 			ind.minValue = result
 		}
 
+		// notify of a new result value though the value available action
 		ind.valueAvailableAction(result, streamBarIndex)
 	}
 

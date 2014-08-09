@@ -1059,7 +1059,7 @@ var _ = Describe("when executing the gotrade average directional movement rating
 
 var _ = Describe("when executing the gotrade relative strength index with a years data and known output", func() {
 	var (
-		rsi             *indicators.RSI
+		rsi             *indicators.Rsi
 		period          int
 		expectedResults []float64
 		err             error
@@ -1076,7 +1076,7 @@ var _ = Describe("when executing the gotrade relative strength index with a year
 
 		BeforeEach(func() {
 			period = 14
-			rsi, err = indicators.NewRSI(period, gotrade.UseClosePrice)
+			rsi, err = indicators.NewRsi(period, gotrade.UseClosePrice)
 			priceStream.AddTickSubscription(rsi)
 			csvFeed.FillDOHLCVStream(priceStream)
 		})

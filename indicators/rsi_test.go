@@ -9,12 +9,12 @@ import (
 var _ = Describe("when calculating an relative strength index (rsi) with DOHLCV source data", func() {
 	var (
 		period    int = 7
-		indicator *RSI
+		indicator *Rsi
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
 	)
 
 	BeforeEach(func() {
-		indicator, _ = NewRSI(period, gotrade.UseClosePrice)
+		indicator, _ = NewRsi(period, gotrade.UseClosePrice)
 
 		inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 			func() float64 {
