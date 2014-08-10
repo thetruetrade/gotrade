@@ -27,10 +27,10 @@ func NewAdxrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 		return nil, ErrValueAvailableActionIsNil
 	}
 
-	// // the minimum timeperiod for an Adxr indicator is 2
-	// if timePeriod < 2 {
-	// 	return nil, errors.New("timePeriod is less than the minimum (2)")
-	// }
+	// the minimum timeperiod for an Adxr indicator is 2
+	if timePeriod < 2 {
+		return nil, errors.New("timePeriod is less than the minimum (2)")
+	}
 
 	// check the maximum timeperiod
 	if timePeriod > MaximumLookbackPeriod {
@@ -38,11 +38,11 @@ func NewAdxrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 	}
 
 	ind := AdxrWithoutStorage{
-		timePeriod:           timePeriod,
 		baseFloatBounds:      newBaseFloatBounds(),
 		periodCounter:        0,
 		periodHistory:        list.New(),
 		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
 	}
 
 	ind.adx, err = NewAdxWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
@@ -125,10 +125,18 @@ func NewDefaultAdxrWithSrcLen(sourceLength int) (indicator *Adxr, err error) {
 	return ind, err
 }
 
+// NewAdxrForStream creates an Average Directional Rating Index (Adxr) for online usage with a source data stream
 func NewAdxrForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Adxr, err error) {
-	newAdxr, err := NewAdxr(timePeriod)
-	priceStream.AddTickSubscription(newAdxr)
-	return newAdxr, err
+	ind, err := NewAdxr(timePeriod)
+	priceStream.AddTickSubscription(ind)
+	return ind, err
+}
+
+// NewDefaultAdxrForStream creates an Average Directional Index Rating (Adxr) for online usage with a source data stream
+func NewDefaultAdxrForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Adxr, err error) {
+	ind, err := NewDefaultAdxr()
+	priceStream.AddTickSubscription(ind)
+	return ind, err
 }
 
 // NewAdxrForStreamWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
@@ -143,11 +151,6 @@ func NewDefaultAdxrForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOH
 	ind, err := NewDefaultAdxrWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
-}
-
-// GetTimePeriod returns the configured ADdxrtimePeriod
-func (ind *AdxrWithoutStorage) GetTimePeriod() int {
-	return ind.timePeriod
 }
 
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick

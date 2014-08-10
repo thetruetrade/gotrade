@@ -42,12 +42,12 @@ func NewAdxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 	ind := AdxWithoutStorage{
 		baseIndicator:        newBaseIndicator(lookback),
 		baseFloatBounds:      newBaseFloatBounds(),
-		timePeriod:           timePeriod,
 		periodCounter:        timePeriod * -1,
 		currentDX:            0.0,
 		sumDX:                0.0,
 		previousAdx:          0.0,
 		valueAvailableAction: valueAvailableAction,
+		timePeriod:           timePeriod,
 	}
 
 	ind.dx, err = NewDxWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {

@@ -6,7 +6,7 @@ import (
 	"github.com/thetruetrade/gotrade/indicators"
 )
 
-var _ = Describe("when creating an adlwithoutstorage", func() {
+var _ = Describe("when creating an adxwithoutstorage", func() {
 	var (
 		indicator      *indicators.AdxWithoutStorage
 		indicatorError error
