@@ -70,28 +70,28 @@ func NewDefaultMedPriceWithSrcLen(sourceLength int) (indicator *MedPrice, err er
 }
 
 // NewMedPriceForStream creates a Median Price Indicator (MedPrice) for online usage with a source data stream
-func NewMedPriceForStream(priceStream *gotrade.DOHLCVStream) (indicator *MedPrice, err error) {
+func NewMedPriceForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *MedPrice, err error) {
 	ind, err := NewMedPrice()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMedPriceForStream creates a Median Price Indicator (MedPrice) for online usage with a source data stream
-func NewDefaultMedPriceForStream(priceStream *gotrade.DOHLCVStream) (indicator *MedPrice, err error) {
+func NewDefaultMedPriceForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *MedPrice, err error) {
 	ind, err := NewDefaultMedPrice()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewMedPriceForStreamWithSrcLen creates a Median Price Indicator (MedPrice) for offline usage with a source data stream
-func NewMedPriceForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *MedPrice, err error) {
+func NewMedPriceForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *MedPrice, err error) {
 	ind, err := NewMedPriceWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMedPriceForStreamWithSrcLen creates a Median Price Indicator (MedPrice) for offline usage with a source data stream
-func NewDefaultMedPriceForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *MedPrice, err error) {
+func NewDefaultMedPriceForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *MedPrice, err error) {
 	ind, err := NewDefaultMedPriceWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

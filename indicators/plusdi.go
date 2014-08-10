@@ -105,28 +105,28 @@ func NewDefaultPlusDiWithSrcLen(sourceLength int) (indicator *PlusDi, err error)
 }
 
 // NewPlusDiForStream creates a Plus Directional Indicator (PlusDi) for online usage with a source data stream
-func NewPlusDiForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *PlusDi, err error) {
+func NewPlusDiForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *PlusDi, err error) {
 	ind, err := NewPlusDi(timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultPlusDiForStream creates a Plus Directional Indicator (PlusDi) for online usage with a source data stream
-func NewDefaultPlusDiForStream(priceStream *gotrade.DOHLCVStream) (indicator *PlusDi, err error) {
+func NewDefaultPlusDiForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *PlusDi, err error) {
 	ind, err := NewDefaultPlusDi()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewPlusDiForStreamWithSrcLen creates a Plus Directional Indicator (PlusDi) for offline usage with a source data stream
-func NewPlusDiForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *PlusDi, err error) {
+func NewPlusDiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *PlusDi, err error) {
 	ind, err := NewPlusDiWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultPlusDiForStreamWithSrcLen creates a Plus Directional Indicator (PlusDi) for offline usage with a source data stream
-func NewDefaultPlusDiForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *PlusDi, err error) {
+func NewDefaultPlusDiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *PlusDi, err error) {
 	ind, err := NewDefaultPlusDiWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -98,28 +98,28 @@ func NewDefaultRsiWithSrcLen(sourceLength int) (indicator *Rsi, err error) {
 }
 
 // NewRsiForStream creates a Relative Strength Indicator (Rsi) for online usage with a source data stream
-func NewRsiForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rsi, err error) {
+func NewRsiForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rsi, err error) {
 	ind, err := NewRsi(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRsiForStream creates a Relative Strength Indicator (Rsi) for online usage with a source data stream
-func NewDefaultRsiForStream(priceStream *gotrade.DOHLCVStream) (indicator *Rsi, err error) {
+func NewDefaultRsiForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Rsi, err error) {
 	ind, err := NewDefaultRsi()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewRsiForStreamWithSrcLen creates a Relative Strength Indicator (Rsi) for offline usage with a source data stream
-func NewRsiForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rsi, err error) {
+func NewRsiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rsi, err error) {
 	ind, err := NewRsiWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRsiForStreamWithSrcLen creates a Relative Strength Indicator (Rsi) for offline usage with a source data stream
-func NewDefaultRsiForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Rsi, err error) {
+func NewDefaultRsiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Rsi, err error) {
 	ind, err := NewDefaultRsiWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

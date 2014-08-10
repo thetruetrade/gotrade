@@ -128,28 +128,28 @@ func NewDefaultTemaWithSrcLen(sourceLength int) (indicator *Tema, err error) {
 }
 
 // NewTemaForStream creates a Tripple Exponential Moving Average Indicator (Tema) for online usage with a source data stream
-func NewTemaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+func NewTemaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
 	ind, err := NewTema(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultTemaForStream creates a Tripple Exponential Moving Average Indicator (Tema) for online usage with a source data stream
-func NewDefaultTemaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Tema, err error) {
+func NewDefaultTemaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Tema, err error) {
 	ind, err := NewDefaultTema()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewTemaForStreamWithSrcLen creates a Tripple Exponential Moving Average Indicator (Tema) for offline usage with a source data stream
-func NewTemaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+func NewTemaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
 	ind, err := NewTemaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultTemaForStreamWithSrcLen creates a Tripple Exponential Moving Average Indicator (Tema) for offline usage with a source data stream
-func NewDefaultTemaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Tema, err error) {
+func NewDefaultTemaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Tema, err error) {
 	ind, err := NewDefaultTemaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

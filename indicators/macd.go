@@ -176,28 +176,28 @@ func NewDefaultMacdWithSrcLen(sourceLength int) (indicator *Macd, err error) {
 }
 
 // NewMacdForStream creates a Moving Average Convergence Divergence Indicator (Macd) for online usage with a source data stream
-func NewMacdForStream(priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+func NewMacdForStream(priceStream gotrade.DOHLCVStreamSubscriber, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
 	ind, err := NewMacd(fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMacdForStream creates a Moving Average Convergence Divergence Indicator (Macd) for online usage with a source data stream
-func NewDefaultMacdForStream(priceStream *gotrade.DOHLCVStream) (indicator *Macd, err error) {
+func NewDefaultMacdForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Macd, err error) {
 	ind, err := NewDefaultMacd()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewMacdForStreamWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with a source data stream
-func NewMacdForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+func NewMacdForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
 	ind, err := NewMacdWithSrcLen(sourceLength, fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMacdForStreamWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with a source data stream
-func NewDefaultMacdForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Macd, err error) {
+func NewDefaultMacdForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Macd, err error) {
 	ind, err := NewDefaultMacdWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

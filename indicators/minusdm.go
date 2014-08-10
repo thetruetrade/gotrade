@@ -94,28 +94,28 @@ func NewDefaultMinusDmWithSrcLen(sourceLength int) (indicator *MinusDm, err erro
 }
 
 // NewMinusDmForStream creates a Minus Directional Movement Indicator (MinusDm) for online usage with a source data stream
-func NewMinusDmForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *MinusDm, err error) {
+func NewMinusDmForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *MinusDm, err error) {
 	ind, err := NewMinusDm(timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMinusDmForStream creates a Minus Directional Movement Indicator (MinusDm) for online usage with a source data stream
-func NewDefaultMinusDmForStream(priceStream *gotrade.DOHLCVStream) (indicator *MinusDm, err error) {
+func NewDefaultMinusDmForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *MinusDm, err error) {
 	ind, err := NewDefaultMinusDm()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewMinusDmForStreamWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage with a source data stream
-func NewMinusDmForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *MinusDm, err error) {
+func NewMinusDmForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *MinusDm, err error) {
 	ind, err := NewMinusDmWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMinusDmForStreamWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage with a source data stream
-func NewDefaultMinusDmForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *MinusDm, err error) {
+func NewDefaultMinusDmForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *MinusDm, err error) {
 	ind, err := NewDefaultMinusDmWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -59,14 +59,14 @@ func NewAdlWithSrcLen(sourceLength int) (indicator *Adl, err error) {
 }
 
 // NewAdlForStream creates an Accumulation Distribution Line Indicator (Adl) for online usage with a source data stream
-func NewAdlForStream(priceStream *gotrade.DOHLCVStream) (indicator *Adl, err error) {
+func NewAdlForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Adl, err error) {
 	ind, err := NewAdl()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewAdlForStreamWithSrcLen creates an Accumulation Distribution Line Indicator (Adl) for offline usage with a source data stream
-func NewAdlForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Adl, err error) {
+func NewAdlForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Adl, err error) {
 	ind, err := NewAdlWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

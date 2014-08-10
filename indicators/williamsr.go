@@ -93,28 +93,28 @@ func NewDefaultWillRWithSrcLen(sourceLength int) (indicator *WillR, err error) {
 }
 
 // NewWillRForStream creates a Williams Percent R Indicator (WillR) for online usage with a source data stream
-func NewWillRForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *WillR, err error) {
+func NewWillRForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *WillR, err error) {
 	ind, err := NewWillR(timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultWillRForStream creates a Williams Percent R Indicator (WillR) for online usage with a source data stream
-func NewDefaultWillRForStream(priceStream *gotrade.DOHLCVStream) (indicator *WillR, err error) {
+func NewDefaultWillRForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *WillR, err error) {
 	ind, err := NewDefaultWillR()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewWillRForStreamWithSrcLen creates a Williams Percent R Indicator (WillR) for offline usage with a source data stream
-func NewWillRForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *WillR, err error) {
+func NewWillRForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *WillR, err error) {
 	ind, err := NewWillRWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultWillRForStreamWithSrcLen creates a Williams Percent R Indicator (WillR) for offline usage with a source data stream
-func NewDefaultWillRForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *WillR, err error) {
+func NewDefaultWillRForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *WillR, err error) {
 	ind, err := NewDefaultWillRWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

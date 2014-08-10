@@ -30,12 +30,12 @@ func NewAdxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	// the minimum timeperiod for an Adx indicator is 2
 	if timePeriod < 2 {
-		return nil, errors.New("timePeriod is less than the minimum (2)")
+		return nil, errors.New("timePeriod " + ErrStrBelowMinimum + " (2)")
 	}
 
 	// check the maximum timeperiod
 	if timePeriod > MaximumLookbackPeriod {
-		return nil, errors.New("timePeriod is greater than the maximum (100000)")
+		return nil, errors.New("timePeriod " + ErrStrAboveMaximum + " (100000)")
 	}
 
 	lookback := (2 * timePeriod) - 1
@@ -67,7 +67,7 @@ func NewAdxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 			}
 
 			ind.sumDX += ind.currentDX
-			result := ind.sumDX / float64(ind.GetTimePeriod())
+			result := ind.sumDX / float64(ind.timePeriod)
 
 			// update the maximum result value
 			if result > ind.maxValue {
@@ -85,7 +85,7 @@ func NewAdxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 			ind.dataLength += 1
 
-			result := (ind.previousAdx*float64(ind.GetTimePeriod()-1) + ind.currentDX) / float64(ind.GetTimePeriod())
+			result := (ind.previousAdx*float64(ind.timePeriod-1) + ind.currentDX) / float64(ind.timePeriod)
 
 			// update the maximum result value
 			if result > ind.maxValue {
@@ -151,36 +151,31 @@ func NewDefaultAdxWithSrcLen(sourceLength int) (indicator *Adx, err error) {
 }
 
 // NewAdxForStream creates an Average Directional Index (Adx) for online usage with a source data stream
-func NewAdxForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Adx, err error) {
+func NewAdxForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Adx, err error) {
 	ind, err := NewAdx(timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultAdxForStream creates an Average Directional Index (Adx) for online usage with a source data stream
-func NewDefaultAdxForStream(priceStream *gotrade.DOHLCVStream) (indicator *Adx, err error) {
+func NewDefaultAdxForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Adx, err error) {
 	ind, err := NewDefaultAdx()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewAdxForStreamWithSrcLen creates an Average Directional Index (Adx) for offline usage with a source data stream
-func NewAdxForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Adx, err error) {
+func NewAdxForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Adx, err error) {
 	ind, err := NewAdxWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultAdxForStreamWithSrcLen creates an Average Directional Index (Adx) for offline usage with a source data stream
-func NewDefaultAdxForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Adx, err error) {
+func NewDefaultAdxForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Adx, err error) {
 	ind, err := NewDefaultAdxWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
-}
-
-// GetTimePeriod returns the configured Adx timePeriod
-func (ind *AdxWithoutStorage) GetTimePeriod() int {
-	return ind.timePeriod
 }
 
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick

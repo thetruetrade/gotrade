@@ -123,28 +123,28 @@ func NewDefaultDemaWithSrcLen(sourceLength int) (indicator *Dema, err error) {
 }
 
 // NewDemaForStream creates a Double Exponential Moving Average (Dema) for online usage with a source data stream
-func NewDemaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
+func NewDemaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
 	newDema, err := NewDema(timePeriod, selectData)
 	priceStream.AddTickSubscription(newDema)
 	return newDema, err
 }
 
 // NewDefaultDemaForStream creates a Double Exponential Moving Average (Dema) for online usage with a source data stream
-func NewDefaultDemaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Dema, err error) {
+func NewDefaultDemaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Dema, err error) {
 	ind, err := NewDefaultDema()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDemaForStreamWithSrcLen creates a Double Exponential Moving Average (Dema) for offline usage with a source data stream
-func NewDemaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
+func NewDemaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Dema, err error) {
 	ind, err := NewDemaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultDemaForStreamWithSrcLen creates a Double Exponential Moving Average (Dema) for offline usage with a source data stream
-func NewDefaultDemaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Dema, err error) {
+func NewDefaultDemaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Dema, err error) {
 	ind, err := NewDefaultDemaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

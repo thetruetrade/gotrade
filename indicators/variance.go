@@ -97,28 +97,28 @@ func NewDefaultVarWithSrcLen(sourceLength int) (indicator *Var, err error) {
 }
 
 // NewVarForStream creates a Variance Indicator (Var) for online usage with a source data stream
-func NewVarForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Var, err error) {
+func NewVarForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Var, err error) {
 	ind, err := NewVar(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultVarForStream creates a Variance Indicator (Var) for online usage with a source data stream
-func NewDefaultVarForStream(priceStream *gotrade.DOHLCVStream) (indicator *Var, err error) {
+func NewDefaultVarForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Var, err error) {
 	ind, err := NewDefaultVar()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewVarForStreamWithSrcLen creates a Variance Indicator (Var) for offline usage with a source data stream
-func NewVarForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Var, err error) {
+func NewVarForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Var, err error) {
 	ind, err := NewVarWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultVarForStreamWithSrcLen creates a Variance Indicator (Var) for offline usage with a source data stream
-func NewDefaultVarForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Var, err error) {
+func NewDefaultVarForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Var, err error) {
 	ind, err := NewDefaultVarWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

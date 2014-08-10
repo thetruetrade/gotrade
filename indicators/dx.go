@@ -142,28 +142,28 @@ func NewDefaultDxWithSrcLen(sourceLength int) (indicator *Dx, err error) {
 }
 
 // NewDxForStream creates a Directional Movement Index (Dx) for online usage with a source data stream
-func NewDxForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Dx, err error) {
+func NewDxForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Dx, err error) {
 	ind, err := NewDx(timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultDxForStream creates a Directional Movement Index (Dx) for online usage with a source data stream
-func NewDefaultDxForStream(priceStream *gotrade.DOHLCVStream) (indicator *Dx, err error) {
+func NewDefaultDxForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Dx, err error) {
 	ind, err := NewDefaultDx()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDxForStreamWithSrcLen creates a Directional Movement Index (Dx) for offline usage with a source data stream
-func NewDxForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Dx, err error) {
+func NewDxForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Dx, err error) {
 	ind, err := NewDxWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultDxForStreamWithSrcLen creates a Directional Movement Index (Dx) for offline usage with a source data stream
-func NewDefaultDxForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Dx, err error) {
+func NewDefaultDxForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Dx, err error) {
 	ind, err := NewDefaultDxWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

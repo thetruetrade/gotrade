@@ -94,28 +94,28 @@ func NewDefaultLlvWithSrcLen(sourceLength int) (indicator *Llv, err error) {
 }
 
 // NewLlvForStream creates a Lowest Low Value Indicator (Llv)for online usage with a source data stream
-func NewLlvForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Llv, err error) {
+func NewLlvForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Llv, err error) {
 	ind, err := NewLlv(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLlvForStream creates a Lowest Low Value Indicator (Llv)for online usage with a source data stream
-func NewDefaultLlvForStream(priceStream *gotrade.DOHLCVStream) (indicator *Llv, err error) {
+func NewDefaultLlvForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Llv, err error) {
 	ind, err := NewDefaultLlv()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewLlvForStreamWithSrcLen creates a Lowest Low Value Indicator (Llv)for offline usage with a source data stream
-func NewLlvForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Llv, err error) {
+func NewLlvForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Llv, err error) {
 	ind, err := NewLlvWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLlvForStreamWithSrcLen creates a Lowest Low Value Indicator (Llv)for offline usage with a source data stream
-func NewDefaultLlvForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Llv, err error) {
+func NewDefaultLlvForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Llv, err error) {
 	ind, err := NewDefaultLlvWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -95,28 +95,28 @@ func NewDefaultRocWithSrcLen(sourceLength int) (indicator *Roc, err error) {
 }
 
 // NewRocForStream creates a Rate of Change Indicator (Roc) for online usage with a source data stream
-func NewRocForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Roc, err error) {
+func NewRocForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Roc, err error) {
 	ind, err := NewRoc(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRocForStream creates a Rate of Change Indicator (Roc) for online usage with a source data stream
-func NewDefaultRocForStream(priceStream *gotrade.DOHLCVStream) (indicator *Roc, err error) {
+func NewDefaultRocForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Roc, err error) {
 	ind, err := NewDefaultRoc()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewRocForStreamWithSrcLen creates a Rate of Change Indicator (Roc) for offline usage with a source data stream
-func NewRocForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Roc, err error) {
+func NewRocForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Roc, err error) {
 	ind, err := NewRocWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRocForStreamWithSrcLen creates a Rate of Change Indicator (Roc) for offline usage with a source data stream
-func NewDefaultRocForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Roc, err error) {
+func NewDefaultRocForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Roc, err error) {
 	ind, err := NewDefaultRocWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

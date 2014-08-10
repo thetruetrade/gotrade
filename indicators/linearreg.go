@@ -112,28 +112,28 @@ func NewDefaultLinRegWithSrcLen(sourceLength int) (indicator *LinReg, err error)
 }
 
 // NewLinRegForStream creates a Linear Regression Indicator (LinReg) for online usage with a source data stream
-func NewLinRegForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinReg, err error) {
+func NewLinRegForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinReg, err error) {
 	ind, err := NewLinReg(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLinRegForStream creates a Linear Regression Indicator (LinReg) for online usage with a source data stream
-func NewDefaultLinRegForStream(priceStream *gotrade.DOHLCVStream) (indicator *LinReg, err error) {
+func NewDefaultLinRegForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LinReg, err error) {
 	ind, err := NewDefaultLinReg()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewLinRegForStreamWithSrcLen creates a Linear Regression Indicator (LinReg) for offline usage with a source data stream
-func NewLinRegForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinReg, err error) {
+func NewLinRegForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinReg, err error) {
 	ind, err := NewLinRegWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLinRegForStreamWithSrcLen creates a Linear Regression Indicator (LinReg) for offline usage with a source data stream
-func NewDefaultLinRegForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LinReg, err error) {
+func NewDefaultLinRegForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LinReg, err error) {
 	ind, err := NewDefaultLinRegWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

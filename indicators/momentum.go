@@ -97,28 +97,28 @@ func NewDefaultMomWithSrcLen(sourceLength int) (indicator *Mom, err error) {
 }
 
 // NewMomForStream creates a Momentum (Mom) for online usage with a source data stream
-func NewMomForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Mom, err error) {
+func NewMomForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Mom, err error) {
 	newMom, err := NewMom(timePeriod, selectData)
 	priceStream.AddTickSubscription(newMom)
 	return newMom, err
 }
 
 // NewDefaultMomForStream creates a Momentum (Mom) for online usage with a source data stream
-func NewDefaultMomForStream(priceStream *gotrade.DOHLCVStream) (indicator *Mom, err error) {
+func NewDefaultMomForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Mom, err error) {
 	ind, err := NewDefaultMom()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewMomForStreamWithSrcLen creates a Momentum (Mom) for offline usage with a source data stream
-func NewMomForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Mom, err error) {
+func NewMomForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Mom, err error) {
 	ind, err := NewMomWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMomForStreamWithSrcLen creates a Momentum (Mom) for offline usage with a source data stream
-func NewDefaultMomForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Mom, err error) {
+func NewDefaultMomForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Mom, err error) {
 	ind, err := NewDefaultMomWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

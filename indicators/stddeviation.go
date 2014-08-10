@@ -119,28 +119,28 @@ func NewDefaultStdDevWithSrcLen(sourceLength int) (indicator *StdDev, err error)
 }
 
 // NewStdDevForStream creates a Standard Deviation Indicator (StdDev) for online usage with a source data stream
-func NewStdDevForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
+func NewStdDevForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
 	ind, err := NewStdDev(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultStdDevForStream creates a Standard Deviation Indicator (StdDev) for online usage with a source data stream
-func NewDefaultStdDevForStream(priceStream *gotrade.DOHLCVStream) (indicator *StdDev, err error) {
+func NewDefaultStdDevForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *StdDev, err error) {
 	ind, err := NewDefaultStdDev()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewStdDevForStreamWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage with a source data stream
-func NewStdDevForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
+func NewStdDevForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
 	ind, err := NewStdDevWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultStdDevForStreamWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage with a source data stream
-func NewDefaultStdDevForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *StdDev, err error) {
+func NewDefaultStdDevForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *StdDev, err error) {
 	ind, err := NewDefaultStdDevWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

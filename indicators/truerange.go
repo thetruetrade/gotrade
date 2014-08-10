@@ -65,14 +65,14 @@ func NewTrueRangeWithSrcLen(sourceLength int) (indicator *TrueRange, err error) 
 }
 
 // NewTrueRangeForStream creates a True Range Indicator (TrueRange) for online usage with a source data stream
-func NewTrueRangeForStream(priceStream *gotrade.DOHLCVStream) (indicator *TrueRange, err error) {
+func NewTrueRangeForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *TrueRange, err error) {
 	ind, err := NewTrueRange()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewTrueRangeForStreamWithSrcLen creates a True Range Indicator (TrueRange) for offline usage with a source data stream
-func NewTrueRangeForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *TrueRange, err error) {
+func NewTrueRangeForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *TrueRange, err error) {
 	ind, err := NewTrueRangeWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

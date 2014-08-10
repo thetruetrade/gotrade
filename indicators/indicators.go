@@ -38,6 +38,8 @@ var (
 	ErrNotEnoughSourceDataForLookbackPeriod = errors.New("Source data does not contain enough data for the specfied lookback period")
 	ErrLookbackPeriodMustBeGreaterThanZero  = errors.New("Lookback period must be greater than 0")
 	ErrValueAvailableActionIsNil            = errors.New("ValueAvailableAction cannot be empty")
+	ErrStrBelowMinimum                      = "is less than the minimum"
+	ErrStrAboveMaximum                      = "is greater than the maximum"
 
 	// lookback minimum
 	MinimumLookbackPeriod int = 0

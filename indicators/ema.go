@@ -93,28 +93,28 @@ func NewDefaultEmaWithSrcLen(sourceLength int) (indicator *Ema, err error) {
 }
 
 // NewEmaForStream creates an Exponential Moving Average (Ema) for online usage with a source data stream
-func NewEmaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ema, err error) {
+func NewEmaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ema, err error) {
 	ind, err := NewEma(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultEmaForStream creates an Exponential Moving Average (Ema) for online usage with a source data stream
-func NewDefaultEmaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Ema, err error) {
+func NewDefaultEmaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Ema, err error) {
 	ind, err := NewDefaultEma()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewEmaForStreamWithSrcLen creates an Exponential Moving Average (Ema) for offline usage with a source data stream
-func NewEmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ema, err error) {
+func NewEmaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ema, err error) {
 	ind, err := NewEmaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultEmaForStreamWithSrcLen creates an Exponential Moving Average (Ema) for offline usage with a source data stream
-func NewDefaultEmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Ema, err error) {
+func NewDefaultEmaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Ema, err error) {
 	ind, err := NewDefaultEmaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

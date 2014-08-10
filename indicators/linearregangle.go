@@ -60,28 +60,28 @@ func NewDefaultLinRegAngWithSrcLen(sourceLength int) (indicator *LinRegAng, err 
 }
 
 // NewLinRegAngForStream creates a Linear Regression Angle Indicator (LinRegAng) for online usage with a source data stream
-func NewLinRegAngForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegAng, err error) {
+func NewLinRegAngForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegAng, err error) {
 	ind, err := NewLinRegAng(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLinRegAngForStream creates a Linear Regression Angle Indicator (LinRegAng) for online usage with a source data stream
-func NewDefaultLinRegAngForStream(priceStream *gotrade.DOHLCVStream) (indicator *LinRegAng, err error) {
+func NewDefaultLinRegAngForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LinRegAng, err error) {
 	ind, err := NewDefaultLinRegAng()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewLinRegAngForStreamWithSrcLen creates a Linear Regression Angle Indicator (LinRegAng) for offline usage with a source data stream
-func NewLinRegAngForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegAng, err error) {
+func NewLinRegAngForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegAng, err error) {
 	ind, err := NewLinRegAngWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLinRegAngForStreamWithSrcLen creates a Linear Regression Angle Indicator (LinRegAng) for offline usage with a source data stream
-func NewDefaultLinRegAngForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LinRegAng, err error) {
+func NewDefaultLinRegAngForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LinRegAng, err error) {
 	ind, err := NewDefaultLinRegAngWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

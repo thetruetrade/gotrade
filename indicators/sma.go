@@ -96,28 +96,28 @@ func NewDefaultSmaWithSrcLen(sourceLength int) (indicator *Sma, err error) {
 }
 
 // NewSmaForStream creates a Simple Moving Average Indicator (Sma) for online usage with a source data stream
-func NewSmaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+func NewSmaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
 	ind, err := NewSma(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultSmaForStream creates a Simple Moving Average Indicator (Sma) for online usage with a source data stream
-func NewDefaultSmaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Sma, err error) {
+func NewDefaultSmaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Sma, err error) {
 	ind, err := NewDefaultSma()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewSmaForStreamWithSrcLen creates a Simple Moving Average Indicator (Sma) for offline usage with a source data stream
-func NewSmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+func NewSmaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
 	ind, err := NewSmaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultSmaForStreamWithSrcLen creates a Simple Moving Average Indicator (Sma) for offline usage with a source data stream
-func NewDefaultSmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Sma, err error) {
+func NewDefaultSmaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Sma, err error) {
 	ind, err := NewDefaultSmaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

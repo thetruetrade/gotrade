@@ -59,28 +59,28 @@ func NewDefaultTsfWithSrcLen(sourceLength int) (indicator *Tsf, err error) {
 }
 
 // NewTsfForStream creates a Time Series Forecast Indicator (Tsf) for online usage with a source data stream
-func NewTsfForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tsf, err error) {
+func NewTsfForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tsf, err error) {
 	ind, err := NewTsf(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultTsfForStream creates a Time Series Forecast Indicator (Tsf) for online usage with a source data stream
-func NewDefaultTsfForStream(priceStream *gotrade.DOHLCVStream) (indicator *Tsf, err error) {
+func NewDefaultTsfForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Tsf, err error) {
 	ind, err := NewDefaultTsf()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewTsfForStreamWithSrcLen creates a Time Series Forecast Indicator (Tsf) for offline usage with a source data stream
-func NewTsfForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tsf, err error) {
+func NewTsfForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tsf, err error) {
 	ind, err := NewTsfWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultTsfForStreamWithSrcLen creates a Time Series Forecast Indicator (Tsf) for offline usage with a source data stream
-func NewDefaultTsfForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Tsf, err error) {
+func NewDefaultTsfForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Tsf, err error) {
 	ind, err := NewDefaultTsfWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

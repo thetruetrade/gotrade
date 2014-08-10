@@ -13,6 +13,10 @@ type DOHLCVStreamTickReceiver interface {
 	ReceiveTick(tickData DOHLCV)
 }
 
+type DOHLCVStreamSubscriber interface {
+	AddTickSubscription(subscriber DOHLCVTickReceiver)
+}
+
 type DataStreamHolder interface {
 	MinValue() float64
 	MaxValue() float64

@@ -95,28 +95,28 @@ func NewDefaultRocRWithSrcLen(sourceLength int) (indicator *RocR, err error) {
 }
 
 // NewRocRForStream creates a Rate of Change Ratio Indicator (RocR) for online usage with a source data stream
-func NewRocRForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR, err error) {
+func NewRocRForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR, err error) {
 	ind, err := NewRocR(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRocRForStream creates a Rate of Change Ratio Indicator (RocR) for online usage with a source data stream
-func NewDefaultRocRForStream(priceStream *gotrade.DOHLCVStream) (indicator *RocR, err error) {
+func NewDefaultRocRForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *RocR, err error) {
 	ind, err := NewDefaultRocR()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewRocRForStreamWithSrcLen creates a Rate of Change Ratio Indicator (RocR) for offline usage with a source data stream
-func NewRocRForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR, err error) {
+func NewRocRForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR, err error) {
 	ind, err := NewRocRWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRocRForStreamWithSrcLen creates a Rate of Change Ratio Indicator (RocR) for offline usage with a source data stream
-func NewDefaultRocRForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *RocR, err error) {
+func NewDefaultRocRForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *RocR, err error) {
 	ind, err := NewDefaultRocRWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

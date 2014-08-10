@@ -95,28 +95,28 @@ func NewDefaultRocR100WithSrcLen(sourceLength int) (indicator *RocR100, err erro
 }
 
 // NewRocR100ForStream creates a Rate of Change Ratio 100 Scale Indicator (RocR100) for online usage with a source data stream
-func NewRocR100ForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR100, err error) {
+func NewRocR100ForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR100, err error) {
 	ind, err := NewRocR100(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRocR100ForStream creates a Rate of Change Ratio 100 Scale Indicator (RocR100) for online usage with a source data stream
-func NewDefaultRocR100ForStream(priceStream *gotrade.DOHLCVStream) (indicator *RocR100, err error) {
+func NewDefaultRocR100ForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *RocR100, err error) {
 	ind, err := NewDefaultRocR100()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewRocR100ForStreamWithSrcLen creates a Rate of Change Ratio 100 Scale Indicator (RocR100) for offline usage with a source data stream
-func NewRocR100ForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR100, err error) {
+func NewRocR100ForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR100, err error) {
 	ind, err := NewRocR100WithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRocR100ForStreamWithSrcLen creates a Rate of Change Ratio 100 Scale Indicator (RocR100) for offline usage with a source data stream
-func NewDefaultRocR100ForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *RocR100, err error) {
+func NewDefaultRocR100ForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *RocR100, err error) {
 	ind, err := NewDefaultRocR100WithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -104,28 +104,28 @@ func NewDefaultKamaWithSrcLen(sourceLength int) (indicator *Kama, err error) {
 }
 
 // NewKamaForStream creates a Kaufman Adaptive Moving Average Indicator (Kama) for online usage with a source data stream
-func NewKamaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Kama, err error) {
+func NewKamaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Kama, err error) {
 	ind, err := NewKama(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultKamaForStream creates a Kaufman Adaptive Moving Average Indicator (Kama) for online usage with a source data stream
-func NewDefaultKamaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Kama, err error) {
+func NewDefaultKamaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Kama, err error) {
 	ind, err := NewDefaultKama()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewKamaForStreamWithSrcLen creates a Kaufman Adaptive Moving Average Indicator (Kama) for offline usage with a source data stream
-func NewKamaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Kama, err error) {
+func NewKamaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Kama, err error) {
 	ind, err := NewKamaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultKamaForStreamWithSrcLen creates a Kaufman Adaptive Moving Average Indicator (Kama) for offline usage with a source data stream
-func NewDefaultKamaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Kama, err error) {
+func NewDefaultKamaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Kama, err error) {
 	ind, err := NewDefaultKamaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

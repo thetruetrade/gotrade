@@ -131,28 +131,28 @@ func NewDefaultTrimaWithSrcLen(sourceLength int) (indicator *Trima, err error) {
 }
 
 // NewTrimaForStream creates a Triangular Moving Average Indicator (Trima) for online usage with a source data stream
-func NewTrimaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+func NewTrimaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
 	ind, err := NewTrima(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultTrimaForStream creates a Triangular Moving Average Indicator (Trima) for online usage with a source data stream
-func NewDefaultTrimaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Trima, err error) {
+func NewDefaultTrimaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Trima, err error) {
 	ind, err := NewDefaultTrima()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewTrimaForStreamWithSrcLen creates a Triangular Moving Average Indicator (Trima) for offline usage with a source data stream
-func NewTrimaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+func NewTrimaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
 	ind, err := NewTrimaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultTrimaForStreamWithSrcLen creates a Triangular Moving Average Indicator (Trima) for offline usage with a source data stream
-func NewDefaultTrimaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Trima, err error) {
+func NewDefaultTrimaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Trima, err error) {
 	ind, err := NewDefaultTrimaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

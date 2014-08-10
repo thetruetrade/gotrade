@@ -687,3 +687,25 @@ func (sdi *StochDataItem) K() float64 {
 func (sdi *StochDataItem) D() float64 {
 	return sdi.d
 }
+
+type fakeDOHLCVStreamSubscriber struct {
+	numTimesAddTickSubscriptionCalled int
+	lastCallToAddTickSubscriptionArg  gotrade.DOHLCVTickReceiver
+}
+
+func newFakeDOHLCVStreamSubscriber() *fakeDOHLCVStreamSubscriber {
+	fss := fakeDOHLCVStreamSubscriber{
+		numTimesAddTickSubscriptionCalled: 0,
+		lastCallToAddTickSubscriptionArg:  nil,
+	}
+
+	return &fss
+}
+func (f *fakeDOHLCVStreamSubscriber) AddTickSubscription(subscriber gotrade.DOHLCVTickReceiver) {
+	f.lastCallToAddTickSubscriptionArg = subscriber
+	f.numTimesAddTickSubscriptionCalled += 1
+}
+
+func fakeFloatValAvailable(dataItem float64, streamBarIndex int) {
+
+}

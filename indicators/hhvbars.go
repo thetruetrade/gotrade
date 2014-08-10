@@ -95,28 +95,28 @@ func NewDefaultHhvBarsWithSrcLen(sourceLength int) (indicator *HhvBars, err erro
 }
 
 // NewHhvBarsForStream creates a Highest High Value Indicator (HhvBars)for online usage with a source data stream
-func NewHhvBarsForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HhvBars, err error) {
+func NewHhvBarsForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HhvBars, err error) {
 	ind, err := NewHhvBars(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultHhvBarsForStream creates a Highest High Value Indicator (HhvBars)for online usage with a source data stream
-func NewDefaultHhvBarsForStream(priceStream *gotrade.DOHLCVStream) (indicator *HhvBars, err error) {
+func NewDefaultHhvBarsForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *HhvBars, err error) {
 	ind, err := NewDefaultHhvBars()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewHhvBarsForStreamWithSrcLen creates a Highest High Value Indicator (HhvBars)for offline usage with a source data stream
-func NewHhvBarsForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HhvBars, err error) {
+func NewHhvBarsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HhvBars, err error) {
 	ind, err := NewHhvBarsWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultHhvBarsForStreamWithSrcLen creates a Highest High Value Indicator (HhvBars)for offline usage with a source data stream
-func NewDefaultHhvBarsForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *HhvBars, err error) {
+func NewDefaultHhvBarsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *HhvBars, err error) {
 	ind, err := NewDefaultHhvBarsWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

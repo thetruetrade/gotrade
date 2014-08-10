@@ -167,28 +167,28 @@ func NewDefaultStochOscWithSrcLen(sourceLength int) (indicator *StochOsc, err er
 }
 
 // NewStochOscForStream creates a Stochastic Oscillator Indicator (StochOsc) for online usage with a source data stream
-func NewStochOscForStream(priceStream *gotrade.DOHLCVStream, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
+func NewStochOscForStream(priceStream gotrade.DOHLCVStreamSubscriber, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
 	ind, err := NewStochOsc(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultStochOscForStream creates a Stochastic Oscillator Indicator (StochOsc) for online usage with a source data stream
-func NewDefaultStochOscForStream(priceStream *gotrade.DOHLCVStream) (indicator *StochOsc, err error) {
+func NewDefaultStochOscForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *StochOsc, err error) {
 	ind, err := NewDefaultStochOsc()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewStochOscForStreamWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage with a source data stream
-func NewStochOscForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
+func NewStochOscForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
 	ind, err := NewStochOscWithSrcLen(sourceLength, fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultStochOscForStreamWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage with a source data stream
-func NewDefaultStochOscForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *StochOsc, err error) {
+func NewDefaultStochOscForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *StochOsc, err error) {
 	ind, err := NewDefaultStochOscWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

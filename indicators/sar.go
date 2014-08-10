@@ -125,28 +125,28 @@ func NewDefaultSarWithSrcLen(sourceLength int) (indicator *Sar, err error) {
 }
 
 // NewSarForStream creates a Stop and Reverse Indicator (Sar) for online usage with a source data stream
-func NewSarForStream(priceStream *gotrade.DOHLCVStream, accelerationFactor float64, accelerationFactorMax float64) (indicator *Sar, err error) {
+func NewSarForStream(priceStream gotrade.DOHLCVStreamSubscriber, accelerationFactor float64, accelerationFactorMax float64) (indicator *Sar, err error) {
 	ind, err := NewSar(accelerationFactor, accelerationFactorMax)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultSarForStream creates a Stop and Reverse Indicator (Sar) for online usage with a source data stream
-func NewDefaultSarForStream(priceStream *gotrade.DOHLCVStream) (indicator *Sar, err error) {
+func NewDefaultSarForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Sar, err error) {
 	ind, err := NewDefaultSar()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewSarForStreamWithSrcLen creates a Stop and Reverse Indicator (Sar) for offline usage with a source data stream
-func NewSarForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, accelerationFactor float64, accelerationFactorMax float64) (indicator *Sar, err error) {
+func NewSarForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, accelerationFactor float64, accelerationFactorMax float64) (indicator *Sar, err error) {
 	ind, err := NewSarWithSrcLen(sourceLength, accelerationFactor, accelerationFactorMax)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultSarForStreamWithSrcLen creates a Stop and Reverse Indicator (Sar) for offline usage with a source data stream
-func NewDefaultSarForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Sar, err error) {
+func NewDefaultSarForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Sar, err error) {
 	ind, err := NewDefaultSarWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

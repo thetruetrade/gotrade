@@ -68,7 +68,7 @@ func NewAdxrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 			ind.valueAvailableAction(result, streamBarIndex)
 		}
 
-		if ind.periodHistory.Len() >= ind.adx.GetTimePeriod() {
+		if ind.periodHistory.Len() >= timePeriod {
 			first := ind.periodHistory.Front()
 			ind.periodHistory.Remove(first)
 		}
@@ -125,21 +125,21 @@ func NewDefaultAdxrWithSrcLen(sourceLength int) (indicator *Adxr, err error) {
 	return ind, err
 }
 
-func NewAdxrForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Adxr, err error) {
+func NewAdxrForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Adxr, err error) {
 	newAdxr, err := NewAdxr(timePeriod)
 	priceStream.AddTickSubscription(newAdxr)
 	return newAdxr, err
 }
 
 // NewAdxrForStreamWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
-func NewAdxrForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Adxr, err error) {
+func NewAdxrForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Adxr, err error) {
 	ind, err := NewAdxrWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultAdxrForStreamWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
-func NewDefaultAdxrForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Adxr, err error) {
+func NewDefaultAdxrForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Adxr, err error) {
 	ind, err := NewDefaultAdxrWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

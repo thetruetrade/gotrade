@@ -95,28 +95,28 @@ func NewDefaultLlvBarsWithSrcLen(sourceLength int) (indicator *LlvBars, err erro
 }
 
 // NewLlvBarsForStream creates a Lowest Low Value Indicator (LlvBars)for online usage with a source data stream
-func NewLlvBarsForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
+func NewLlvBarsForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
 	ind, err := NewLlvBars(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLlvBarsForStream creates a Lowest Low Value Indicator (LlvBars)for online usage with a source data stream
-func NewDefaultLlvBarsForStream(priceStream *gotrade.DOHLCVStream) (indicator *LlvBars, err error) {
+func NewDefaultLlvBarsForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LlvBars, err error) {
 	ind, err := NewDefaultLlvBars()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewLlvBarsForStreamWithSrcLen creates a Lowest Low Value Indicator (LlvBars)for offline usage with a source data stream
-func NewLlvBarsForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
+func NewLlvBarsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
 	ind, err := NewLlvBarsWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLlvBarsForStreamWithSrcLen creates a Lowest Low Value Indicator (LlvBars)for offline usage with a source data stream
-func NewDefaultLlvBarsForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LlvBars, err error) {
+func NewDefaultLlvBarsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LlvBars, err error) {
 	ind, err := NewDefaultLlvBarsWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

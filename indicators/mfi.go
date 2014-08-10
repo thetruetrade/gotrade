@@ -199,28 +199,28 @@ func NewDefaultMfiWithSrcLen(sourceLength int) (indicator *Mfi, err error) {
 }
 
 // NewMfiForStream creates a Money Flow Index Indicator (Mfi) for online usage with a source data stream
-func NewMfiForStream(priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Mfi, err error) {
+func NewMfiForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Mfi, err error) {
 	ind, err := NewMfi(timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMfiForStream creates a Money Flow Index Indicator (Mfi) for online usage with a source data stream
-func NewDefaultMfiForStream(priceStream *gotrade.DOHLCVStream) (indicator *Mfi, err error) {
+func NewDefaultMfiForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Mfi, err error) {
 	ind, err := NewDefaultMfi()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewMfiForStreamWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage with a source data stream
-func NewMfiForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int) (indicator *Mfi, err error) {
+func NewMfiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Mfi, err error) {
 	ind, err := NewMfiWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMfiForStreamWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage with a source data stream
-func NewDefaultMfiForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Mfi, err error) {
+func NewDefaultMfiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Mfi, err error) {
 	ind, err := NewDefaultMfiWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

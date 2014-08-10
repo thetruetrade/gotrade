@@ -59,28 +59,28 @@ func NewDefaultLinRegSlpWithSrcLen(sourceLength int) (indicator *LinRegSlp, err 
 }
 
 // NewLinRegSlpForStream creates a Linear Regression Slope Indicator (LinRegSlp) for online usage with a source data stream
-func NewLinRegSlpForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
+func NewLinRegSlpForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
 	ind, err := NewLinRegSlp(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLinRegSlpForStream creates a Linear Regression Slope Indicator (LinRegSlp) for online usage with a source data stream
-func NewDefaultLinRegSlpForStream(priceStream *gotrade.DOHLCVStream) (indicator *LinRegSlp, err error) {
+func NewDefaultLinRegSlpForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LinRegSlp, err error) {
 	ind, err := NewDefaultLinRegSlp()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewLinRegSlpForStreamWithSrcLen creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage with a source data stream
-func NewLinRegSlpForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
+func NewLinRegSlpForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
 	ind, err := NewLinRegSlpWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLinRegSlpForStreamWithSrcLen creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage with a source data stream
-func NewDefaultLinRegSlpForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *LinRegSlp, err error) {
+func NewDefaultLinRegSlpForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LinRegSlp, err error) {
 	ind, err := NewDefaultLinRegSlpWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

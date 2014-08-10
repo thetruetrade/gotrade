@@ -132,28 +132,28 @@ func NewDefaultBollingerBandsWithSrcLen(sourceLength int) (indicator *BollingerB
 }
 
 // NewBollingerBandsForStream creates a Bollinger Bands Indicator (BollingerBand) for online usage with a source data stream
-func NewBollingerBandsForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+func NewBollingerBandsForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
 	ind, err := NewBollingerBands(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultBollingerBandsForStream creates a Bollinger Bands Indicator (BollingerBand) for online usage with a source data stream
-func NewDefaultBollingerBandsForStream(priceStream *gotrade.DOHLCVStream) (indicator *BollingerBands, err error) {
+func NewDefaultBollingerBandsForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *BollingerBands, err error) {
 	ind, err := NewDefaultBollingerBands()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewBollingerBandsForStreamWithSrcLen creates a Bollinger Bands Indicator (BollingerBand) for online usage with a source data stream
-func NewBollingerBandsForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+func NewBollingerBandsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
 	ind, err := NewBollingerBandsWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultBollingerBandsForStreamWithSrcLen creates a Bollinger Bands Indicator (BollingerBand) for online usage with a source data stream
-func NewDefaultBollingerBandsForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *BollingerBands, err error) {
+func NewDefaultBollingerBandsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *BollingerBands, err error) {
 	ind, err := NewDefaultBollingerBandsWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -64,14 +64,14 @@ func NewObvWithSrcLen(sourceLength int) (indicator *Obv, err error) {
 }
 
 // NewObvForStream creates an On Balance Volume (Obv) for online usage with a source data stream
-func NewObvForStream(priceStream *gotrade.DOHLCVStream) (indicator *Obv, err error) {
+func NewObvForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Obv, err error) {
 	ind, err := NewObv()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewObvForStreamWithSrcLen creates an On Balance Volume (Obv) for offline usage with a source data stream
-func NewObvForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Obv, err error) {
+func NewObvForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Obv, err error) {
 	ind, err := NewObvWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

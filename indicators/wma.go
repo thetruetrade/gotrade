@@ -99,28 +99,28 @@ func NewDefaultWmaWithSrcLen(sourceLength int) (indicator *Wma, err error) {
 }
 
 // NewWmaForStream creates a Weighted Moving Average Indicator (Wma) for online usage with a source data stream
-func NewWmaForStream(priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
+func NewWmaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
 	ind, err := NewWma(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultWmaForStream creates a Weighted Moving Average Indicator (Wma) for online usage with a source data stream
-func NewDefaultWmaForStream(priceStream *gotrade.DOHLCVStream) (indicator *Wma, err error) {
+func NewDefaultWmaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Wma, err error) {
 	ind, err := NewDefaultWma()
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewWmaForStreamWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage with a source data stream
-func NewWmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
+func NewWmaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
 	ind, err := NewWmaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultWmaForStreamWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage with a source data stream
-func NewDefaultWmaForStreamWithSrcLen(sourceLength int, priceStream *gotrade.DOHLCVStream) (indicator *Wma, err error) {
+func NewDefaultWmaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Wma, err error) {
 	ind, err := NewDefaultWmaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
