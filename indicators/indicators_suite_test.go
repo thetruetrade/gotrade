@@ -35,7 +35,23 @@ var (
 		gotrade.NewDOHLCVDataItem(time.Now(), 18.0, 19.0, 16.0, 17.0, 0.0),
 		gotrade.NewDOHLCVDataItem(time.Now(), 19.0, 20.0, 17.0, 18.0, 0.0),
 		gotrade.NewDOHLCVDataItem(time.Now(), 20.0, 21.0, 18.0, 19.0, 0.0),
-		gotrade.NewDOHLCVDataItem(time.Now(), 21.0, 22.0, 19.0, 20.0, 0.0)}
+		gotrade.NewDOHLCVDataItem(time.Now(), 21.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 22.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 23.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 24.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 25.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 26.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 27.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 28.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 29.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 30.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 31.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 32.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 33.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 34.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 35.0, 22.0, 19.0, 20.0, 0.0),
+		gotrade.NewDOHLCVDataItem(time.Now(), 36.0, 22.0, 19.0, 20.0, 0.0),
+	}
 )
 
 func TestIndicators(t *testing.T) {
