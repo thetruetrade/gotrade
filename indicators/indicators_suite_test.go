@@ -813,3 +813,7 @@ func fakeFloatValAvailable(dataItem float64, streamBarIndex int) {
 func fakeAroonValAvailable(dataItemAroonUp float64, dataItemAroonDown float64, streamBarIndex int) {
 
 }
+
+func fakeBollingerBandsValAvailable(dataItemUpperBand float64, dataItemMiddleBand float64, dataItemLowerBand float64, streamBarIndex int) {
+
+}

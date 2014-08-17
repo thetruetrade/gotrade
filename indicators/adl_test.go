@@ -135,7 +135,6 @@ var _ = Describe("when calculating an accumulation distribution line (adl) with 
 
 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 		})
-
 	})
 
 	Context("given the indicator is created via the constructor for use with a price stream with fixed source length", func() {
@@ -180,6 +179,5 @@ var _ = Describe("when calculating an accumulation distribution line (adl) with 
 				Expect(len(indicator.Data)).To(Equal(cap(indicator.Data)))
 			})
 		})
-
 	})
 })
