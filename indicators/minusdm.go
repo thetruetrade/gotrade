@@ -79,17 +79,26 @@ func NewDefaultMinusDm() (indicator *MinusDm, err error) {
 }
 
 // NewMinusDmWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage
-func NewMinusDmWithSrcLen(sourceLength int, timePeriod int) (indicator *MinusDm, err error) {
+func NewMinusDmWithSrcLen(sourceLength uint, timePeriod int) (indicator *MinusDm, err error) {
 	ind, err := NewMinusDm(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultMinusDmWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage with default parameters
-func NewDefaultMinusDmWithSrcLen(sourceLength int) (indicator *MinusDm, err error) {
+func NewDefaultMinusDmWithSrcLen(sourceLength uint) (indicator *MinusDm, err error) {
 	ind, err := NewDefaultMinusDm()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -108,14 +117,14 @@ func NewDefaultMinusDmForStream(priceStream gotrade.DOHLCVStreamSubscriber) (ind
 }
 
 // NewMinusDmForStreamWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage with a source data stream
-func NewMinusDmForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *MinusDm, err error) {
+func NewMinusDmForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *MinusDm, err error) {
 	ind, err := NewMinusDmWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMinusDmForStreamWithSrcLen creates a Minus Directional Movement Indicator (MinusDm) for offline usage with a source data stream
-func NewDefaultMinusDmForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *MinusDm, err error) {
+func NewDefaultMinusDmForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *MinusDm, err error) {
 	ind, err := NewDefaultMinusDmWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

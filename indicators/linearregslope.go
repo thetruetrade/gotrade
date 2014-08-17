@@ -44,17 +44,26 @@ func NewDefaultLinRegSlp() (indicator *LinRegSlp, err error) {
 }
 
 // NewLinRegSlpWithSrcLen creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage
-func NewLinRegSlpWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
+func NewLinRegSlpWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
 	ind, err := NewLinRegSlp(timePeriod, selectData)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultLinRegSlpWithSrcLen creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage with default parameters
-func NewDefaultLinRegSlpWithSrcLen(sourceLength int) (indicator *LinRegSlp, err error) {
+func NewDefaultLinRegSlpWithSrcLen(sourceLength uint) (indicator *LinRegSlp, err error) {
 	ind, err := NewDefaultLinRegSlp()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -73,14 +82,14 @@ func NewDefaultLinRegSlpForStream(priceStream gotrade.DOHLCVStreamSubscriber) (i
 }
 
 // NewLinRegSlpForStreamWithSrcLen creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage with a source data stream
-func NewLinRegSlpForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
+func NewLinRegSlpForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegSlp, err error) {
 	ind, err := NewLinRegSlpWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLinRegSlpForStreamWithSrcLen creates a Linear Regression Slope Indicator (LinRegSlp) for offline usage with a source data stream
-func NewDefaultLinRegSlpForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LinRegSlp, err error) {
+func NewDefaultLinRegSlpForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LinRegSlp, err error) {
 	ind, err := NewDefaultLinRegSlpWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

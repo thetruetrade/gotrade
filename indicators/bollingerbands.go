@@ -112,21 +112,29 @@ func NewDefaultBollingerBands() (indicator *BollingerBands, err error) {
 }
 
 // NewBollingerBandsWithSrcLen creates a Bollinger Band Indicator (BollingerBand) for offline usage
-func NewBollingerBandsWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+func NewBollingerBandsWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
 	ind, err := NewBollingerBands(timePeriod, selectData)
-	ind.UpperBand = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.MiddleBand = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.LowerBand = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.UpperBand = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.MiddleBand = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.LowerBand = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultBollingerBandsWithSrcLen creates a Bollinger Band Indicator (BollingerBand) for offline usage
-func NewDefaultBollingerBandsWithSrcLen(sourceLength int) (indicator *BollingerBands, err error) {
+func NewDefaultBollingerBandsWithSrcLen(sourceLength uint) (indicator *BollingerBands, err error) {
 	ind, err := NewDefaultBollingerBands()
-	ind.UpperBand = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.MiddleBand = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.LowerBand = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.UpperBand = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.MiddleBand = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.LowerBand = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
@@ -146,14 +154,14 @@ func NewDefaultBollingerBandsForStream(priceStream gotrade.DOHLCVStreamSubscribe
 }
 
 // NewBollingerBandsForStreamWithSrcLen creates a Bollinger Bands Indicator (BollingerBand) for online usage with a source data stream
-func NewBollingerBandsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+func NewBollingerBandsForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
 	ind, err := NewBollingerBandsWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultBollingerBandsForStreamWithSrcLen creates a Bollinger Bands Indicator (BollingerBand) for online usage with a source data stream
-func NewDefaultBollingerBandsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *BollingerBands, err error) {
+func NewDefaultBollingerBandsForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *BollingerBands, err error) {
 	ind, err := NewDefaultBollingerBandsWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

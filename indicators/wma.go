@@ -84,17 +84,26 @@ func NewDefaultWma() (indicator *Wma, err error) {
 }
 
 // NewWmaWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage
-func NewWmaWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
+func NewWmaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
 	ind, err := NewWma(timePeriod, selectData)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultWmaWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage with default parameters
-func NewDefaultWmaWithSrcLen(sourceLength int) (indicator *Wma, err error) {
+func NewDefaultWmaWithSrcLen(sourceLength uint) (indicator *Wma, err error) {
 	ind, err := NewDefaultWma()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -113,14 +122,14 @@ func NewDefaultWmaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewWmaForStreamWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage with a source data stream
-func NewWmaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
+func NewWmaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Wma, err error) {
 	ind, err := NewWmaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultWmaForStreamWithSrcLen creates a Weighted Moving Average Indicator (Wma) for offline usage with a source data stream
-func NewDefaultWmaForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Wma, err error) {
+func NewDefaultWmaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Wma, err error) {
 	ind, err := NewDefaultWmaWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

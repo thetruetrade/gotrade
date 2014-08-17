@@ -48,9 +48,13 @@ func NewTypPrice() (indicator *TypPrice, err error) {
 }
 
 // NewTypPriceWithSrcLen creates a Typical Price Indicator (TypPrice) for offline usage
-func NewTypPriceWithSrcLen(sourceLength int) (indicator *TypPrice, err error) {
+func NewTypPriceWithSrcLen(sourceLength uint) (indicator *TypPrice, err error) {
 	ind, err := NewTypPrice()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
@@ -63,7 +67,7 @@ func NewTypPriceForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator
 }
 
 // NewTypPriceForStreamWithSrcLen creates a Typical Price Indicator (TypPrice) for offline usage with a source data stream
-func NewTypPriceForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *TypPrice, err error) {
+func NewTypPriceForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *TypPrice, err error) {
 	ind, err := NewTypPriceWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

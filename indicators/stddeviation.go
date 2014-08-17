@@ -104,17 +104,26 @@ func NewDefaultStdDev() (indicator *StdDev, err error) {
 }
 
 // NewStdDevWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage
-func NewStdDevWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
+func NewStdDevWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
 	ind, err := NewStdDev(timePeriod, selectData)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultStdDevWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage with default parameters
-func NewDefaultStdDevWithSrcLen(sourceLength int) (indicator *StdDev, err error) {
+func NewDefaultStdDevWithSrcLen(sourceLength uint) (indicator *StdDev, err error) {
 	ind, err := NewDefaultStdDev()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -133,14 +142,14 @@ func NewDefaultStdDevForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indi
 }
 
 // NewStdDevForStreamWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage with a source data stream
-func NewStdDevForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
+func NewStdDevForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *StdDev, err error) {
 	ind, err := NewStdDevWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultStdDevForStreamWithSrcLen creates a Standard Deviation Indicator (StdDev) for offline usage with a source data stream
-func NewDefaultStdDevForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *StdDev, err error) {
+func NewDefaultStdDevForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *StdDev, err error) {
 	ind, err := NewDefaultStdDevWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

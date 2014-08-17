@@ -80,17 +80,26 @@ func NewDefaultRoc() (indicator *Roc, err error) {
 }
 
 // NewRocWithSrcLen creates a Rate of Change Indicator (Roc) for offline usage
-func NewRocWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Roc, err error) {
+func NewRocWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Roc, err error) {
 	ind, err := NewRoc(timePeriod, selectData)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultRocWithSrcLen creates a Rate of Change Indicator (Roc) for offline usage with default parameters
-func NewDefaultRocWithSrcLen(sourceLength int) (indicator *Roc, err error) {
+func NewDefaultRocWithSrcLen(sourceLength uint) (indicator *Roc, err error) {
 	ind, err := NewDefaultRoc()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -109,14 +118,14 @@ func NewDefaultRocForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewRocForStreamWithSrcLen creates a Rate of Change Indicator (Roc) for offline usage with a source data stream
-func NewRocForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Roc, err error) {
+func NewRocForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Roc, err error) {
 	ind, err := NewRocWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRocForStreamWithSrcLen creates a Rate of Change Indicator (Roc) for offline usage with a source data stream
-func NewDefaultRocForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Roc, err error) {
+func NewDefaultRocForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Roc, err error) {
 	ind, err := NewDefaultRocWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

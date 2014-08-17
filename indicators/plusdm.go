@@ -79,17 +79,26 @@ func NewDefaultPlusDm() (indicator *PlusDm, err error) {
 }
 
 // NewPlusDmWithSrcLen creates a Plus Directional Movement Indicator (PlusDm) for offline usage
-func NewPlusDmWithSrcLen(sourceLength int, timePeriod int) (indicator *PlusDm, err error) {
+func NewPlusDmWithSrcLen(sourceLength uint, timePeriod int) (indicator *PlusDm, err error) {
 	ind, err := NewPlusDm(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultPlusDmWithSrcLen creates a Plus Directional Movement Indicator (PlusDm) for offline usage with default parameters
-func NewDefaultPlusDmWithSrcLen(sourceLength int) (indicator *PlusDm, err error) {
+func NewDefaultPlusDmWithSrcLen(sourceLength uint) (indicator *PlusDm, err error) {
 	ind, err := NewDefaultPlusDm()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -108,14 +117,14 @@ func NewDefaultPlusDmForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indi
 }
 
 // NewPlusDmForStreamWithSrcLen creates a Plus Directional Movement Indicator (PlusDm) for offline usage with a source data stream
-func NewPlusDmForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *PlusDm, err error) {
+func NewPlusDmForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *PlusDm, err error) {
 	ind, err := NewPlusDmWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultPlusDmForStreamWithSrcLen creates a Plus Directional Movement Indicator (PlusDm) for offline usage with a source data stream
-func NewDefaultPlusDmForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *PlusDm, err error) {
+func NewDefaultPlusDmForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *PlusDm, err error) {
 	ind, err := NewDefaultPlusDmWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

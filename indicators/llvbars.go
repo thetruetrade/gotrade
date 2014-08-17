@@ -80,17 +80,26 @@ func NewDefaultLlvBars() (indicator *LlvBars, err error) {
 }
 
 // NewLlvBarsWithSrcLen creates a Lowest Low Value Indicator (LlvBars)for offline usage
-func NewLlvBarsWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
+func NewLlvBarsWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
 	ind, err := NewLlvBars(timePeriod, selectData)
-	ind.Data = make([]int64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]int64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultLlvBarsWithSrcLen creates a Lowest Low Value Indicator (LlvBars)for offline usage with default parameters
-func NewDefaultLlvBarsWithSrcLen(sourceLength int) (indicator *LlvBars, err error) {
+func NewDefaultLlvBarsWithSrcLen(sourceLength uint) (indicator *LlvBars, err error) {
 	ind, err := NewDefaultLlvBars()
-	ind.Data = make([]int64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]int64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -109,14 +118,14 @@ func NewDefaultLlvBarsForStream(priceStream gotrade.DOHLCVStreamSubscriber) (ind
 }
 
 // NewLlvBarsForStreamWithSrcLen creates a Lowest Low Value Indicator (LlvBars)for offline usage with a source data stream
-func NewLlvBarsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
+func NewLlvBarsForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LlvBars, err error) {
 	ind, err := NewLlvBarsWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultLlvBarsForStreamWithSrcLen creates a Lowest Low Value Indicator (LlvBars)for offline usage with a source data stream
-func NewDefaultLlvBarsForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LlvBars, err error) {
+func NewDefaultLlvBarsForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *LlvBars, err error) {
 	ind, err := NewDefaultLlvBarsWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

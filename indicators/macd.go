@@ -157,21 +157,32 @@ func NewDefaultMacd() (indicator *Macd, err error) {
 }
 
 // NewMacdWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage
-func NewMacdWithSrcLen(sourceLength int, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+func NewMacdWithSrcLen(sourceLength uint, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
 	ind, err := NewMacd(fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
-	ind.Macd = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.Signal = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.Histogram = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+
+		ind.Macd = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.Signal = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.Histogram = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultMacdWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with default parameters
-func NewDefaultMacdWithSrcLen(sourceLength int) (indicator *Macd, err error) {
+func NewDefaultMacdWithSrcLen(sourceLength uint) (indicator *Macd, err error) {
 	ind, err := NewDefaultMacd()
-	ind.Macd = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.Signal = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.Histogram = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+
+		ind.Macd = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.Signal = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.Histogram = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -190,14 +201,14 @@ func NewDefaultMacdForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indica
 }
 
 // NewMacdForStreamWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with a source data stream
-func NewMacdForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+func NewMacdForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
 	ind, err := NewMacdWithSrcLen(sourceLength, fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMacdForStreamWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with a source data stream
-func NewDefaultMacdForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Macd, err error) {
+func NewDefaultMacdForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Macd, err error) {
 	ind, err := NewDefaultMacdWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -80,17 +80,26 @@ func NewDefaultRocP() (indicator *RocP, err error) {
 }
 
 // NewRocPWithSrcLen creates a Rate of Change Percentage Indicator (RocP) for offline usage
-func NewRocPWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocP, err error) {
+func NewRocPWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocP, err error) {
 	ind, err := NewRocP(timePeriod, selectData)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultRocPWithSrcLen creates a Rate of Change Percentage Indicator (RocP) for offline usage with default parameters
-func NewDefaultRocPWithSrcLen(sourceLength int) (indicator *RocP, err error) {
+func NewDefaultRocPWithSrcLen(sourceLength uint) (indicator *RocP, err error) {
 	ind, err := NewDefaultRocP()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -109,14 +118,14 @@ func NewDefaultRocPForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indica
 }
 
 // NewRocPForStreamWithSrcLen creates a Rate of Change Percentage Indicator (RocP) for offline usage with a source data stream
-func NewRocPForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocP, err error) {
+func NewRocPForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocP, err error) {
 	ind, err := NewRocPWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRocPForStreamWithSrcLen creates a Rate of Change Percentage Indicator (RocP) for offline usage with a source data stream
-func NewDefaultRocPForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *RocP, err error) {
+func NewDefaultRocPForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *RocP, err error) {
 	ind, err := NewDefaultRocPWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

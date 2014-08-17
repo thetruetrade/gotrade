@@ -155,7 +155,7 @@ var _ = Describe("when calculating an average directional movement indicator (Ad
 
 	Context("given the indicator is created via the constructor with fixed source length", func() {
 		BeforeEach(func() {
-			indicator, _ = indicators.NewAdxWithSrcLen(len(sourceDOHLCVData), 4)
+			indicator, _ = indicators.NewAdxWithSrcLen(uint(len(sourceDOHLCVData)), 4)
 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 				func() float64 {
 					return GetFloatDataMax(indicator.Data)
@@ -194,7 +194,7 @@ var _ = Describe("when calculating an average directional movement indicator (Ad
 
 	Context("given the indicator is created via the constructor with defaulted parameters and fixed source length", func() {
 		BeforeEach(func() {
-			indicator, _ = indicators.NewDefaultAdxWithSrcLen(len(sourceDOHLCVData))
+			indicator, _ = indicators.NewDefaultAdxWithSrcLen(uint(len(sourceDOHLCVData)))
 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 				func() float64 {
 					return GetFloatDataMax(indicator.Data)
@@ -308,7 +308,7 @@ var _ = Describe("when calculating an average directional movement indicator (Ad
 	Context("given the indicator is created via the constructor for use with a price stream with fixed source length", func() {
 		BeforeEach(func() {
 			stream = newFakeDOHLCVStreamSubscriber()
-			indicator, _ = indicators.NewAdxForStreamWithSrcLen(len(sourceDOHLCVData), stream, 4)
+			indicator, _ = indicators.NewAdxForStreamWithSrcLen(uint(len(sourceDOHLCVData)), stream, 4)
 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 				func() float64 {
 					return GetFloatDataMax(indicator.Data)
@@ -352,7 +352,7 @@ var _ = Describe("when calculating an average directional movement indicator (Ad
 	Context("given the indicator is created via the constructor for use with a price stream with fixed source length with defaulted parmeters", func() {
 		BeforeEach(func() {
 			stream = newFakeDOHLCVStreamSubscriber()
-			indicator, _ = indicators.NewDefaultAdxForStreamWithSrcLen(len(sourceDOHLCVData), stream)
+			indicator, _ = indicators.NewDefaultAdxForStreamWithSrcLen(uint(len(sourceDOHLCVData)), stream)
 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
 				func() float64 {
 					return GetFloatDataMax(indicator.Data)

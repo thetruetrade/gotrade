@@ -78,17 +78,26 @@ func NewDefaultWillR() (indicator *WillR, err error) {
 }
 
 // NewWillRWithSrcLen creates a Williams Percent R Indicator (WillR) for offline usage
-func NewWillRWithSrcLen(sourceLength int, timePeriod int) (indicator *WillR, err error) {
+func NewWillRWithSrcLen(sourceLength uint, timePeriod int) (indicator *WillR, err error) {
 	ind, err := NewWillR(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultWillRWithSrcLen creates a Williams Percent R Indicator (WillR) for offline usage with default parameters
-func NewDefaultWillRWithSrcLen(sourceLength int) (indicator *WillR, err error) {
+func NewDefaultWillRWithSrcLen(sourceLength uint) (indicator *WillR, err error) {
 	ind, err := NewDefaultWillR()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -107,14 +116,14 @@ func NewDefaultWillRForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indic
 }
 
 // NewWillRForStreamWithSrcLen creates a Williams Percent R Indicator (WillR) for offline usage with a source data stream
-func NewWillRForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *WillR, err error) {
+func NewWillRForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *WillR, err error) {
 	ind, err := NewWillRWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultWillRForStreamWithSrcLen creates a Williams Percent R Indicator (WillR) for offline usage with a source data stream
-func NewDefaultWillRForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *WillR, err error) {
+func NewDefaultWillRForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *WillR, err error) {
 	ind, err := NewDefaultWillRWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

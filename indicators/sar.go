@@ -110,17 +110,26 @@ func NewDefaultSar() (indicator *Sar, err error) {
 }
 
 // NewSarWithSrcLen creates a Stop and Reverse Indicator (Sar) for offline usage
-func NewSarWithSrcLen(sourceLength int, accelerationFactor float64, accelerationFactorMax float64) (indicator *Sar, err error) {
+func NewSarWithSrcLen(sourceLength uint, accelerationFactor float64, accelerationFactorMax float64) (indicator *Sar, err error) {
 	ind, err := NewSar(accelerationFactor, accelerationFactorMax)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultSarWithSrcLen creates a Stop and Reverse Indicator (Sar) for offline usage with default parameters
-func NewDefaultSarWithSrcLen(sourceLength int) (indicator *Sar, err error) {
+func NewDefaultSarWithSrcLen(sourceLength uint) (indicator *Sar, err error) {
 	ind, err := NewDefaultSar()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -139,14 +148,14 @@ func NewDefaultSarForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewSarForStreamWithSrcLen creates a Stop and Reverse Indicator (Sar) for offline usage with a source data stream
-func NewSarForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, accelerationFactor float64, accelerationFactorMax float64) (indicator *Sar, err error) {
+func NewSarForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, accelerationFactor float64, accelerationFactorMax float64) (indicator *Sar, err error) {
 	ind, err := NewSarWithSrcLen(sourceLength, accelerationFactor, accelerationFactorMax)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultSarForStreamWithSrcLen creates a Stop and Reverse Indicator (Sar) for offline usage with a source data stream
-func NewDefaultSarForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Sar, err error) {
+func NewDefaultSarForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Sar, err error) {
 	ind, err := NewDefaultSarWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

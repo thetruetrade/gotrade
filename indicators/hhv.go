@@ -79,17 +79,26 @@ func NewDefaultHhv() (indicator *Hhv, err error) {
 }
 
 // NewHhvWithSrcLen creates a Highest High Value Indicator (Hhv)for offline usage
-func NewHhvWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Hhv, err error) {
+func NewHhvWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Hhv, err error) {
 	ind, err := NewHhv(timePeriod, selectData)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultHhvWithSrcLen creates a Highest High Value Indicator (Hhv)for offline usage with default parameters
-func NewDefaultHhvWithSrcLen(sourceLength int) (indicator *Hhv, err error) {
+func NewDefaultHhvWithSrcLen(sourceLength uint) (indicator *Hhv, err error) {
 	ind, err := NewDefaultHhv()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -108,14 +117,14 @@ func NewDefaultHhvForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewHhvForStreamWithSrcLen creates a Highest High Value Indicator (Hhv)for offline usage with a source data stream
-func NewHhvForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Hhv, err error) {
+func NewHhvForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Hhv, err error) {
 	ind, err := NewHhvWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultHhvForStreamWithSrcLen creates a Highest High Value Indicator (Hhv)for offline usage with a source data stream
-func NewDefaultHhvForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Hhv, err error) {
+func NewDefaultHhvForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Hhv, err error) {
 	ind, err := NewDefaultHhvWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

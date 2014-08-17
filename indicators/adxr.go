@@ -110,18 +110,26 @@ func NewDefaultAdxr() (indicator *Adxr, err error) {
 }
 
 // NewAdxrWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage
-func NewAdxrWithSrcLen(sourceLength int, timePeriod int) (indicator *Adxr, err error) {
+func NewAdxrWithSrcLen(sourceLength uint, timePeriod int) (indicator *Adxr, err error) {
 	ind, err := NewAdxr(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultAdxrWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with default parameters
-func NewDefaultAdxrWithSrcLen(sourceLength int) (indicator *Adxr, err error) {
-
+func NewDefaultAdxrWithSrcLen(sourceLength uint) (indicator *Adxr, err error) {
 	ind, err := NewDefaultAdxr()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -140,14 +148,14 @@ func NewDefaultAdxrForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indica
 }
 
 // NewAdxrForStreamWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
-func NewAdxrForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Adxr, err error) {
+func NewAdxrForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Adxr, err error) {
 	ind, err := NewAdxrWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultAdxrForStreamWithSrcLen creates an Average Directional Index Rating (Adxr) for offline usage with a source data stream
-func NewDefaultAdxrForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Adxr, err error) {
+func NewDefaultAdxrForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Adxr, err error) {
 	ind, err := NewDefaultAdxrWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

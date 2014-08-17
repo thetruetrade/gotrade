@@ -83,17 +83,26 @@ func NewDefaultRsi() (indicator *Rsi, err error) {
 }
 
 // NewRsiWithSrcLen creates a Relative Strength Indicator (Rsi) for offline usage
-func NewRsiWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rsi, err error) {
+func NewRsiWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rsi, err error) {
 	ind, err := NewRsi(timePeriod, selectData)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultRsiWithSrcLen creates a Relative Strength Indicator (Rsi) for offline usage with default parameters
-func NewDefaultRsiWithSrcLen(sourceLength int) (indicator *Rsi, err error) {
+func NewDefaultRsiWithSrcLen(sourceLength uint) (indicator *Rsi, err error) {
 	ind, err := NewDefaultRsi()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -112,14 +121,14 @@ func NewDefaultRsiForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewRsiForStreamWithSrcLen creates a Relative Strength Indicator (Rsi) for offline usage with a source data stream
-func NewRsiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rsi, err error) {
+func NewRsiForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rsi, err error) {
 	ind, err := NewRsiWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultRsiForStreamWithSrcLen creates a Relative Strength Indicator (Rsi) for offline usage with a source data stream
-func NewDefaultRsiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Rsi, err error) {
+func NewDefaultRsiForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Rsi, err error) {
 	ind, err := NewDefaultRsiWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

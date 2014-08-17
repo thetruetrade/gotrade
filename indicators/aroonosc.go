@@ -93,18 +93,26 @@ func NewDefaultAroonOsc() (indicator *AroonOsc, err error) {
 }
 
 // NewAroonOscWithSrcLen creates an Aroon Oscillator (AroonOsc) for offline usage
-func NewAroonOscWithSrcLen(sourceLength int, timePeriod int) (indicator *AroonOsc, err error) {
+func NewAroonOscWithSrcLen(sourceLength uint, timePeriod int) (indicator *AroonOsc, err error) {
 	ind, err := NewAroonOsc(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultAroonOscWithSrcLen creates an Aroon Oscillator (AroonOsc) for offline usage with default parameters
-func NewDefaultAroonOscWithSrcLen(sourceLength int) (indicator *AroonOsc, err error) {
-
+func NewDefaultAroonOscWithSrcLen(sourceLength uint) (indicator *AroonOsc, err error) {
 	ind, err := NewDefaultAroonOsc()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -123,14 +131,14 @@ func NewDefaultAroonOscForStream(priceStream gotrade.DOHLCVStreamSubscriber) (in
 }
 
 // NewAroonOscForStreamWithSrcLen creates an Aroon Oscillator (AroonOsc) for offline usage with a source data stream
-func NewAroonOscForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *AroonOsc, err error) {
+func NewAroonOscForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *AroonOsc, err error) {
 	ind, err := NewAroonOscWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultAroonOscForStreamWithSrcLen creates an Aroon Oscillator (AroonOsc) for offline usage with a source data stream
-func NewDefaultAroonOscForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *AroonOsc, err error) {
+func NewDefaultAroonOscForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *AroonOsc, err error) {
 	ind, err := NewDefaultAroonOscWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

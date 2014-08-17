@@ -129,17 +129,26 @@ func NewDefaultAtr() (indicator *Atr, err error) {
 }
 
 // NewAtrWithSrcLen creates an Average True Range (Atr) for offline usage
-func NewAtrWithSrcLen(sourceLength int, timePeriod int) (indicator *Atr, err error) {
+func NewAtrWithSrcLen(sourceLength uint, timePeriod int) (indicator *Atr, err error) {
 	ind, err := NewAtr(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultAtrWithSrcLen creates an Average True Range (Atr) for offline usage with default parameters
-func NewDefaultAtrWithSrcLen(sourceLength int) (indicator *Atr, err error) {
+func NewDefaultAtrWithSrcLen(sourceLength uint) (indicator *Atr, err error) {
 	ind, err := NewDefaultAtr()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -158,14 +167,14 @@ func NewDefaultAtrForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewAtrForStreamWithSrcLen creates an Average True Range (Atr) for offline usage with a source data stream
-func NewAtrForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Atr, err error) {
+func NewAtrForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Atr, err error) {
 	ind, err := NewAtrWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultAtrForStreamWithSrcLen creates an Average True Range (Atr) for offline usage with a source data stream
-func NewDefaultAtrForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Atr, err error) {
+func NewDefaultAtrForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Atr, err error) {
 	ind, err := NewDefaultAtrWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

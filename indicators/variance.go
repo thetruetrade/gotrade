@@ -82,17 +82,26 @@ func NewDefaultVar() (indicator *Var, err error) {
 }
 
 // NewVarWithSrcLen creates a Variance Indicator (Var) for offline usage
-func NewVarWithSrcLen(sourceLength int, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Var, err error) {
+func NewVarWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Var, err error) {
 	ind, err := NewVar(timePeriod, selectData)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultVarWithSrcLen creates a Variance Indicator (Var) for offline usage with default parameters
-func NewDefaultVarWithSrcLen(sourceLength int) (indicator *Var, err error) {
+func NewDefaultVarWithSrcLen(sourceLength uint) (indicator *Var, err error) {
 	ind, err := NewDefaultVar()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -111,14 +120,14 @@ func NewDefaultVarForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewVarForStreamWithSrcLen creates a Variance Indicator (Var) for offline usage with a source data stream
-func NewVarForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Var, err error) {
+func NewVarForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Var, err error) {
 	ind, err := NewVarWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultVarForStreamWithSrcLen creates a Variance Indicator (Var) for offline usage with a source data stream
-func NewDefaultVarForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Var, err error) {
+func NewDefaultVarForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Var, err error) {
 	ind, err := NewDefaultVarWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

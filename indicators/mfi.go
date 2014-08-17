@@ -184,17 +184,26 @@ func NewDefaultMfi() (indicator *Mfi, err error) {
 }
 
 // NewMfiWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage
-func NewMfiWithSrcLen(sourceLength int, timePeriod int) (indicator *Mfi, err error) {
+func NewMfiWithSrcLen(sourceLength uint, timePeriod int) (indicator *Mfi, err error) {
 	ind, err := NewMfi(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultMfiWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage with default parameters
-func NewDefaultMfiWithSrcLen(sourceLength int) (indicator *Mfi, err error) {
+func NewDefaultMfiWithSrcLen(sourceLength uint) (indicator *Mfi, err error) {
 	ind, err := NewDefaultMfi()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -213,14 +222,14 @@ func NewDefaultMfiForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewMfiForStreamWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage with a source data stream
-func NewMfiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Mfi, err error) {
+func NewMfiForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Mfi, err error) {
 	ind, err := NewMfiWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultMfiForStreamWithSrcLen creates a Money Flow Index Indicator (Mfi) for offline usage with a source data stream
-func NewDefaultMfiForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Mfi, err error) {
+func NewDefaultMfiForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Mfi, err error) {
 	ind, err := NewDefaultMfiWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

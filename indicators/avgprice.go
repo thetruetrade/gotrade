@@ -50,7 +50,7 @@ func NewAvgPrice() (indicator *AvgPrice, err error) {
 }
 
 // NewAvgPriceWithSrcLen creates an Avgerage Price Indicator(AvgPrice) for offline usage
-func NewAvgPriceWithSrcLen(sourceLength int) (indicator *AvgPrice, err error) {
+func NewAvgPriceWithSrcLen(sourceLength uint) (indicator *AvgPrice, err error) {
 	ind, err := NewAvgPrice()
 	ind.Data = make([]float64, 0, sourceLength)
 
@@ -65,7 +65,7 @@ func NewAvgPriceForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicator
 }
 
 // NewAvgPriceForStreamWithSrcLen creates an Avgerage Price Indicator(AvgPrice) for offline usage with a source data stream
-func NewAvgPriceForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *AvgPrice, err error) {
+func NewAvgPriceForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *AvgPrice, err error) {
 	ind, err := NewAvgPriceWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

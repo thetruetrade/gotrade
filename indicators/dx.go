@@ -127,17 +127,26 @@ func NewDefaultDx() (indicator *Dx, err error) {
 }
 
 // NewDxWithSrcLen creates a Directional Movement Index (Dx) for offline usage
-func NewDxWithSrcLen(sourceLength int, timePeriod int) (indicator *Dx, err error) {
+func NewDxWithSrcLen(sourceLength uint, timePeriod int) (indicator *Dx, err error) {
 	ind, err := NewDx(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultDxWithSrcLen creates a Directional Movement Index (Dx) for offline usage with default parameters
-func NewDefaultDxWithSrcLen(sourceLength int) (indicator *Dx, err error) {
+func NewDefaultDxWithSrcLen(sourceLength uint) (indicator *Dx, err error) {
 	ind, err := NewDefaultDx()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -156,14 +165,14 @@ func NewDefaultDxForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicato
 }
 
 // NewDxForStreamWithSrcLen creates a Directional Movement Index (Dx) for offline usage with a source data stream
-func NewDxForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Dx, err error) {
+func NewDxForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Dx, err error) {
 	ind, err := NewDxWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultDxForStreamWithSrcLen creates a Directional Movement Index (Dx) for offline usage with a source data stream
-func NewDefaultDxForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Dx, err error) {
+func NewDefaultDxForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Dx, err error) {
 	ind, err := NewDefaultDxWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

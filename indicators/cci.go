@@ -116,17 +116,26 @@ func NewDefaultCci() (indicator *Cci, err error) {
 }
 
 // NewCciWithSrcLen creates a Commodity Channel Index (Cci) for offline usage
-func NewCciWithSrcLen(sourceLength int, timePeriod int) (indicator *Cci, err error) {
+func NewCciWithSrcLen(sourceLength uint, timePeriod int) (indicator *Cci, err error) {
 	ind, err := NewCci(timePeriod)
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultCciWithSrcLen creates a Commodity Channel Index (Cci) for offline usage with default parameters
-func NewDefaultCciWithSrcLen(sourceLength int) (indicator *Cci, err error) {
+func NewDefaultCciWithSrcLen(sourceLength uint) (indicator *Cci, err error) {
 	ind, err := NewDefaultCci()
-	ind.Data = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Data = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -145,14 +154,14 @@ func NewDefaultCciForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewCciForStreamWithSrcLen creates a Commodity Channel Index (Cci) for offline usage with a source data stream
-func NewCciForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Cci, err error) {
+func NewCciForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Cci, err error) {
 	ind, err := NewCciWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultCciForStreamWithSrcLen creates a Commodity Channel Index (Cci) for offline usage with a source data stream
-func NewDefaultCciForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Cci, err error) {
+func NewDefaultCciForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Cci, err error) {
 	ind, err := NewDefaultCciWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -151,18 +151,28 @@ func NewDefaultStochOsc() (indicator *StochOsc, err error) {
 }
 
 // NewStochOscWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage
-func NewStochOscWithSrcLen(sourceLength int, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
+func NewStochOscWithSrcLen(sourceLength uint, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
 	ind, err := NewStochOsc(fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
-	ind.SlowK = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.SlowD = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.SlowK = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.SlowD = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
 // NewDefaultStochOscWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage with default parameters
-func NewDefaultStochOscWithSrcLen(sourceLength int) (indicator *StochOsc, err error) {
+func NewDefaultStochOscWithSrcLen(sourceLength uint) (indicator *StochOsc, err error) {
 	ind, err := NewDefaultStochOsc()
-	ind.SlowK = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.SlowD = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.SlowK = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.SlowD = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -181,14 +191,14 @@ func NewDefaultStochOscForStream(priceStream gotrade.DOHLCVStreamSubscriber) (in
 }
 
 // NewStochOscForStreamWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage with a source data stream
-func NewStochOscForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
+func NewStochOscForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, fastKTimePeriod int, slowKTimePeriod int, slowDTimePeriod int) (indicator *StochOsc, err error) {
 	ind, err := NewStochOscWithSrcLen(sourceLength, fastKTimePeriod, slowKTimePeriod, slowDTimePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultStochOscForStreamWithSrcLen creates a Stochastic Oscillator Indicator (StochOsc) for offline usage with a source data stream
-func NewDefaultStochOscForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *StochOsc, err error) {
+func NewDefaultStochOscForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *StochOsc, err error) {
 	ind, err := NewDefaultStochOscWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
