@@ -306,7 +306,6 @@ var _ = Describe("when calculating an aroon with DOHLCV source data", func() {
 
 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 		})
-
 	})
 
 	Context("given the indicator is created via the constructor for use with a price stream with fixed source length", func() {

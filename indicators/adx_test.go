@@ -265,7 +265,6 @@ var _ = Describe("when calculating an average directional movement indicator (Ad
 
 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 		})
-
 	})
 
 	Context("given the indicator is created via the constructor for use with a price stream with defaulted parameters", func() {
@@ -302,7 +301,6 @@ var _ = Describe("when calculating an average directional movement indicator (Ad
 
 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 		})
-
 	})
 
 	Context("given the indicator is created via the constructor for use with a price stream with fixed source length", func() {
@@ -391,6 +389,5 @@ var _ = Describe("when calculating an average directional movement indicator (Ad
 				Expect(len(indicator.Data)).To(Equal(cap(indicator.Data)))
 			})
 		})
-
 	})
 })
