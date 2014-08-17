@@ -810,6 +810,10 @@ func fakeFloatValAvailable(dataItem float64, streamBarIndex int) {
 
 }
 
+func fakeIntValAvailable(dataItem int64, streamBarIndex int) {
+
+}
+
 func fakeAroonValAvailable(dataItemAroonUp float64, dataItemAroonDown float64, streamBarIndex int) {
 
 }
