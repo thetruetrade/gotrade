@@ -81,20 +81,28 @@ func NewDefaultAroon() (indicator *Aroon, err error) {
 }
 
 // NewAroonWithSrcLen creates an Aroon (Aroon) for offline usage
-func NewAroonWithSrcLen(sourceLength int, timePeriod int) (indicator *Aroon, err error) {
+func NewAroonWithSrcLen(sourceLength uint, timePeriod int) (indicator *Aroon, err error) {
 	ind, err := NewAroon(timePeriod)
-	ind.Up = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.Down = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Up = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.Down = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
 
 	return ind, err
 }
 
 // NewDefaultAroonWithSrcLen creates an Aroon (Aroon) for offline usage with default parameters
-func NewDefaultAroonWithSrcLen(sourceLength int) (indicator *Aroon, err error) {
-
+func NewDefaultAroonWithSrcLen(sourceLength uint) (indicator *Aroon, err error) {
 	ind, err := NewDefaultAroon()
-	ind.Up = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
-	ind.Down = make([]float64, 0, sourceLength-ind.GetLookbackPeriod())
+
+	// only initialise the storage if there is enough source data to require it
+	if sourceLength-uint(ind.GetLookbackPeriod()) > 1 {
+		ind.Up = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+		ind.Down = make([]float64, 0, sourceLength-uint(ind.GetLookbackPeriod()))
+	}
+
 	return ind, err
 }
 
@@ -113,14 +121,14 @@ func NewDefaultAroonForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indic
 }
 
 // NewAroonForStreamWithSrcLen creates an Aroon (Aroon) for online usage with a source data stream
-func NewAroonForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Aroon, err error) {
+func NewAroonForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int) (indicator *Aroon, err error) {
 	ind, err := NewAroonWithSrcLen(sourceLength, timePeriod)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
 }
 
 // NewDefaultAroonForStreamWithSrcLen creates an Aroon (Aroon) for online usage with a source data stream
-func NewDefaultAroonForStreamWithSrcLen(sourceLength int, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Aroon, err error) {
+func NewDefaultAroonForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber) (indicator *Aroon, err error) {
 	ind, err := NewDefaultAroonWithSrcLen(sourceLength)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
