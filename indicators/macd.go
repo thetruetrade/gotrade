@@ -56,7 +56,7 @@ func NewMacd(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selec
 
 	// the minimum signalTimePeriod for this indicator is 2
 	if signalTimePeriod < 1 {
-		return nil, errors.New("signalTimePeriod is less than the minimum (2)")
+		return nil, errors.New("signalTimePeriod is less than the minimum (1)")
 	}
 
 	// check the maximum slowTimePeriod

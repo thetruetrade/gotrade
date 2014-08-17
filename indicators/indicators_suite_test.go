@@ -825,3 +825,7 @@ func fakeBollingerBandsValAvailable(dataItemUpperBand float64, dataItemMiddleBan
 func fakeLinRegValAvailable(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 
 }
+
+func fakeMacdValAvailable(dataItemMacd float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int) {
+
+}
