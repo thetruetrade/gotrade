@@ -66,9 +66,6 @@ func NewRocR100(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator
 			newRocR100.Data = append(newRocR100.Data, dataItem)
 		})
 
-	newRocR100.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		newRocR100.Data = append(newRocR100.Data, dataItem)
-	}
 	return &newRocR100, err
 }
 
