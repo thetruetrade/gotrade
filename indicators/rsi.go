@@ -69,9 +69,6 @@ func NewRsi(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Rs
 			ind.Data = append(ind.Data, dataItem)
 		})
 
-	ind.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		ind.Data = append(ind.Data, dataItem)
-	}
 	return &ind, err
 }
 
