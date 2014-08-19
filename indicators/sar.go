@@ -39,7 +39,7 @@ func NewSarWithoutStorage(accelerationFactor float64, accelerationFactorMax floa
 	}
 
 	// check the maximum accelerationFactor
-	if accelerationFactor > math.MaxFloat64 {
+	if accelerationFactor >= math.MaxFloat64 {
 		return nil, errors.New("accelerationFactor is greater than the maximum float64 size")
 	}
 
@@ -49,7 +49,7 @@ func NewSarWithoutStorage(accelerationFactor float64, accelerationFactorMax floa
 	}
 
 	// check the maximum accelerationFactorMax
-	if accelerationFactorMax > math.MaxFloat64 {
+	if accelerationFactorMax >= math.MaxFloat64 {
 		return nil, errors.New("accelerationFactorMax is greater than the maximum float64 size")
 	}
 
