@@ -90,9 +90,6 @@ func NewStdDev(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator 
 			ind.Data = append(ind.Data, dataItem)
 		})
 
-	ind.valueAvailableAction = func(dataItem float64, streamBarIndex int) {
-		ind.Data = append(ind.Data, dataItem)
-	}
 	return &ind, err
 }
 
