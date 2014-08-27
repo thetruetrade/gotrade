@@ -7,17 +7,15 @@ import (
 
 // An Average Directional Index (Adx), no storage, for use in other indicators
 type AdxWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	periodCounter        int
-	dx                   *DxWithoutStorage
-	currentDX            float64
-	sumDX                float64
-	previousAdx          float64
-	timePeriod           int
+	periodCounter int
+	dx            *DxWithoutStorage
+	currentDX     float64
+	sumDX         float64
+	previousAdx   float64
+	timePeriod    int
 }
 
 // NewAdxWithoutStorage creates an Average Directional Index (Adx) without storage
@@ -40,14 +38,12 @@ func NewAdxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	lookback := (2 * timePeriod) - 1
 	ind := AdxWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        timePeriod * -1,
-		currentDX:            0.0,
-		sumDX:                0.0,
-		previousAdx:          0.0,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                timePeriod * -1,
+		currentDX:                    0.0,
+		sumDX:                        0.0,
+		previousAdx:                  0.0,
+		timePeriod:                   timePeriod,
 	}
 
 	ind.dx, err = NewDxWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
@@ -58,50 +54,22 @@ func NewAdxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 		if ind.periodCounter < 0 {
 			ind.sumDX += ind.currentDX
 		} else if ind.periodCounter == 0 {
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-
-			if ind.validFromBar == -1 {
-				// set the streamBarIndex from which this indicator returns valid results
-				ind.validFromBar = streamBarIndex
-			}
-
 			ind.sumDX += ind.currentDX
+
 			result := ind.sumDX / float64(ind.timePeriod)
 
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-			ind.valueAvailableAction(result, streamBarIndex)
 			ind.previousAdx = result
 
 		} else {
 
-			ind.dataLength += 1
-
 			result := (ind.previousAdx*float64(ind.timePeriod-1) + ind.currentDX) / float64(ind.timePeriod)
 
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 			ind.previousAdx = result
 		}
-
 	})
 
 	return &ind, err

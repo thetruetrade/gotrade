@@ -6,8 +6,7 @@ import (
 
 // An Accumulation Distribution Line Indicator (Adl), no storage, for use in other indicators
 type AdlWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
@@ -21,12 +20,10 @@ func NewAdlWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indic
 	if valueAvailableAction == nil {
 		return nil, ErrValueAvailableActionIsNil
 	}
-
+	lookback := 0
 	ind := AdlWithoutStorage{
-		baseIndicator:        newBaseIndicator(0),
-		baseFloatBounds:      newBaseFloatBounds(),
-		previousAdl:          float64(0.0),
-		valueAvailableAction: valueAvailableAction,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		previousAdl:                  float64(0.0),
 	}
 
 	return &ind, nil
@@ -73,19 +70,12 @@ func NewAdlForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStre
 
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *AdlWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
-	// increment the number of results this indicator can be expected to return
-	ind.IncDataLength()
 
 	moneyFlowMultiplier := ((tickData.C() - tickData.L()) - (tickData.H() - tickData.C())) / (tickData.H() - tickData.L())
 	moneyFlowVolume := moneyFlowMultiplier * tickData.V()
 	result := ind.previousAdl + moneyFlowVolume
 
-	ind.SetValidFromBar(streamBarIndex)
-
-	ind.UpdateMinMax(result, result)
-
-	// notify of a new result value though the value available action
-	ind.valueAvailableAction(result, streamBarIndex)
+	ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 	ind.previousAdl = result
 }

@@ -176,13 +176,30 @@ type baseIndicatorWithTimePeriod struct {
 type baseIndicatorWithFloatBounds struct {
 	*baseIndicator
 	*baseFloatBounds
+	valueAvailableAction ValueAvailableActionFloat
 }
 
-func newBaseIndicatorWithFloatBounds(lookbackPeriod int) *baseIndicatorWithFloatBounds {
+func newBaseIndicatorWithFloatBounds(lookbackPeriod int, valueAvailableAction ValueAvailableActionFloat) *baseIndicatorWithFloatBounds {
 	ind := baseIndicatorWithFloatBounds{
-		baseIndicator:   newBaseIndicator(lookbackPeriod),
-		baseFloatBounds: newBaseFloatBounds()}
+		baseIndicator:        newBaseIndicator(lookbackPeriod),
+		baseFloatBounds:      newBaseFloatBounds(),
+		valueAvailableAction: valueAvailableAction,
+	}
 	return &ind
+}
+
+func (ind *baseIndicatorWithFloatBounds) UpdateIndicatorWithNewValue(newValue float64, streamBarIndex int) {
+	// increment the number of results this indicator can be expected to return
+	ind.IncDataLength()
+
+	// set the streamBarIndex from which this indicator returns valid results
+	ind.SetValidFromBar(streamBarIndex)
+
+	// update the min max data bounds
+	ind.UpdateMinMax(newValue, newValue)
+
+	// notify of a new result value though the value available action
+	ind.valueAvailableAction(newValue, streamBarIndex)
 }
 
 type baseIndicatorWithIntBounds struct {
