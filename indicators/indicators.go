@@ -92,6 +92,18 @@ func (ind *baseFloatBounds) MaxValue() float64 {
 	return ind.maxValue
 }
 
+func (ind *baseFloatBounds) UpdateMinMax(minCandidate float64, maxCandidate float64) {
+	// update the maximum result value
+	if maxCandidate > ind.maxValue {
+		ind.maxValue = maxCandidate
+	}
+
+	// update the minimum result value
+	if minCandidate < ind.minValue {
+		ind.minValue = minCandidate
+	}
+}
+
 type baseIntBounds struct {
 	minValue int64
 	maxValue int64
@@ -108,6 +120,18 @@ func (ind *baseIntBounds) MinValue() int64 {
 
 func (ind *baseIntBounds) MaxValue() int64 {
 	return ind.maxValue
+}
+
+func (ind *baseIntBounds) UpdateMinMax(minCandidate int64, maxCandidate int64) {
+	// update the maximum result value
+	if maxCandidate > ind.maxValue {
+		ind.maxValue = maxCandidate
+	}
+
+	// update the minimum result value
+	if minCandidate < ind.minValue {
+		ind.minValue = minCandidate
+	}
 }
 
 type baseIndicator struct {
@@ -131,6 +155,18 @@ func (ind *baseIndicator) GetLookbackPeriod() int {
 
 func (ind *baseIndicator) Length() int {
 	return ind.dataLength
+}
+
+func (ind *baseIndicator) IncDataLength() {
+	ind.dataLength += 1
+}
+
+func (ind *baseIndicator) SetValidFromBar(streamBarIndex int) {
+	// if the indicator has not yet set a valid from bar
+	if ind.validFromBar == -1 {
+		// set the streamBarIndex from which this indicator returns valid results
+		ind.validFromBar = streamBarIndex
+	}
 }
 
 type baseIndicatorWithTimePeriod struct {

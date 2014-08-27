@@ -74,26 +74,15 @@ func NewAdlForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStre
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *AdlWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 	// increment the number of results this indicator can be expected to return
-	ind.dataLength += 1
+	ind.IncDataLength()
 
 	moneyFlowMultiplier := ((tickData.C() - tickData.L()) - (tickData.H() - tickData.C())) / (tickData.H() - tickData.L())
 	moneyFlowVolume := moneyFlowMultiplier * tickData.V()
 	result := ind.previousAdl + moneyFlowVolume
 
-	if ind.validFromBar == -1 {
-		// set the streamBarIndex from which this indicator returns valid results
-		ind.validFromBar = streamBarIndex
-	}
+	ind.SetValidFromBar(streamBarIndex)
 
-	// update the maximum result value
-	if result > ind.maxValue {
-		ind.maxValue = result
-	}
-
-	// update the minimum result value
-	if result < ind.minValue {
-		ind.minValue = result
-	}
+	ind.UpdateMinMax(result, result)
 
 	// notify of a new result value though the value available action
 	ind.valueAvailableAction(result, streamBarIndex)
