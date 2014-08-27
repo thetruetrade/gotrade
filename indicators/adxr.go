@@ -8,15 +8,13 @@ import (
 
 // An Average Directional Index Rating (Adxr), no storage
 type AdxrWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	periodCounter        int
-	periodHistory        *list.List
-	adx                  *AdxWithoutStorage
-	valueAvailableAction ValueAvailableActionFloat
-	timePeriod           int
+	periodCounter int
+	periodHistory *list.List
+	adx           *AdxWithoutStorage
+	timePeriod    int
 }
 
 // NewAdxrWithoutStorage creates an Average Directional Index Rating (Adxr) without storage
@@ -38,11 +36,9 @@ func NewAdxrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 	}
 
 	ind := AdxrWithoutStorage{
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        0,
-		periodHistory:        list.New(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		periodCounter: 0,
+		periodHistory: list.New(),
+		timePeriod:    timePeriod,
 	}
 
 	ind.adx, err = NewAdxWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
@@ -52,20 +48,7 @@ func NewAdxrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 			adxN := ind.periodHistory.Front().Value.(float64)
 			result := (dataItem + adxN) / 2.0
 
-			ind.dataLength += 1
-			if ind.validFromBar == -1 {
-				ind.validFromBar = streamBarIndex
-			}
-
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		}
 
 		if ind.periodHistory.Len() >= timePeriod {
@@ -78,7 +61,7 @@ func NewAdxrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 	if timePeriod > 1 {
 		lookback = timePeriod - 1 + ind.adx.GetLookbackPeriod()
 	}
-	ind.baseIndicator = newBaseIndicator(lookback)
+	ind.baseIndicatorWithFloatBounds = newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction)
 
 	return &ind, nil
 }

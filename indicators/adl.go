@@ -9,8 +9,7 @@ type AdlWithoutStorage struct {
 	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	previousAdl          float64
+	previousAdl float64
 }
 
 // NewAdlWithoutStorage creates an Accumulation Distribution Line Indicator (Adl) without storage
