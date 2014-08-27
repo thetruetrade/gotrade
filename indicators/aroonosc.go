@@ -6,12 +6,10 @@ import (
 )
 
 type AroonOscWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	//private variables
-	valueAvailableAction ValueAvailableActionFloat
-	aroon                *AroonWithoutStorage
+	aroon *AroonWithoutStorage
 }
 
 func NewAroonOscWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *AroonOscWithoutStorage, err error) {
@@ -33,34 +31,15 @@ func NewAroonOscWithoutStorage(timePeriod int, valueAvailableAction ValueAvailab
 
 	lookback := timePeriod
 	ind := AroonOscWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		valueAvailableAction: valueAvailableAction,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
 	}
 
 	ind.aroon, err = NewAroonWithoutStorage(timePeriod,
 		func(dataItemAroonUp float64, dataItemAroonDown float64, streamBarIndex int) {
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength++
 
 			result := dataItemAroonUp - dataItemAroonDown
-			if ind.validFromBar == -1 {
-				// set the streamBarIndex from which this indicator returns valid results
-				ind.validFromBar = streamBarIndex
-			}
 
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		})
 	return &ind, nil
 }
