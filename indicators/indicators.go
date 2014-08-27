@@ -202,6 +202,35 @@ func (ind *baseIndicatorWithFloatBounds) UpdateIndicatorWithNewValue(newValue fl
 	ind.valueAvailableAction(newValue, streamBarIndex)
 }
 
+type baseIndicatorWithFloatBoundsAroon struct {
+	*baseIndicator
+	*baseFloatBounds
+	valueAvailableAction ValueAvailableActionAroon
+}
+
+func newBaseIndicatorWithFloatBoundsAroon(lookbackPeriod int, valueAvailableAction ValueAvailableActionAroon) *baseIndicatorWithFloatBoundsAroon {
+	ind := baseIndicatorWithFloatBoundsAroon{
+		baseIndicator:        newBaseIndicator(lookbackPeriod),
+		baseFloatBounds:      newBaseFloatBounds(),
+		valueAvailableAction: valueAvailableAction,
+	}
+	return &ind
+}
+
+func (ind *baseIndicatorWithFloatBoundsAroon) UpdateIndicatorWithNewValue(newAroonUpValue float64, newAroonDwnValue float64, streamBarIndex int) {
+	// increment the number of results this indicator can be expected to return
+	ind.IncDataLength()
+
+	// set the streamBarIndex from which this indicator returns valid results
+	ind.SetValidFromBar(streamBarIndex)
+
+	// update the min max data bounds
+	ind.UpdateMinMax(newAroonDwnValue, newAroonUpValue)
+
+	// notify of a new result value though the value available action
+	ind.valueAvailableAction(newAroonUpValue, newAroonDwnValue, streamBarIndex)
+}
+
 type baseIndicatorWithIntBounds struct {
 	*baseIndicator
 	*baseIntBounds

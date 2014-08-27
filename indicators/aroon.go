@@ -9,16 +9,14 @@ import (
 
 // An Aroon (Aroon), no storage, for use in other indicators
 type AroonWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBoundsAroon
 
 	// private variables
-	periodCounter        int
-	periodHighHistory    *list.List
-	periodLowHistory     *list.List
-	valueAvailableAction ValueAvailableActionAroon
-	aroonFactor          float64
-	timePeriod           int
+	periodCounter     int
+	periodHighHistory *list.List
+	periodLowHistory  *list.List
+	aroonFactor       float64
+	timePeriod        int
 }
 
 // NewAroonWithoutStorage creates an Aroon (Aroon) without storage
@@ -41,13 +39,11 @@ func NewAroonWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableA
 
 	lookback := timePeriod
 	ind := AroonWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        (timePeriod + 1) * -1,
-		periodHighHistory:    list.New(),
-		periodLowHistory:     list.New(),
-		valueAvailableAction: valueAvailableAction,
-		aroonFactor:          100.0 / float64(timePeriod),
+		baseIndicatorWithFloatBoundsAroon: newBaseIndicatorWithFloatBoundsAroon(lookback, valueAvailableAction),
+		periodCounter:                     (timePeriod + 1) * -1,
+		periodHighHistory:                 list.New(),
+		periodLowHistory:                  list.New(),
+		aroonFactor:                       100.0 / float64(timePeriod),
 	}
 
 	return &ind, nil
@@ -148,13 +144,6 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 	}
 
 	if ind.periodCounter >= 0 {
-		ind.dataLength += 1
-
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
 		var aroonUp float64
 		var aroonDwn float64
 
@@ -188,17 +177,6 @@ func (ind *AroonWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 		aroonUp = ind.aroonFactor * float64(ind.GetLookbackPeriod()-daysSinceHigh)
 		aroonDwn = ind.aroonFactor * float64(ind.GetLookbackPeriod()-daysSinceLow)
 
-		// update the maximum result value
-		if aroonUp > ind.maxValue {
-			ind.maxValue = aroonUp
-		}
-
-		// update the minimum result value
-		if aroonDwn < ind.minValue {
-			ind.minValue = aroonDwn
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(aroonUp, aroonDwn, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(aroonUp, aroonDwn, streamBarIndex)
 	}
 }
