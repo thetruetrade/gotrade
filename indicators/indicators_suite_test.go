@@ -829,3 +829,7 @@ func fakeLinRegValAvailable(dataItem float64, slope float64, intercept float64, 
 func fakeMacdValAvailable(dataItemMacd float64, dataItemSignal float64, dataItemHistogram float64, streamBarIndex int) {
 
 }
+
+func FakeStochValueAvailable(dataItemK float64, dataItemD float64, streamBarIndex int) {
+
+}
