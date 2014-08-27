@@ -10,16 +10,14 @@ import (
 
 // An Directional Movement Index Indicator (Dx), no storage, for use in other indicators
 type DxWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	minusDI              *MinusDi
-	plusDI               *PlusDi
-	currentPlusDi        float64
-	currentMinusDi       float64
-	timePeriod           int
+	minusDI        *MinusDi
+	plusDI         *PlusDi
+	currentPlusDi  float64
+	currentMinusDi float64
+	timePeriod     int
 }
 
 // NewDxWithoutStorage creates a Directional Movement Index Indicator (Dx) without storage
@@ -46,12 +44,10 @@ func NewDxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActi
 	}
 
 	ind := DxWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		currentPlusDi:        0.0,
-		currentMinusDi:       0.0,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		currentPlusDi:                0.0,
+		currentMinusDi:               0.0,
+		timePeriod:                   timePeriod,
 	}
 
 	ind.minusDI, err = NewMinusDi(timePeriod)
@@ -73,27 +69,7 @@ func NewDxWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActi
 			result = 0.0
 		}
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
-
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
 
 	return &ind, err
