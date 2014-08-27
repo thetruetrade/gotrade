@@ -9,14 +9,12 @@ import (
 
 // A Double Exponential Moving Average Indicator (Dema), no storage, for use in other indicators
 type DemaWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	ema1                 *EmaWithoutStorage
-	ema2                 *EmaWithoutStorage
-	currentEMA           float64
+	ema1       *EmaWithoutStorage
+	ema2       *EmaWithoutStorage
+	currentEMA float64
 }
 
 // NewDemaWithoutStorage creates a Double Exponential Moving Average Indicator (Dema) without storage
@@ -39,9 +37,7 @@ func NewDemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 
 	lookback := 2 * (timePeriod - 1)
 	ind := DemaWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		valueAvailableAction: valueAvailableAction,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
 	}
 
 	ind.ema1, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
@@ -50,28 +46,11 @@ func NewDemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 	})
 
 	ind.ema2, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
 
 		// Dema(X) = (2 * EMA(X, CLOSE)) - (EMA(X, EMA(X, CLOSE)))
-		dema := (2 * ind.currentEMA) - dataItem
+		result := (2 * ind.currentEMA) - dataItem
 
-		// update the maximum result value
-		if dema > ind.maxValue {
-			ind.maxValue = dema
-		}
-
-		// update the minimum result value
-		if dema < ind.minValue {
-			ind.minValue = dema
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(dema, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	})
 
 	return &ind, nil
