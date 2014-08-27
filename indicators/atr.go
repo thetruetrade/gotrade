@@ -7,11 +7,9 @@ import (
 
 // An Average True Range Indicator (Atr), no storage, for use in other indicators
 type AtrWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
 	trueRange            *TrueRangeWithoutStorage
 	sma                  *SmaWithoutStorage
 	previousAvgTrueRange float64
@@ -39,36 +37,16 @@ func NewAtrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	lookback := timePeriod
 	ind := AtrWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		multiplier:           float64(timePeriod - 1),
-		previousAvgTrueRange: -1,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		multiplier:                   float64(timePeriod - 1),
+		previousAvgTrueRange:         -1,
+		timePeriod:                   timePeriod,
 	}
 
 	ind.sma, err = NewSmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.previousAvgTrueRange = dataItem
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
-		// update the maximum result value
-		if dataItem > ind.maxValue {
-			ind.maxValue = dataItem
-		}
-
-		// update the minimum result value
-		if dataItem < ind.minValue {
-			ind.minValue = dataItem
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(dataItem, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(dataItem, streamBarIndex)
 	})
 
 	ind.trueRange, err = NewTrueRangeWithoutStorage(func(dataItem float64, streamBarIndex int) {
@@ -77,23 +55,9 @@ func NewAtrWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 			ind.sma.ReceiveTick(dataItem, streamBarIndex)
 		} else {
 
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-
 			result := ((ind.previousAvgTrueRange * ind.multiplier) + dataItem) / float64(ind.timePeriod)
 
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 			// update the previous true range for the next tick
 			ind.previousAvgTrueRange = result
