@@ -7,20 +7,18 @@ import (
 
 // A Chaikin Oscillator Indicator (ChaikinOsc), no storage, for use in other indicators
 type ChaikinOscWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	fastTimePeriod       int
-	slowTimePeriod       int
-	valueAvailableAction ValueAvailableActionFloat
-	adl                  *AdlWithoutStorage
-	emaFast              float64
-	emaSlow              float64
-	emaFastMultiplier    float64
-	emaSlowMultiplier    float64
-	periodCounter        int
-	isInitialised        bool
+	fastTimePeriod    int
+	slowTimePeriod    int
+	adl               *AdlWithoutStorage
+	emaFast           float64
+	emaSlow           float64
+	emaFastMultiplier float64
+	emaSlowMultiplier float64
+	periodCounter     int
+	isInitialised     bool
 }
 
 // NewChaikinOscWithoutStorage creates a Chaikin Oscillator Indicator (ChaikinOsc) without storage
@@ -56,15 +54,13 @@ func NewChaikinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueAv
 
 	lookback := slowTimePeriod - 1
 	ind := ChaikinOscWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		slowTimePeriod:       slowTimePeriod,
-		fastTimePeriod:       fastTimePeriod,
-		emaFastMultiplier:    float64(2.0 / float64(fastTimePeriod+1.0)),
-		emaSlowMultiplier:    float64(2.0 / float64(slowTimePeriod+1.0)),
-		periodCounter:        slowTimePeriod * -1,
-		isInitialised:        false,
-		valueAvailableAction: valueAvailableAction,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		slowTimePeriod:               slowTimePeriod,
+		fastTimePeriod:               fastTimePeriod,
+		emaFastMultiplier:            float64(2.0 / float64(fastTimePeriod+1.0)),
+		emaSlowMultiplier:            float64(2.0 / float64(slowTimePeriod+1.0)),
+		periodCounter:                slowTimePeriod * -1,
+		isInitialised:                false,
 	}
 
 	ind.adl, err = NewAdlWithoutStorage(func(dataItem float64, streamBarIndex int) {
@@ -81,30 +77,12 @@ func NewChaikinOscWithoutStorage(fastTimePeriod int, slowTimePeriod int, valueAv
 		}
 
 		if ind.periodCounter >= 0 {
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-
-			if ind.validFromBar == -1 {
-				// set the streamBarIndex from which this indicator returns valid results
-				ind.validFromBar = streamBarIndex
-			}
 
 			ind.emaFast = (dataItem-ind.emaFast)*ind.emaFastMultiplier + ind.emaFast
 			ind.emaSlow = (dataItem-ind.emaSlow)*ind.emaSlowMultiplier + ind.emaSlow
-			chaikinOsc := ind.emaFast - ind.emaSlow
+			result := ind.emaFast - ind.emaSlow
 
-			// update the maximum result value
-			if chaikinOsc > ind.maxValue {
-				ind.maxValue = chaikinOsc
-			}
-
-			// update the minimum result value
-			if chaikinOsc < ind.minValue {
-				ind.minValue = chaikinOsc
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(chaikinOsc, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		}
 	})
 
