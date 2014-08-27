@@ -22,6 +22,26 @@ var _ = Describe("when creating an cciwithoutstorage", func() {
 			Expect(indicatorError).To(Equal(indicators.ErrValueAvailableActionIsNil))
 		})
 	})
+
+	Context("and the indicator was given a timePeriod below the minimum", func() {
+		BeforeEach(func() {
+			indicator, indicatorError = indicators.NewCciWithoutStorage(1, fakeFloatValAvailable)
+		})
+
+		It("the indicator should not be created and return the appropriate error message", func() {
+			Expect(indicator).To(BeNil())
+		})
+	})
+
+	Context("and the indicator was given a timePeriod above the maximum", func() {
+		BeforeEach(func() {
+			indicator, indicatorError = indicators.NewCciWithoutStorage(indicators.MaximumLookbackPeriod+1, fakeFloatValAvailable)
+		})
+
+		It("the indicator should not be created and return the appropriate error message", func() {
+			Expect(indicator).To(BeNil())
+		})
+	})
 })
 
 var _ = Describe("when calculating an commodity channel index (cci) with DOHLCV source data", func() {

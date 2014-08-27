@@ -9,11 +9,9 @@ import (
 
 // A Commodity Channel Index Indicator (Cci), no storage, for use in other indicators
 type CciWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction   ValueAvailableActionFloat
 	periodCounter          int
 	typicalPriceAvg        *SmaWithoutStorage
 	factor                 float64
@@ -43,13 +41,11 @@ func NewCciWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	lookback := timePeriod - 1
 	ind := CciWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		factor:               0.015,
-		periodCounter:        (timePeriod * -1),
-		valueAvailableAction: valueAvailableAction,
-		typicalPriceHistory:  list.New(),
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		factor:              0.015,
+		periodCounter:       (timePeriod * -1),
+		typicalPriceHistory: list.New(),
+		timePeriod:          timePeriod,
 	}
 
 	ind.typicalPriceAvg, err = NewSmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
@@ -65,26 +61,7 @@ func NewCciWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 		result := ((ind.currentTypicalPrice - currentTypicalPriceAvg) / (ind.factor * meanDeviation))
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	})
 
 	return &ind, err
