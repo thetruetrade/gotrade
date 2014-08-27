@@ -7,16 +7,14 @@ import (
 
 // An Exponential Moving Average Indicator (Ema), no storage, for use in other indicators
 type EmaWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	periodTotal          float64
-	periodCounter        int
-	multiplier           float64
-	previousEma          float64
-	valueAvailableAction ValueAvailableActionFloat
-	timePeriod           int
+	periodTotal   float64
+	periodCounter int
+	multiplier    float64
+	previousEma   float64
+	timePeriod    int
 }
 
 // NewEmaWithoutStorage creates an Exponential Moving Average Indicator (Ema) without storage
@@ -39,12 +37,10 @@ func NewEmaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	lookback := timePeriod - 1
 	ind := EmaWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        timePeriod * -1,
-		multiplier:           float64(2.0 / float64(timePeriod+1.0)),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                timePeriod * -1,
+		multiplier:                   float64(2.0 / float64(timePeriod+1.0)),
+		timePeriod:                   timePeriod,
 	}
 
 	return &ind, err
@@ -130,60 +126,28 @@ func NewDefaultEmaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOH
 }
 
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick
-func (ema *Ema) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
-	var selectedData = ema.selectData(tickData)
-	ema.ReceiveTick(selectedData, streamBarIndex)
+func (ind *Ema) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ind.selectData(tickData)
+	ind.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (ema *EmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
-	ema.periodCounter += 1
-	if ema.periodCounter < 0 {
-		ema.periodTotal += tickData
-	} else if ema.periodCounter == 0 {
+func (ind *EmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+	ind.periodCounter += 1
+	if ind.periodCounter < 0 {
+		ind.periodTotal += tickData
+	} else if ind.periodCounter == 0 {
 
-		// increment the number of results this indicator can be expected to return
-		ema.dataLength += 1
+		ind.periodTotal += tickData
+		result := ind.periodTotal / float64(ind.timePeriod)
+		ind.previousEma = result
 
-		if ema.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ema.validFromBar = streamBarIndex
-		}
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
-		ema.periodTotal += tickData
-		result := ema.periodTotal / float64(ema.timePeriod)
-		ema.previousEma = result
+	} else if ind.periodCounter > 0 {
 
-		// update the maximum result value
-		if result > ema.maxValue {
-			ema.maxValue = result
-		}
+		result := (tickData-ind.previousEma)*ind.multiplier + ind.previousEma
+		ind.previousEma = result
 
-		// update the minimum result value
-		if result < ema.minValue {
-			ema.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ema.valueAvailableAction(ema.previousEma, streamBarIndex)
-
-	} else if ema.periodCounter > 0 {
-		// increment the number of results this indicator can be expected to return
-		ema.dataLength += 1
-
-		result := (tickData-ema.previousEma)*ema.multiplier + ema.previousEma
-		ema.previousEma = result
-
-		// update the maximum result value
-		if result > ema.maxValue {
-			ema.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ema.minValue {
-			ema.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ema.valueAvailableAction(ema.previousEma, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
 }
