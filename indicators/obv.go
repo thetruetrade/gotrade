@@ -6,14 +6,12 @@ import (
 
 // An On Balance Volume Indicator (Obv), no storage, for use in other indicators
 type ObvWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	periodCounter        int
-	previousObv          float64
-	previousClose        float64
-	valueAvailableAction ValueAvailableActionFloat
+	periodCounter int
+	previousObv   float64
+	previousClose float64
 }
 
 // NewObvWithoutStorage creates an On Balance Volume Indicator (Obv) without storage
@@ -26,12 +24,10 @@ func NewObvWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indic
 
 	lookback := 0
 	ind := ObvWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        -1,
-		previousObv:          0.0,
-		previousClose:        0.0,
-		valueAvailableAction: valueAvailableAction,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                -1,
+		previousObv:                  0.0,
+		previousClose:                0.0,
 	}
 
 	return &ind, nil
@@ -89,27 +85,9 @@ func (ind *ObvWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamB
 		ind.previousObv = tickData.V()
 		ind.previousClose = tickData.C()
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
 		result := ind.previousObv
 
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
 
 	if ind.periodCounter > 0 {
@@ -120,23 +98,10 @@ func (ind *ObvWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamB
 			ind.previousObv -= tickData.V()
 		}
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
 		result := ind.previousObv
 
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
 		ind.previousClose = tickData.C()
 	}
 }
