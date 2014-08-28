@@ -75,15 +75,7 @@ func NewLinReg(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator 
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			ind.Data = append(ind.Data, dataItem)
 
-			// update the maximum result value
-			if dataItem > ind.LinRegWithoutStorage.maxValue {
-				ind.LinRegWithoutStorage.maxValue = dataItem
-			}
-
-			// update the minimum result value
-			if dataItem < ind.LinRegWithoutStorage.minValue {
-				ind.LinRegWithoutStorage.minValue = dataItem
-			}
+			ind.UpdateMinMax(dataItem, dataItem)
 		})
 
 	return &ind, err
@@ -175,11 +167,10 @@ func (ind *LinRegWithoutStorage) ReceiveTick(tickData float64, streamBarIndex in
 		result := b + m*float64(timePeriod-1.0)
 
 		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
+		ind.IncDataLength()
+
+		// set the streamBarIndex from which this indicator returns valid results
+		ind.SetValidFromBar(streamBarIndex)
 
 		// notify of a new result value though the value available action
 		ind.valueAvailableAction(result, m, b, streamBarIndex)
