@@ -9,15 +9,13 @@ import (
 
 // A Highest High Value Bars Indicator (HhvBars), no storage, for use in other indicators
 type HhvBarsWithoutStorage struct {
-	*baseIndicator
-	*baseIntBounds
+	*baseIndicatorWithIntBounds
 
 	// private variables
-	periodHistory        *list.List
-	valueAvailableAction ValueAvailableActionInt
-	currentHigh          float64
-	currentHighIndex     int64
-	timePeriod           int
+	periodHistory    *list.List
+	currentHigh      float64
+	currentHighIndex int64
+	timePeriod       int
 }
 
 // NewHhvBarsWithoutStorage creates a Highest High Value Bars Indicator Indicator (HhvBars) without storage
@@ -41,13 +39,11 @@ func NewHhvBarsWithoutStorage(timePeriod int, valueAvailableAction ValueAvailabl
 	lookback := timePeriod - 1
 
 	ind := HhvBarsWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseIntBounds:        newBaseIntBounds(),
-		currentHigh:          math.SmallestNonzeroFloat64,
-		currentHighIndex:     0,
-		periodHistory:        list.New(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithIntBounds: newBaseIndicatorWithIntBounds(lookback, valueAvailableAction),
+		currentHigh:                math.SmallestNonzeroFloat64,
+		currentHighIndex:           0,
+		periodHistory:              list.New(),
+		timePeriod:                 timePeriod,
 	}
 
 	return &ind, nil
@@ -169,26 +165,7 @@ func (ind *HhvBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 
 		var result = ind.currentHighIndex
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 	} else {
 		if tickData > ind.currentHigh {
@@ -201,26 +178,7 @@ func (ind *HhvBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 		if ind.periodHistory.Len() == ind.timePeriod {
 			var result = ind.currentHighIndex
 
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-
-			if ind.validFromBar == -1 {
-				// set the streamBarIndex from which this indicator returns valid results
-				ind.validFromBar = streamBarIndex
-			}
-
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		}
 	}
 
