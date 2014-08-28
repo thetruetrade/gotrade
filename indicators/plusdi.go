@@ -7,19 +7,17 @@ import (
 
 // A Plus Directional Indicator (PlusDi), no storage, for use in other indicators
 type PlusDiWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	periodCounter        int
-	previousHigh         float64
-	previousLow          float64
-	previousPlusDM       float64
-	previousTrueRange    float64
-	currentTrueRange     float64
-	trueRange            *TrueRange
-	timePeriod           int
+	periodCounter     int
+	previousHigh      float64
+	previousLow       float64
+	previousPlusDM    float64
+	previousTrueRange float64
+	currentTrueRange  float64
+	trueRange         *TrueRange
+	timePeriod        int
 }
 
 // NewPlusDiWithoutStorage creates a Plus Directional Indicator (PlusDi) without storage
@@ -45,14 +43,12 @@ func NewPlusDiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailable
 		lookback = timePeriod
 	}
 	ind := PlusDiWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        -1,
-		previousPlusDM:       0.0,
-		previousTrueRange:    0.0,
-		currentTrueRange:     0.0,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                -1,
+		previousPlusDM:               0.0,
+		previousTrueRange:            0.0,
+		currentTrueRange:             0.0,
+		timePeriod:                   timePeriod,
 	}
 
 	ind.trueRange, err = NewTrueRange()
@@ -166,26 +162,7 @@ func (ind *PlusDiWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, stre
 				result = 0
 			}
 
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-
-			if ind.validFromBar == -1 {
-				// set the streamBarIndex from which this indicator returns valid results
-				ind.validFromBar = streamBarIndex
-			}
-
-			if result > ind.maxValue {
-				// update the maximum result value
-				ind.maxValue = result
-			}
-
-			if result < ind.minValue {
-				// update the minimum result value
-				ind.minValue = result
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		}
 	} else {
 		if ind.periodCounter > 0 {
@@ -209,26 +186,7 @@ func (ind *PlusDiWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, stre
 					result = 0.0
 				}
 
-				// increment the number of results this indicator can be expected to return
-				ind.dataLength += 1
-
-				if ind.validFromBar == -1 {
-					// set the streamBarIndex from which this indicator returns valid results
-					ind.validFromBar = streamBarIndex
-				}
-
-				// update the maximum result value
-				if result > ind.maxValue {
-					ind.maxValue = result
-				}
-
-				// update the minimum result value
-				if result < ind.minValue {
-					ind.minValue = result
-				}
-
-				// notify of a new result value though the value available action
-				ind.valueAvailableAction(result, streamBarIndex)
+				ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 			}
 		}
 	}
