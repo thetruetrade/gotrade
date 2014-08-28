@@ -8,20 +8,18 @@ import (
 
 // A Money Flow Index Indicator (Mfi), no storage, for use in other indicators
 type MfiWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	periodCounter        int
-	typicalPrice         *TypPriceWithoutStorage
-	positiveMoneyFlow    float64
-	negativeMoneyFlow    float64
-	positiveHistory      *list.List
-	negativeHistory      *list.List
-	previousTypPrice     float64
-	currentVolume        float64
-	timePeriod           int
+	periodCounter     int
+	typicalPrice      *TypPriceWithoutStorage
+	positiveMoneyFlow float64
+	negativeMoneyFlow float64
+	positiveHistory   *list.List
+	negativeHistory   *list.List
+	previousTypPrice  float64
+	currentVolume     float64
+	timePeriod        int
 }
 
 // NewMfiWithoutStorage creates a Money Flow Index Indicator (Mfi) without storage
@@ -44,17 +42,15 @@ func NewMfiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	lookback := timePeriod
 	ind := MfiWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        (timePeriod * -1) - 1,
-		positiveHistory:      list.New(),
-		negativeHistory:      list.New(),
-		positiveMoneyFlow:    0.0,
-		negativeMoneyFlow:    0.0,
-		currentVolume:        0.0,
-		previousTypPrice:     0.0,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                (timePeriod * -1) - 1,
+		positiveHistory:              list.New(),
+		negativeHistory:              list.New(),
+		positiveMoneyFlow:            0.0,
+		negativeMoneyFlow:            0.0,
+		currentVolume:                0.0,
+		previousTypPrice:             0.0,
+		timePeriod:                   timePeriod,
 	}
 
 	ind.typicalPrice, err = NewTypPriceWithoutStorage(func(dataItem float64, streamBarIndex int) {
@@ -82,25 +78,7 @@ func NewMfiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 				result := 100.0 * (ind.positiveMoneyFlow / (ind.positiveMoneyFlow + ind.negativeMoneyFlow))
 
-				// increment the number of results this indicator can be expected to return
-				ind.dataLength += 1
-				if ind.validFromBar == -1 {
-					// set the streamBarIndex from which this indicator returns valid results
-					ind.validFromBar = streamBarIndex
-				}
-
-				// update the maximum result value
-				if result > ind.maxValue {
-					ind.maxValue = result
-				}
-
-				// update the minimum result value
-				if result < ind.minValue {
-					ind.minValue = result
-				}
-
-				// notify of a new result value though the value available action
-				ind.valueAvailableAction(result, streamBarIndex)
+				ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 			}
 			if ind.periodCounter > 0 {
 				firstPositive := ind.positiveHistory.Front().Value.(float64)
@@ -124,21 +102,7 @@ func NewMfiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 				result := 100.0 * (ind.positiveMoneyFlow / (ind.positiveMoneyFlow + ind.negativeMoneyFlow))
 
-				// increment the number of results this indicator can be expected to return
-				ind.dataLength += 1
-
-				// update the maximum result value
-				if result > ind.maxValue {
-					ind.maxValue = result
-				}
-
-				// update the minimum result value
-				if result < ind.minValue {
-					ind.minValue = result
-				}
-
-				// notify of a new result value though the value available action
-				ind.valueAvailableAction(result, streamBarIndex)
+				ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 			}
 
 		}
