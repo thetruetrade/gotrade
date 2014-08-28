@@ -7,16 +7,14 @@ import (
 
 // A Minus Directional Movement Indicator (MinusDm), no storage, for use in other indicators
 type MinusDmWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	periodCounter        int
-	previousHigh         float64
-	previousLow          float64
-	previousMinusDm      float64
-	timePeriod           int
+	periodCounter   int
+	previousHigh    float64
+	previousLow     float64
+	previousMinusDm float64
+	timePeriod      int
 }
 
 // NewMinusDmWithoutStorage creates a Minus Directional Movement Indicator (MinusDm) without storage
@@ -42,12 +40,10 @@ func NewMinusDmWithoutStorage(timePeriod int, valueAvailableAction ValueAvailabl
 		lookback = timePeriod - 1
 	}
 	ind := MinusDmWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        -1,
-		previousMinusDm:      0.0,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                -1,
+		previousMinusDm:              0.0,
+		timePeriod:                   timePeriod,
 	}
 
 	return &ind, nil
@@ -148,26 +144,7 @@ func (ind *MinusDmWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, str
 				result = 0
 			}
 
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-
-			if ind.validFromBar == -1 {
-				// set the streamBarIndex from which this indicator returns valid results
-				ind.validFromBar = streamBarIndex
-			}
-
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		}
 	} else {
 		if ind.periodCounter > 0 {
@@ -180,26 +157,7 @@ func (ind *MinusDmWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, str
 
 					result := ind.previousMinusDm
 
-					// increment the number of results this indicator can be expected to return
-					ind.dataLength += 1
-
-					if ind.validFromBar == -1 {
-						// set the streamBarIndex from which this indicator returns valid results
-						ind.validFromBar = streamBarIndex
-					}
-
-					// update the maximum result value
-					if result > ind.maxValue {
-						ind.maxValue = result
-					}
-
-					// update the minimum result value
-					if result < ind.minValue {
-						ind.minValue = result
-					}
-
-					// notify of a new result value though the value available action
-					ind.valueAvailableAction(result, streamBarIndex)
+					ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 				}
 			} else {
@@ -210,26 +168,7 @@ func (ind *MinusDmWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, str
 					result = ind.previousMinusDm - (ind.previousMinusDm / float64(ind.timePeriod))
 				}
 
-				// increment the number of results this indicator can be expected to return
-				ind.dataLength += 1
-
-				if ind.validFromBar == -1 {
-					// set the streamBarIndex from which this indicator returns valid results
-					ind.validFromBar = streamBarIndex
-				}
-
-				// update the maximum result value
-				if result > ind.maxValue {
-					ind.maxValue = result
-				}
-
-				// update the minimum result value
-				if result < ind.minValue {
-					ind.minValue = result
-				}
-
-				// notify of a new result value though the value available action
-				ind.valueAvailableAction(result, streamBarIndex)
+				ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 				ind.previousMinusDm = result
 			}
