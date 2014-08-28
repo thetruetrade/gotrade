@@ -9,21 +9,19 @@ import (
 
 // A Kaufman Adaptive Moving Average Indicator (Kama), no storage, for use in other indicators
 type KamaWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	periodTotal          float64
-	periodHistory        *list.List
-	periodCounter        int
-	constantMax          float64
-	constantDiff         float64
-	sumROC               float64
-	periodROC            float64
-	previousClose        float64
-	previousKama         float64
-	valueAvailableAction ValueAvailableActionFloat
-	timePeriod           int
+	periodTotal   float64
+	periodHistory *list.List
+	periodCounter int
+	constantMax   float64
+	constantDiff  float64
+	sumROC        float64
+	periodROC     float64
+	previousClose float64
+	previousKama  float64
+	timePeriod    int
 }
 
 // NewKamaWithoutStorage creates a Kaufman Adaptive Moving Average Indicator (Kama) without storage
@@ -46,17 +44,15 @@ func NewKamaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 
 	lookback := timePeriod
 	ind := KamaWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        (timePeriod + 1) * -1,
-		constantMax:          float64(2.0 / (30.0 + 1.0)),
-		constantDiff:         float64((2.0 / (2.0 + 1.0)) - (2.0 / (30.0 + 1.0))),
-		sumROC:               0.0,
-		periodROC:            0.0,
-		periodHistory:        list.New(),
-		previousClose:        math.SmallestNonzeroFloat64,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                (timePeriod + 1) * -1,
+		constantMax:                  float64(2.0 / (30.0 + 1.0)),
+		constantDiff:                 float64((2.0 / (2.0 + 1.0)) - (2.0 / (30.0 + 1.0))),
+		sumROC:                       0.0,
+		periodROC:                    0.0,
+		periodHistory:                list.New(),
+		previousClose:                math.SmallestNonzeroFloat64,
+		timePeriod:                   timePeriod,
 	}
 
 	return &ind, nil
@@ -175,26 +171,7 @@ func (ind *KamaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int)
 
 		result := ind.previousKama
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 	} else if ind.periodCounter > 0 {
 
@@ -220,21 +197,7 @@ func (ind *KamaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int)
 
 		result := ind.previousKama
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
 
 	ind.previousClose = tickData
