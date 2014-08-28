@@ -9,15 +9,13 @@ import (
 
 // A Lowest Low Value Bars Indicator (LlvBars), no storage, for use in other indicators
 type LlvBarsWithoutStorage struct {
-	*baseIndicator
-	*baseIntBounds
+	*baseIndicatorWithIntBounds
 
 	// private variables
-	periodHistory        *list.List
-	valueAvailableAction ValueAvailableActionInt
-	currentLow           float64
-	currentLowIndex      int64
-	timePeriod           int
+	periodHistory   *list.List
+	currentLow      float64
+	currentLowIndex int64
+	timePeriod      int
 }
 
 // NewLlvBarsWithoutStorage creates a Lowest Low Value Bars Indicator Indicator (LlvBars) without storage
@@ -41,13 +39,11 @@ func NewLlvBarsWithoutStorage(timePeriod int, valueAvailableAction ValueAvailabl
 	lookback := timePeriod - 1
 
 	ind := LlvBarsWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseIntBounds:        newBaseIntBounds(),
-		currentLow:           math.MaxFloat64,
-		currentLowIndex:      0,
-		periodHistory:        list.New(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithIntBounds: newBaseIndicatorWithIntBounds(lookback, valueAvailableAction),
+		currentLow:                 math.MaxFloat64,
+		currentLowIndex:            0,
+		periodHistory:              list.New(),
+		timePeriod:                 timePeriod,
 	}
 
 	return &ind, nil
@@ -169,26 +165,7 @@ func (ind *LlvBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 
 		var result = ind.currentLowIndex
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 	} else {
 		if tickData < ind.currentLow {
@@ -201,26 +178,7 @@ func (ind *LlvBarsWithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 		if ind.periodHistory.Len() == ind.timePeriod {
 			var result = ind.currentLowIndex
 
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-
-			if ind.validFromBar == -1 {
-				// set the streamBarIndex from which this indicator returns valid results
-				ind.validFromBar = streamBarIndex
-			}
-
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		}
 	}
 
