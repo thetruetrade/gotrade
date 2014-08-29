@@ -8,11 +8,9 @@ import (
 
 // A Stop and Reverse Indicator (Sar), no storage, for use in other indicators
 type SarWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction  ValueAvailableActionFloat
 	periodCounter         int
 	isLong                bool
 	extremePoint          float64
@@ -55,19 +53,17 @@ func NewSarWithoutStorage(accelerationFactor float64, accelerationFactorMax floa
 
 	lookback := 1
 	ind := SarWithoutStorage{
-		baseIndicator:         newBaseIndicator(lookback),
-		baseFloatBounds:       newBaseFloatBounds(),
-		periodCounter:         -2,
-		isLong:                false,
-		hasInitialDirection:   false,
-		accelerationFactor:    accelerationFactor,
-		accelerationFactorMax: accelerationFactorMax,
-		extremePoint:          0.0,
-		previousSar:           0.0,
-		previousHigh:          0.0,
-		previousLow:           0.0,
-		acceleration:          accelerationFactor,
-		valueAvailableAction:  valueAvailableAction,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                -2,
+		isLong:                       false,
+		hasInitialDirection:          false,
+		accelerationFactor:           accelerationFactor,
+		accelerationFactorMax:        accelerationFactorMax,
+		extremePoint:                 0.0,
+		previousSar:                  0.0,
+		previousHigh:                 0.0,
+		previousLow:                  0.0,
+		acceleration:                 accelerationFactor,
 	}
 
 	ind.minusDM, err = NewMinusDmWithoutStorage(1, func(dataItem float64, streamBarIndex int) {
@@ -206,26 +202,7 @@ func (ind *SarWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamB
 
 					result = ind.previousSar
 
-					// increment the number of results this indicator can be expected to return
-					ind.dataLength += 1
-
-					if ind.validFromBar == -1 {
-						// set the streamBarIndex from which this indicator returns valid results
-						ind.validFromBar = streamBarIndex
-					}
-
-					// update the maximum result value
-					if result > ind.maxValue {
-						ind.maxValue = result
-					}
-
-					// update the minimum result value
-					if result < ind.minValue {
-						ind.minValue = result
-					}
-
-					// notify of a new result value though the value available action
-					ind.valueAvailableAction(result, streamBarIndex)
+					ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 					// adjust af and extremePoint
 					ind.acceleration = ind.accelerationFactor
@@ -249,26 +226,7 @@ func (ind *SarWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamB
 					// just output the current Sar
 					result = ind.previousSar
 
-					// increment the number of results this indicator can be expected to return
-					ind.dataLength += 1
-
-					if ind.validFromBar == -1 {
-						// set the streamBarIndex from which this indicator returns valid results
-						ind.validFromBar = streamBarIndex
-					}
-
-					if result > ind.maxValue {
-						// update the maximum result value
-						ind.maxValue = result
-					}
-
-					// update the minimum result value
-					if result < ind.minValue {
-						ind.minValue = result
-					}
-
-					// notify of a new result value though the value available action
-					ind.valueAvailableAction(result, streamBarIndex)
+					ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 					if tickData.H() > ind.extremePoint {
 						// adjust af and extremePoint
@@ -308,26 +266,7 @@ func (ind *SarWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamB
 
 					result = ind.previousSar
 
-					// increment the number of results this indicator can be expected to return
-					ind.dataLength += 1
-
-					if ind.validFromBar == -1 {
-						// set the streamBarIndex from which this indicator returns valid results
-						ind.validFromBar = streamBarIndex
-					}
-
-					if result > ind.maxValue {
-						// update the maximum result value
-						ind.maxValue = result
-					}
-
-					// update the minimum result value
-					if result < ind.minValue {
-						ind.minValue = result
-					}
-
-					// notify of a new result value though the value available action
-					ind.valueAvailableAction(result, streamBarIndex)
+					ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 					// adjust af and extremePoint
 					ind.acceleration = ind.accelerationFactor
@@ -350,26 +289,7 @@ func (ind *SarWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamB
 					// just output the current Sar
 					result = ind.previousSar
 
-					// increment the number of results this indicator can be expected to return
-					ind.dataLength += 1
-
-					if ind.validFromBar == -1 {
-						// set the streamBarIndex from which this indicator returns valid results
-						ind.validFromBar = streamBarIndex
-					}
-
-					if result > ind.maxValue {
-						// update the maximum result value
-						ind.maxValue = result
-					}
-
-					// update the minimum result value
-					if result < ind.minValue {
-						ind.minValue = result
-					}
-
-					// notify of a new result value though the value available action
-					ind.valueAvailableAction(result, streamBarIndex)
+					ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 
 					if tickData.L() < ind.extremePoint {
 						// adjust af and extremePoint
