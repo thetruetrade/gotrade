@@ -260,6 +260,38 @@ func (ind *baseIndicatorWithFloatBoundsBollinger) UpdateIndicatorWithNewValue(ne
 	ind.valueAvailableAction(newUpperBandValue, newMiddleBandValue, newLowerBandValue, streamBarIndex)
 }
 
+type baseIndicatorWithFloatBoundsStoch struct {
+	*baseIndicator
+	*baseFloatBounds
+	valueAvailableAction ValueAvailableActionStoch
+}
+
+func newBaseIndicatorWithFloatBoundsStoch(lookbackPeriod int, valueAvailableAction ValueAvailableActionStoch) *baseIndicatorWithFloatBoundsStoch {
+	ind := baseIndicatorWithFloatBoundsStoch{
+		baseIndicator:        newBaseIndicator(lookbackPeriod),
+		baseFloatBounds:      newBaseFloatBounds(),
+		valueAvailableAction: valueAvailableAction,
+	}
+	return &ind
+}
+
+func (ind *baseIndicatorWithFloatBoundsStoch) UpdateIndicatorWithNewValue(newSlowKValue float64, newSlowDValue float64, streamBarIndex int) {
+	// increment the number of results this indicator can be expected to return
+	ind.IncDataLength()
+
+	// set the streamBarIndex from which this indicator returns valid results
+	ind.SetValidFromBar(streamBarIndex)
+
+	var max = math.Max(newSlowKValue, newSlowDValue)
+	var min = math.Min(newSlowKValue, newSlowDValue)
+
+	// update the min max data bounds
+	ind.UpdateMinMax(min, max)
+
+	// notify of a new result value though the value available action
+	ind.valueAvailableAction(newSlowKValue, newSlowDValue, streamBarIndex)
+}
+
 type baseIndicatorWithIntBounds struct {
 	*baseIndicator
 	*baseIntBounds

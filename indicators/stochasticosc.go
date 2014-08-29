@@ -3,26 +3,23 @@ package indicators
 import (
 	"errors"
 	"github.com/thetruetrade/gotrade"
-	"math"
 )
 
 // A Stochastic Oscillator Indicator (StochOsc), no storage, for use in other indicators
 type StochOscWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBoundsStoch
 
 	// private variables
-	valueAvailableAction ValueAvailableActionStoch
-	periodCounter        int
-	slowKMA              *SmaWithoutStorage
-	slowDMA              *SmaWithoutStorage
-	hhv                  *HhvWithoutStorage
-	llv                  *LlvWithoutStorage
-	currentPeriodHigh    float64
-	currentPeriodLow     float64
-	currentFastK         float64
-	currentSlowKMA       float64
-	currentSlowDMA       float64
+	periodCounter     int
+	slowKMA           *SmaWithoutStorage
+	slowDMA           *SmaWithoutStorage
+	hhv               *HhvWithoutStorage
+	llv               *LlvWithoutStorage
+	currentPeriodHigh float64
+	currentPeriodLow  float64
+	currentFastK      float64
+	currentSlowKMA    float64
+	currentSlowDMA    float64
 }
 
 // NewStochOscWithoutStorage creates a Stochastic Oscillator Indicator (StochOsc) without storage
@@ -64,11 +61,10 @@ func NewStochOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, slowDTi
 	}
 
 	ind := StochOscWithoutStorage{
-		baseFloatBounds:      newBaseFloatBounds(),
-		currentSlowKMA:       0.0,
-		currentSlowDMA:       0.0,
-		periodCounter:        (fastKTimePeriod * -1),
-		valueAvailableAction: valueAvailableAction,
+		baseIndicatorWithFloatBoundsStoch: newBaseIndicatorWithFloatBoundsStoch(0, valueAvailableAction),
+		currentSlowKMA:                    0.0,
+		currentSlowDMA:                    0.0,
+		periodCounter:                     (fastKTimePeriod * -1),
 	}
 
 	tmpSlowKMA, err := NewSmaWithoutStorage(slowKTimePeriod, func(dataItem float64, streamBarIndex int) {
@@ -79,28 +75,7 @@ func NewStochOscWithoutStorage(fastKTimePeriod int, slowKTimePeriod int, slowDTi
 	tmpSlowDMA, err := NewSmaWithoutStorage(slowDTimePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.currentSlowDMA = dataItem
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
-		var max = math.Max(ind.currentSlowKMA, ind.currentSlowDMA)
-		var min = math.Min(ind.currentSlowKMA, ind.currentSlowDMA)
-
-		// update the maximum result value
-		if max > ind.maxValue {
-			ind.maxValue = max
-		}
-
-		// update the minimum result value
-		if min < ind.minValue {
-			ind.minValue = min
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(ind.currentSlowKMA, ind.currentSlowDMA, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(ind.currentSlowKMA, ind.currentSlowDMA, streamBarIndex)
 	})
 
 	lookback := fastKTimePeriod - 1 + tmpSlowDMA.GetLookbackPeriod() + tmpSlowKMA.GetLookbackPeriod()
