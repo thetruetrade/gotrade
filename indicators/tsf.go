@@ -20,15 +20,7 @@ func NewTsf(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ts
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := intercept + slope*float64(timePeriod)
 
-			// update the maximum result value
-			if result > ind.LinRegWithoutStorage.maxValue {
-				ind.LinRegWithoutStorage.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.LinRegWithoutStorage.minValue {
-				ind.LinRegWithoutStorage.minValue = result
-			}
+			ind.UpdateMinMax(result, result)
 
 			ind.Data = append(ind.Data, result)
 		})
