@@ -7,8 +7,7 @@ import (
 
 // A Bollinger Band Indicator (BollingerBand), no storage, for use in other indicators
 type BollingerBandsWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBoundsBollinger
 
 	// private variables
 	valueAvailableAction ValueAvailableActionBollinger
@@ -38,11 +37,9 @@ func NewBollingerBandsWithoutStorage(timePeriod int, valueAvailableAction ValueA
 
 	lookback := timePeriod - 1
 	ind := BollingerBandsWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		currentSma:           0.0,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBoundsBollinger: newBaseIndicatorWithFloatBoundsBollinger(lookback, valueAvailableAction),
+		currentSma:                            0.0,
+		timePeriod:                            timePeriod,
 	}
 
 	ind.sma, err = NewSmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
@@ -51,27 +48,10 @@ func NewBollingerBandsWithoutStorage(timePeriod int, valueAvailableAction ValueA
 
 	ind.stdDev, err = NewStdDevWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			ind.validFromBar = streamBarIndex
-		}
-
 		var upperBand = ind.currentSma + 2*dataItem
 		var lowerBand = ind.currentSma - 2*dataItem
 
-		// update the maximum result value
-		if upperBand > ind.maxValue {
-			ind.maxValue = upperBand
-		}
-
-		// update the minimum result value
-		if lowerBand < ind.minValue {
-			ind.minValue = lowerBand
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(upperBand, ind.currentSma, lowerBand, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(upperBand, ind.currentSma, lowerBand, streamBarIndex)
 	})
 
 	return &ind, nil
