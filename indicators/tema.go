@@ -9,17 +9,15 @@ import (
 
 // A Tripple Exponential Moving Average Indicator (Tema), no storage, for use in other indicators
 type TemaWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	ema1                 *EmaWithoutStorage
-	ema2                 *EmaWithoutStorage
-	ema3                 *EmaWithoutStorage
-	currentEMA           float64
-	currentEMA2          float64
-	timePeriod           int
+	ema1        *EmaWithoutStorage
+	ema2        *EmaWithoutStorage
+	ema3        *EmaWithoutStorage
+	currentEMA  float64
+	currentEMA2 float64
+	timePeriod  int
 }
 
 func NewTemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *TemaWithoutStorage, err error) {
@@ -41,10 +39,8 @@ func NewTemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 
 	lookback := 3 * (timePeriod - 1)
 	ind := TemaWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		timePeriod:                   timePeriod,
 	}
 
 	ind.ema1, err = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
@@ -59,28 +55,10 @@ func NewTemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 
 	ind.ema3, _ = NewEmaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
 		//TEMA = (3*EMA – 3*EMA(EMA)) + EMA(EMA(EMA))
-		tema := (3*ind.currentEMA - 3*ind.currentEMA2) + dataItem
+		result := (3*ind.currentEMA - 3*ind.currentEMA2) + dataItem
 
-		// update the maximum result value
-		if tema > ind.maxValue {
-			ind.maxValue = tema
-		}
-
-		// update the minimum result value
-		if tema < ind.minValue {
-			ind.minValue = tema
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(tema, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	})
 
 	return &ind, err
@@ -165,11 +143,11 @@ func NewDefaultTemaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DO
 }
 
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick
-func (tema *Tema) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
-	var selectedData = tema.selectData(tickData)
-	tema.ReceiveTick(selectedData, streamBarIndex)
+func (ind *Tema) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
+	var selectedData = ind.selectData(tickData)
+	ind.ReceiveTick(selectedData, streamBarIndex)
 }
 
-func (tema *TemaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
-	tema.ema1.ReceiveTick(tickData, streamBarIndex)
+func (ind *TemaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) {
+	ind.ema1.ReceiveTick(tickData, streamBarIndex)
 }
