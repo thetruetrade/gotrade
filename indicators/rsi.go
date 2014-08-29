@@ -7,16 +7,14 @@ import (
 
 // A Relative Strength Indicator (Rsi), no storage, for use in other indicators
 type RsiWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	periodCounter        int
-	previousClose        float64
-	previousGain         float64
-	previousLoss         float64
-	timePeriod           int
+	periodCounter int
+	previousClose float64
+	previousGain  float64
+	previousLoss  float64
+	timePeriod    int
 }
 
 // NewRsiWithoutStorage creates a Relative Strength Indicator (Rsi) without storage
@@ -39,14 +37,12 @@ func NewRsiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	lookback := timePeriod
 	ind := RsiWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        (timePeriod * -1) - 1,
-		previousClose:        0.0,
-		previousGain:         0.0,
-		previousLoss:         0.0,
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                (timePeriod * -1) - 1,
+		previousClose:                0.0,
+		previousGain:                 0.0,
+		previousLoss:                 0.0,
+		timePeriod:                   timePeriod,
 	}
 
 	return &ind, err
@@ -155,13 +151,6 @@ func (ind *RsiWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 			ind.previousGain /= float64(ind.timePeriod)
 			ind.previousLoss /= float64(ind.timePeriod)
 
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-			if ind.validFromBar == -1 {
-				// set the streamBarIndex from which this indicator returns valid results
-				ind.validFromBar = streamBarIndex
-			}
-
 			var result float64
 			//    Rsi = 100 * (prevGain/(prevGain+prevLoss))
 			if ind.previousGain+ind.previousLoss == 0.0 {
@@ -170,18 +159,7 @@ func (ind *RsiWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 				result = 100.0 * (ind.previousGain / (ind.previousGain + ind.previousLoss))
 			}
 
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		}
 
 		if ind.periodCounter > 0 {
@@ -197,9 +175,6 @@ func (ind *RsiWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 			ind.previousGain /= float64(ind.timePeriod)
 			ind.previousLoss /= float64(ind.timePeriod)
 
-			// increment the number of results this indicator can be expected to return
-			ind.dataLength += 1
-
 			var result float64
 			//    Rsi = 100 * (prevGain/(prevGain+prevLoss))
 			if ind.previousGain+ind.previousLoss == 0.0 {
@@ -208,18 +183,7 @@ func (ind *RsiWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 				result = 100.0 * (ind.previousGain / (ind.previousGain + ind.previousLoss))
 			}
 
-			// update the maximum result value
-			if result > ind.maxValue {
-				ind.maxValue = result
-			}
-
-			// update the minimum result value
-			if result < ind.minValue {
-				ind.minValue = result
-			}
-
-			// notify of a new result value though the value available action
-			ind.valueAvailableAction(result, streamBarIndex)
+			ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 		}
 	}
 	ind.previousClose = tickData
