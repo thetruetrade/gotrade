@@ -8,14 +8,12 @@ import (
 
 // A Rate of Change Indicator (Roc), no storage, for use in other indicators
 type RocWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	periodCounter        int
-	periodHistory        *list.List
-	timePeriod           int
+	periodCounter int
+	periodHistory *list.List
+	timePeriod    int
 }
 
 // NewRocWithoutStorage creates a Rate of Change Indicator (Roc) without storage
@@ -38,12 +36,10 @@ func NewRocWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	lookback := timePeriod
 	ind := RocWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        (timePeriod * -1),
-		periodHistory:        list.New(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                (timePeriod * -1),
+		periodHistory:                list.New(),
+		timePeriod:                   timePeriod,
 	}
 
 	return &ind, nil
@@ -143,12 +139,6 @@ func (ind *RocWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 		//    Roc = (price/previousPrice - 1) * 100
 		previousPrice := ind.periodHistory.Front().Value.(float64)
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
 		var result float64
 		if previousPrice != 0 {
 			result = 100.0 * ((tickData / previousPrice) - 1)
@@ -156,18 +146,7 @@ func (ind *RocWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 			result = 0.0
 		}
 
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
 
 	if ind.periodHistory.Len() > ind.timePeriod {
