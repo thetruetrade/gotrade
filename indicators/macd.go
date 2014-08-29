@@ -89,13 +89,6 @@ func NewMacd(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selec
 
 	ind.emaSignal, err = NewEmaWithoutStorage(signalTimePeriod, func(dataItem float64, streamBarIndex int) {
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
 		// Macd Line: (12-day EmaWithoutStorage - 26-day EmaWithoutStorage)
 
 		// Signal Line: 9-day EmaWithoutStorage of Macd Line
@@ -106,31 +99,13 @@ func NewMacd(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selec
 		signal := dataItem
 		histogram := macd - signal
 
-		// update the maximum result value
-		if macd > ind.maxValue {
-			ind.maxValue = macd
-		}
+		ind.UpdateMinMax(macd, macd)
+		ind.UpdateMinMax(signal, signal)
+		ind.UpdateMinMax(histogram, histogram)
 
-		if signal > ind.maxValue {
-			ind.maxValue = signal
-		}
+		ind.IncDataLength()
 
-		if histogram > ind.maxValue {
-			ind.maxValue = histogram
-		}
-
-		// update the minimum result value
-		if macd < ind.minValue {
-			ind.minValue = macd
-		}
-
-		if signal < ind.minValue {
-			ind.minValue = signal
-		}
-
-		if histogram < ind.minValue {
-			ind.minValue = histogram
-		}
+		ind.SetValidFromBar(streamBarIndex)
 
 		// notify of a new result value though the value available action
 		ind.valueAvailableAction(macd, signal, histogram, streamBarIndex)
