@@ -5,11 +5,7 @@ import (
 )
 
 type TypPriceWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
-
-	// private variables
-	valueAvailableAction ValueAvailableActionFloat
+	*baseIndicatorWithFloatBounds
 }
 
 func NewTypPriceWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (indicator *TypPriceWithoutStorage, err error) {
@@ -21,9 +17,7 @@ func NewTypPriceWithoutStorage(valueAvailableAction ValueAvailableActionFloat) (
 
 	lookback := 0
 	ind := TypPriceWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		valueAvailableAction: valueAvailableAction,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
 	}
 
 	return &ind, nil
@@ -76,26 +70,7 @@ func NewTypPriceForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLC
 // ReceiveDOHLCVTick consumes a source data DOHLCV price tick
 func (ind *TypPriceWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, streamBarIndex int) {
 
-	// increment the number of results this indicator can be expected to return
-	ind.dataLength += 1
-
-	if ind.validFromBar == -1 {
-		// set the streamBarIndex from which this indicator returns valid results
-		ind.validFromBar = streamBarIndex
-	}
-
 	result := (tickData.H() + tickData.L() + tickData.C()) / float64(3.0)
 
-	// update the maximum result value
-	if result > ind.maxValue {
-		ind.maxValue = result
-	}
-
-	// update the minimum result value
-	if result < ind.minValue {
-		ind.minValue = result
-	}
-
-	// notify of a new result value though the value available action
-	ind.valueAvailableAction(result, streamBarIndex)
+	ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 }
