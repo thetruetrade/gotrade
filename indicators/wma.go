@@ -8,16 +8,14 @@ import (
 
 // A Weighted Moving Average Indicator (Wma), no storage, for use in other indicators
 type WmaWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	periodTotal          float64
-	periodHistory        *list.List
-	periodCounter        int
-	periodWeightTotal    int
-	valueAvailableAction ValueAvailableActionFloat
-	timePeriod           int
+	periodTotal       float64
+	periodHistory     *list.List
+	periodCounter     int
+	periodWeightTotal int
+	timePeriod        int
 }
 
 // NewWmaWithoutStorage creates a Weighted Moving Average Indicator (Wma) without storage
@@ -40,12 +38,10 @@ func NewWmaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	lookback := timePeriod - 1
 	ind := WmaWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        timePeriod * -1,
-		periodHistory:        list.New(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                timePeriod * -1,
+		periodHistory:                list.New(),
+		timePeriod:                   timePeriod,
 	}
 
 	var weightedTotal int = 0
@@ -155,14 +151,6 @@ func (ind *WmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 	}
 
 	if ind.periodCounter >= 0 {
-
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
 		// calculate the ind
 		var iter int = 1
 		var sum float64 = 0
@@ -176,17 +164,6 @@ func (ind *WmaWithoutStorage) ReceiveTick(tickData float64, streamBarIndex int) 
 		}
 		var result float64 = sum / float64(ind.periodWeightTotal)
 
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
 }
