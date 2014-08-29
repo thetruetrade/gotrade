@@ -8,13 +8,11 @@ import (
 
 // A Standard Deviation Indicator (StdDev), no storage, for use in other indicators
 type StdDevWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	valueAvailableAction ValueAvailableActionFloat
-	variance             *VarWithoutStorage
-	timePeriod           int
+	variance   *VarWithoutStorage
+	timePeriod int
 }
 
 func NewStdDevWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *StdDevWithoutStorage, err error) {
@@ -37,37 +35,17 @@ func NewStdDevWithoutStorage(timePeriod int, valueAvailableAction ValueAvailable
 	lookback := timePeriod - 1
 
 	ind := StdDevWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		timePeriod:                   timePeriod,
 	}
 
 	ind.valueAvailableAction = valueAvailableAction
 
 	ind.variance, err = NewVarWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
 		result := math.Sqrt(dataItem)
 
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	})
 
 	return &ind, err
