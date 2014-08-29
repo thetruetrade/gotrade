@@ -11,13 +11,11 @@ import (
 
 // A True Range Indicator (TrueRange), no storage, for use in other indicators
 type TrueRangeWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	periodCounter        int
-	previousClose        float64
-	valueAvailableAction ValueAvailableActionFloat
+	periodCounter int
+	previousClose float64
 }
 
 // NewTrueRangeWithoutStorage creates a True Range Indicator (TrueRange) without storage
@@ -30,12 +28,10 @@ func NewTrueRangeWithoutStorage(valueAvailableAction ValueAvailableActionFloat) 
 
 	lookback := 1
 	ind := TrueRangeWithoutStorage{
-		baseIndicator:   newBaseIndicator(lookback),
-		baseFloatBounds: newBaseFloatBounds(),
-		periodCounter:   -1,
-		previousClose:   0.0,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                -1,
+		previousClose:                0.0,
 	}
-	ind.valueAvailableAction = valueAvailableAction
 	return &ind, nil
 }
 
@@ -88,30 +84,12 @@ func (ind *TrueRangeWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, s
 
 	if ind.periodCounter > 0 {
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
 		high := math.Max(tickData.H(), ind.previousClose)
 		low := math.Min(tickData.L(), ind.previousClose)
-		trueRange := high - low
+		result := high - low
 
-		// update the maximum result value
-		if trueRange > ind.maxValue {
-			ind.maxValue = trueRange
-		}
-
-		// update the minimum result value
-		if trueRange < ind.minValue {
-			ind.minValue = trueRange
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(trueRange, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
-	ind.previousClose = tickData.C()
 
+	ind.previousClose = tickData.C()
 }
