@@ -8,8 +8,7 @@ import (
 
 // A Rate of Change Ratio 100 Scale Indicator (RocR100), no storage, for use in other indicators
 type RocR100WithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
 	valueAvailableAction ValueAvailableActionFloat
@@ -38,12 +37,10 @@ func NewRocR100WithoutStorage(timePeriod int, valueAvailableAction ValueAvailabl
 
 	lookback := timePeriod
 	ind := RocR100WithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        (timePeriod * -1),
-		periodHistory:        list.New(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                (timePeriod * -1),
+		periodHistory:                list.New(),
+		timePeriod:                   timePeriod,
 	}
 
 	return &ind, err
@@ -143,12 +140,6 @@ func (ind *RocR100WithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 		//    RocR100 = (price/previousPrice - 1) * 100
 		previousPrice := ind.periodHistory.Front().Value.(float64)
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
 		var result float64
 		if previousPrice != 0 {
 			result = (tickData / previousPrice) * 100.0
@@ -156,18 +147,7 @@ func (ind *RocR100WithoutStorage) ReceiveTick(tickData float64, streamBarIndex i
 			result = 0.0
 		}
 
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
 
 	if ind.periodHistory.Len() > ind.timePeriod {
