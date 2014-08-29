@@ -9,15 +9,13 @@ import (
 
 // A Williamns Percent R Indicator
 type WillRWithoutStorage struct {
-	*baseIndicator
-	*baseFloatBounds
+	*baseIndicatorWithFloatBounds
 
 	// private variables
-	periodHighHistory    *list.List
-	periodLowHistory     *list.List
-	periodCounter        int
-	valueAvailableAction ValueAvailableActionFloat
-	timePeriod           int
+	periodHighHistory *list.List
+	periodLowHistory  *list.List
+	periodCounter     int
+	timePeriod        int
 }
 
 // NewWillRWithoutStorage creates a Williams Percent R Indicator (WillR) without storage
@@ -40,13 +38,11 @@ func NewWillRWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableA
 
 	lookback := timePeriod - 1
 	ind := WillRWithoutStorage{
-		baseIndicator:        newBaseIndicator(lookback),
-		baseFloatBounds:      newBaseFloatBounds(),
-		periodCounter:        timePeriod * -1,
-		periodHighHistory:    list.New(),
-		periodLowHistory:     list.New(),
-		valueAvailableAction: valueAvailableAction,
-		timePeriod:           timePeriod,
+		baseIndicatorWithFloatBounds: newBaseIndicatorWithFloatBounds(lookback, valueAvailableAction),
+		periodCounter:                timePeriod * -1,
+		periodHighHistory:            list.New(),
+		periodLowHistory:             list.New(),
+		timePeriod:                   timePeriod,
 	}
 
 	return &ind, nil
@@ -142,26 +138,7 @@ func (ind *WillRWithoutStorage) ReceiveDOHLCVTick(tickData gotrade.DOHLCV, strea
 	var result float64 = (highestHigh - tickData.C()) / (highestHigh - lowestLow) * -100.0
 	if ind.periodCounter >= 0 {
 
-		// increment the number of results this indicator can be expected to return
-		ind.dataLength += 1
-
-		if ind.validFromBar == -1 {
-			// set the streamBarIndex from which this indicator returns valid results
-			ind.validFromBar = streamBarIndex
-		}
-
-		// update the maximum result value
-		if result > ind.maxValue {
-			ind.maxValue = result
-		}
-
-		// update the minimum result value
-		if result < ind.minValue {
-			ind.minValue = result
-		}
-
-		// notify of a new result value though the value available action
-		ind.valueAvailableAction(result, streamBarIndex)
+		ind.UpdateIndicatorWithNewValue(result, streamBarIndex)
 	}
 
 	if ind.periodHighHistory.Len() >= ind.timePeriod {
