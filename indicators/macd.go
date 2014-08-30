@@ -23,7 +23,7 @@ type Macd struct {
 	currentSlowEma       float64
 	currentMacd          float64
 	emaSlowSkip          int
-	selectData           gotrade.DataSelectionFunc
+	selectData           gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Macd      []float64
@@ -32,7 +32,7 @@ type Macd struct {
 }
 
 // NewMacd creates a Moving Average Convergence Divergence Indicator (Macd) for online usage
-func NewMacd(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+func NewMacd(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Macd, err error) {
 
 	// the minimum fastTimePeriod for this indicator is 2
 	if fastTimePeriod < 2 {
@@ -62,6 +62,10 @@ func NewMacd(fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selec
 	// check the maximum slowTimePeriod
 	if signalTimePeriod > MaximumLookbackPeriod {
 		return nil, errors.New("signalTimePeriod is greater than the maximum (100000)")
+	}
+
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
 	}
 
 	lookback := slowTimePeriod + signalTimePeriod - 2
@@ -132,7 +136,7 @@ func NewDefaultMacd() (indicator *Macd, err error) {
 }
 
 // NewMacdWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage
-func NewMacdWithSrcLen(sourceLength uint, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+func NewMacdWithSrcLen(sourceLength uint, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Macd, err error) {
 	ind, err := NewMacd(fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -162,7 +166,7 @@ func NewDefaultMacdWithSrcLen(sourceLength uint) (indicator *Macd, err error) {
 }
 
 // NewMacdForStream creates a Moving Average Convergence Divergence Indicator (Macd) for online usage with a source data stream
-func NewMacdForStream(priceStream gotrade.DOHLCVStreamSubscriber, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+func NewMacdForStream(priceStream gotrade.DOHLCVStreamSubscriber, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Macd, err error) {
 	ind, err := NewMacd(fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -176,7 +180,7 @@ func NewDefaultMacdForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indica
 }
 
 // NewMacdForStreamWithSrcLen creates a Moving Average Convergence Divergence Indicator (Macd) for offline usage with a source data stream
-func NewMacdForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Macd, err error) {
+func NewMacdForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, fastTimePeriod int, slowTimePeriod int, signalTimePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Macd, err error) {
 	ind, err := NewMacdWithSrcLen(sourceLength, fastTimePeriod, slowTimePeriod, signalTimePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

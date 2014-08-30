@@ -37,7 +37,8 @@ var (
 	ErrSourceDataEmpty                      = errors.New("Source data is empty")
 	ErrNotEnoughSourceDataForLookbackPeriod = errors.New("Source data does not contain enough data for the specfied lookback period")
 	ErrLookbackPeriodMustBeGreaterThanZero  = errors.New("Lookback period must be greater than 0")
-	ErrValueAvailableActionIsNil            = errors.New("ValueAvailableAction cannot be empty")
+	ErrValueAvailableActionIsNil            = errors.New("A ValueAvailableAction is required")
+	ErrDOHLCVDataSelectFuncIsNil            = errors.New("A DOHLCVDataSelectionFunc is required")
 	ErrStrBelowMinimum                      = "is less than the minimum"
 	ErrStrAboveMaximum                      = "is greater than the maximum"
 
@@ -319,15 +320,6 @@ func (ind *baseIndicatorWithIntBounds) UpdateIndicatorWithNewValue(newValue int6
 
 	// notify of a new result value though the value available action
 	ind.valueAvailableAction(newValue, streamBarIndex)
-}
-
-func newBaseIndicatorWithTimePeriod(timePeriod int) *baseIndicatorWithTimePeriod {
-	ind := baseIndicatorWithTimePeriod{timePeriod: timePeriod}
-	return &ind
-}
-
-func (ind *baseIndicatorWithTimePeriod) GetTimePeriod() int {
-	return ind.timePeriod
 }
 
 type ValueAvailableActionFloat func(dataItem float64, streamBarIndex int)

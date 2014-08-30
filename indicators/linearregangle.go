@@ -8,15 +8,22 @@ import (
 // A Linear Regression Angle Indicator (LinRegAng)
 type LinRegAng struct {
 	*LinRegWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 // NewLinRegAng creates a Linear Regression Angle Indicator (LinRegAng) for online usage
-func NewLinRegAng(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegAng, err error) {
-	ind := LinRegAng{selectData: selectData}
+func NewLinRegAng(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *LinRegAng, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := LinRegAng{
+		selectData: selectData,
+	}
+
 	ind.LinRegWithoutStorage, err = NewLinRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := math.Atan(slope) * (180.0 / math.Pi)
@@ -37,7 +44,7 @@ func NewDefaultLinRegAng() (indicator *LinRegAng, err error) {
 }
 
 // NewLinRegAngWithSrcLen creates a Linear Regression Angle Indicator (LinRegAng) for offline usage
-func NewLinRegAngWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegAng, err error) {
+func NewLinRegAngWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *LinRegAng, err error) {
 	ind, err := NewLinRegAng(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -61,7 +68,7 @@ func NewDefaultLinRegAngWithSrcLen(sourceLength uint) (indicator *LinRegAng, err
 }
 
 // NewLinRegAngForStream creates a Linear Regression Angle Indicator (LinRegAng) for online usage with a source data stream
-func NewLinRegAngForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegAng, err error) {
+func NewLinRegAngForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *LinRegAng, err error) {
 	ind, err := NewLinRegAng(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -75,7 +82,7 @@ func NewDefaultLinRegAngForStream(priceStream gotrade.DOHLCVStreamSubscriber) (i
 }
 
 // NewLinRegAngForStreamWithSrcLen creates a Linear Regression Angle Indicator (LinRegAng) for offline usage with a source data stream
-func NewLinRegAngForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *LinRegAng, err error) {
+func NewLinRegAngForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *LinRegAng, err error) {
 	ind, err := NewLinRegAngWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

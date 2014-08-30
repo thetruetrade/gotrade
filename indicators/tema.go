@@ -67,15 +67,22 @@ func NewTemaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 // A Tripple Exponential Moving Average Indicator (Tema)
 type Tema struct {
 	*TemaWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 // NewTema creates a Tripple Exponential Moving Average Indicator (Tema) for online usage
-func NewTema(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
-	ind := Tema{selectData: selectData}
+func NewTema(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Tema, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := Tema{
+		selectData: selectData,
+	}
+
 	ind.TemaWithoutStorage, err = NewTemaWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			ind.Data = append(ind.Data, dataItem)
@@ -91,7 +98,7 @@ func NewDefaultTema() (indicator *Tema, err error) {
 }
 
 // NewTemaWithSrcLen creates a Tripple Exponential Moving Average Indicator (Tema) for offline usage
-func NewTemaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+func NewTemaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Tema, err error) {
 	ind, err := NewTema(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -115,7 +122,7 @@ func NewDefaultTemaWithSrcLen(sourceLength uint) (indicator *Tema, err error) {
 }
 
 // NewTemaForStream creates a Tripple Exponential Moving Average Indicator (Tema) for online usage with a source data stream
-func NewTemaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+func NewTemaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Tema, err error) {
 	ind, err := NewTema(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -129,7 +136,7 @@ func NewDefaultTemaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indica
 }
 
 // NewTemaForStreamWithSrcLen creates a Tripple Exponential Moving Average Indicator (Tema) for offline usage with a source data stream
-func NewTemaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tema, err error) {
+func NewTemaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Tema, err error) {
 	ind, err := NewTemaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

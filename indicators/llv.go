@@ -51,15 +51,22 @@ func NewLlvWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 // A Lowest Low Value Indicator (hhv)
 type Llv struct {
 	*LlvWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 // NewLlv creates a Lowest Low Value Indicator (Llv) for online usage
-func NewLlv(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Llv, err error) {
-	ind := Llv{selectData: selectData}
+func NewLlv(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Llv, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := Llv{
+		selectData: selectData,
+	}
+
 	ind.LlvWithoutStorage, err = NewLlvWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.Data = append(ind.Data, dataItem)
 	})
@@ -75,7 +82,7 @@ func NewDefaultLlv() (indicator *Llv, err error) {
 }
 
 // NewLlvWithSrcLen creates a Lowest Low Value Indicator (Llv)for offline usage
-func NewLlvWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Llv, err error) {
+func NewLlvWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Llv, err error) {
 	ind, err := NewLlv(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -99,7 +106,7 @@ func NewDefaultLlvWithSrcLen(sourceLength uint) (indicator *Llv, err error) {
 }
 
 // NewLlvForStream creates a Lowest Low Value Indicator (Llv)for online usage with a source data stream
-func NewLlvForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Llv, err error) {
+func NewLlvForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Llv, err error) {
 	ind, err := NewLlv(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -113,7 +120,7 @@ func NewDefaultLlvForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewLlvForStreamWithSrcLen creates a Lowest Low Value Indicator (Llv)for offline usage with a source data stream
-func NewLlvForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Llv, err error) {
+func NewLlvForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Llv, err error) {
 	ind, err := NewLlvWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

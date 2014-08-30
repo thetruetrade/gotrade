@@ -50,21 +50,26 @@ func NewSmaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 // A Simple Moving Average Indicator (Sma)
 type Sma struct {
 	*SmaWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 // NewSma creates a Simple Moving Average Indicator (Sma) for online usage
-func NewSma(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
-	ind := Sma{}
+func NewSma(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Sma, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := Sma{
+		selectData: selectData,
+	}
 	ind.SmaWithoutStorage, err = NewSmaWithoutStorage(
 		timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			ind.Data = append(ind.Data, dataItem)
 		})
-	ind.selectData = selectData
 
 	return &ind, err
 }
@@ -77,7 +82,7 @@ func NewDefaultSma() (indicator *Sma, err error) {
 }
 
 // NewSmaWithSrcLen creates a Simple Moving Average Indicator (Sma) for offline usage
-func NewSmaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+func NewSmaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Sma, err error) {
 	ind, err := NewSma(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -101,7 +106,7 @@ func NewDefaultSmaWithSrcLen(sourceLength uint) (indicator *Sma, err error) {
 }
 
 // NewSmaForStream creates a Simple Moving Average Indicator (Sma) for online usage with a source data stream
-func NewSmaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+func NewSmaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Sma, err error) {
 	ind, err := NewSma(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -115,7 +120,7 @@ func NewDefaultSmaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewSmaForStreamWithSrcLen creates a Simple Moving Average Indicator (Sma) for offline usage with a source data stream
-func NewSmaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Sma, err error) {
+func NewSmaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Sma, err error) {
 	ind, err := NewSmaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

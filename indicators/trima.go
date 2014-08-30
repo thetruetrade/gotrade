@@ -71,14 +71,21 @@ func NewTrimaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableA
 // A Triangular Moving Average Indicator (Trima)
 type Trima struct {
 	*TrimaWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 	// public variables
 	Data []float64
 }
 
 // NewTrima creates a Triangular Moving Average Indicator (Trima) for online usage
-func NewTrima(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
-	ind := Trima{selectData: selectData}
+func NewTrima(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Trima, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := Trima{
+		selectData: selectData,
+	}
+
 	ind.TrimaWithoutStorage, err = NewTrimaWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			ind.Data = append(ind.Data, dataItem)
@@ -94,7 +101,7 @@ func NewDefaultTrima() (indicator *Trima, err error) {
 }
 
 // NewTrimaWithSrcLen creates a Triangular Moving Average Indicator (Trima) for offline usage
-func NewTrimaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+func NewTrimaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Trima, err error) {
 	ind, err := NewTrima(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -118,7 +125,7 @@ func NewDefaultTrimaWithSrcLen(sourceLength uint) (indicator *Trima, err error) 
 }
 
 // NewTrimaForStream creates a Triangular Moving Average Indicator (Trima) for online usage with a source data stream
-func NewTrimaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+func NewTrimaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Trima, err error) {
 	ind, err := NewTrima(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -132,7 +139,7 @@ func NewDefaultTrimaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indic
 }
 
 // NewTrimaForStreamWithSrcLen creates a Triangular Moving Average Indicator (Trima) for offline usage with a source data stream
-func NewTrimaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Trima, err error) {
+func NewTrimaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Trima, err error) {
 	ind, err := NewTrimaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -47,10 +47,11 @@ var _ = Describe("when creating an trimawithoutstorage", func() {
 
 var _ = Describe("when calculating a triangular moving average (trima)", func() {
 	var (
-		period    int = 6
-		indicator *indicators.Trima
-		inputs    IndicatorWithFloatBoundsSharedSpecInputs
-		stream    *fakeDOHLCVStreamSubscriber
+		period         int = 6
+		indicator      *indicators.Trima
+		inputs         IndicatorWithFloatBoundsSharedSpecInputs
+		stream         *fakeDOHLCVStreamSubscriber
+		indicatorError error
 	)
 
 	Context("given the indicator is created via the standard constructor", func() {
@@ -121,6 +122,17 @@ var _ = Describe("when calculating a triangular moving average (trima)", func() 
 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+		})
+	})
+
+	Context("given the indicator is created via the standard constructor with a nil data selection func", func() {
+		BeforeEach(func() {
+			indicator, indicatorError = indicators.NewTrima(period, nil)
+		})
+
+		It("the indicator should not be created and return the appropriate error message", func() {
+			Expect(indicator).To(BeNil())
+			Expect(indicatorError).To(Equal(indicators.ErrDOHLCVDataSelectFuncIsNil))
 		})
 	})
 

@@ -66,7 +66,7 @@ func (di *DOHLCVDataItem) V() float64 {
 }
 
 // A function that selects which data property to use from a DOHLCV data structure
-type DataSelectionFunc func(dataItem DOHLCV) float64
+type DOHLCVDataSelectionFunc func(dataItem DOHLCV) float64
 
 // Close price DOHLCV data selector
 func UseClosePrice(dataItem DOHLCV) float64 {

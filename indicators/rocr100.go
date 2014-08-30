@@ -49,15 +49,22 @@ func NewRocR100WithoutStorage(timePeriod int, valueAvailableAction ValueAvailabl
 // A Rate of Change Ratio Indicator (RocR)
 type RocR100 struct {
 	*RocR100WithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 // NewRocR100 creates a Rate of Change Ratio 100 Scale Indicator (RocR100) for online usage
-func NewRocR100(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR100, err error) {
-	newRocR100 := RocR100{selectData: selectData}
+func NewRocR100(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *RocR100, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	newRocR100 := RocR100{
+		selectData: selectData,
+	}
+
 	newRocR100.RocR100WithoutStorage, err = NewRocR100WithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
 			newRocR100.Data = append(newRocR100.Data, dataItem)
@@ -74,7 +81,7 @@ func NewDefaultRocR100() (indicator *RocR100, err error) {
 }
 
 // NewRocR100WithSrcLen creates a Rate of Change Ratio 100 Scale Indicator (RocR100) for offline usage
-func NewRocR100WithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR100, err error) {
+func NewRocR100WithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *RocR100, err error) {
 	ind, err := NewRocR100(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -98,7 +105,7 @@ func NewDefaultRocR100WithSrcLen(sourceLength uint) (indicator *RocR100, err err
 }
 
 // NewRocR100ForStream creates a Rate of Change Ratio 100 Scale Indicator (RocR100) for online usage with a source data stream
-func NewRocR100ForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR100, err error) {
+func NewRocR100ForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *RocR100, err error) {
 	ind, err := NewRocR100(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -112,7 +119,7 @@ func NewDefaultRocR100ForStream(priceStream gotrade.DOHLCVStreamSubscriber) (ind
 }
 
 // NewRocR100ForStreamWithSrcLen creates a Rate of Change Ratio 100 Scale Indicator (RocR100) for offline usage with a source data stream
-func NewRocR100ForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *RocR100, err error) {
+func NewRocR100ForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *RocR100, err error) {
 	ind, err := NewRocR100WithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

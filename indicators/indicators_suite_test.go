@@ -576,7 +576,7 @@ func GetIntDataMin(intArray []int64) int64 {
 	return min
 }
 
-func GetDataMaxDOHLCV(dohlcvArray []gotrade.DOHLCV, selectData gotrade.DataSelectionFunc) float64 {
+func GetDataMaxDOHLCV(dohlcvArray []gotrade.DOHLCV, selectData gotrade.DOHLCVDataSelectionFunc) float64 {
 	max := math.SmallestNonzeroFloat64
 
 	for i := range dohlcvArray {
@@ -589,7 +589,7 @@ func GetDataMaxDOHLCV(dohlcvArray []gotrade.DOHLCV, selectData gotrade.DataSelec
 	return max
 }
 
-func GetDataMinDOHLCV(dohlcvArray []gotrade.DOHLCV, selectData gotrade.DataSelectionFunc) float64 {
+func GetDataMinDOHLCV(dohlcvArray []gotrade.DOHLCV, selectData gotrade.DOHLCVDataSelectionFunc) float64 {
 	min := math.MaxFloat64
 
 	for i := range dohlcvArray {

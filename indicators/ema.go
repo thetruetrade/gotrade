@@ -49,21 +49,28 @@ func NewEmaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 // An Exponential Moving Average Indicator (Ema)
 type Ema struct {
 	*EmaWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 // NewEma creates an Exponential Moving Average Indicator (Ema) for online usage
-func NewEma(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ema, err error) {
-	newEma := Ema{selectData: selectData}
-	newEma.EmaWithoutStorage, err = NewEmaWithoutStorage(timePeriod,
+func NewEma(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Ema, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := Ema{
+		selectData: selectData,
+	}
+
+	ind.EmaWithoutStorage, err = NewEmaWithoutStorage(timePeriod,
 		func(dataItem float64, streamBarIndex int) {
-			newEma.Data = append(newEma.Data, dataItem)
+			ind.Data = append(ind.Data, dataItem)
 		})
 
-	return &newEma, err
+	return &ind, err
 }
 
 // NewDefaultEma creates an Exponential Moving Average (Ema) for online usage with default parameters
@@ -74,7 +81,7 @@ func NewDefaultEma() (indicator *Ema, err error) {
 }
 
 // NewEmaWithSrcLen creates an Exponential Moving Average (Ema) for offline usage
-func NewEmaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ema, err error) {
+func NewEmaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Ema, err error) {
 	ind, err := NewEma(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -98,7 +105,7 @@ func NewDefaultEmaWithSrcLen(sourceLength uint) (indicator *Ema, err error) {
 }
 
 // NewEmaForStream creates an Exponential Moving Average (Ema) for online usage with a source data stream
-func NewEmaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ema, err error) {
+func NewEmaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Ema, err error) {
 	ind, err := NewEma(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -112,7 +119,7 @@ func NewDefaultEmaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewEmaForStreamWithSrcLen creates an Exponential Moving Average (Ema) for offline usage with a source data stream
-func NewEmaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Ema, err error) {
+func NewEmaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Ema, err error) {
 	ind, err := NewEmaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

@@ -7,15 +7,22 @@ import (
 // A Time Series Forecast Indicator (Tsf)
 type Tsf struct {
 	*LinRegWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 // NewTsf creates a Time Series Forecast Indicator (Tsf) for online usage
-func NewTsf(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tsf, err error) {
-	ind := Tsf{selectData: selectData}
+func NewTsf(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Tsf, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := Tsf{
+		selectData: selectData,
+	}
+
 	ind.LinRegWithoutStorage, err = NewLinRegWithoutStorage(timePeriod,
 		func(dataItem float64, slope float64, intercept float64, streamBarIndex int) {
 			result := intercept + slope*float64(timePeriod)
@@ -36,7 +43,7 @@ func NewDefaultTsf() (indicator *Tsf, err error) {
 }
 
 // NewTsfWithSrcLen creates a Time Series Forecast Indicator (Tsf) for offline usage
-func NewTsfWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tsf, err error) {
+func NewTsfWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Tsf, err error) {
 	ind, err := NewTsf(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -60,7 +67,7 @@ func NewDefaultTsfWithSrcLen(sourceLength uint) (indicator *Tsf, err error) {
 }
 
 // NewTsfForStream creates a Time Series Forecast Indicator (Tsf) for online usage with a source data stream
-func NewTsfForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tsf, err error) {
+func NewTsfForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Tsf, err error) {
 	ind, err := NewTsf(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -74,7 +81,7 @@ func NewDefaultTsfForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indicat
 }
 
 // NewTsfForStreamWithSrcLen creates a Time Series Forecast Indicator (Tsf) for offline usage with a source data stream
-func NewTsfForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Tsf, err error) {
+func NewTsfForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Tsf, err error) {
 	ind, err := NewTsfWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

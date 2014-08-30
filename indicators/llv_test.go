@@ -47,10 +47,11 @@ var _ = Describe("when creating an llvwithoutstorage", func() {
 
 var _ = Describe("when calculating a lowest low value (llv) with DOHLCV source data", func() {
 	var (
-		period    int = 3
-		indicator *indicators.Llv
-		inputs    IndicatorWithFloatBoundsSharedSpecInputs
-		stream    *fakeDOHLCVStreamSubscriber
+		period         int = 3
+		indicator      *indicators.Llv
+		inputs         IndicatorWithFloatBoundsSharedSpecInputs
+		stream         *fakeDOHLCVStreamSubscriber
+		indicatorError error
 	)
 
 	Context("given the indicator is created via the standard constructor", func() {
@@ -121,6 +122,17 @@ var _ = Describe("when calculating a lowest low value (llv) with DOHLCV source d
 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+		})
+	})
+
+	Context("given the indicator is created via the standard constructor with a nil data selection func", func() {
+		BeforeEach(func() {
+			indicator, indicatorError = indicators.NewLlv(period, nil)
+		})
+
+		It("the indicator should not be created and return the appropriate error message", func() {
+			Expect(indicator).To(BeNil())
+			Expect(indicatorError).To(Equal(indicators.ErrDOHLCVDataSelectFuncIsNil))
 		})
 	})
 

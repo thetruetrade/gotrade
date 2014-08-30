@@ -61,15 +61,22 @@ func NewKamaWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAc
 // A Kaufman Adaptive Moving Average Indicator (Kama)
 type Kama struct {
 	*KamaWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []float64
 }
 
 // NewKama creates a Kaufman Adaptive Moving Average Indicator (Kama) for online usage
-func NewKama(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Kama, err error) {
-	ind := Kama{selectData: selectData}
+func NewKama(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Kama, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := Kama{
+		selectData: selectData,
+	}
+
 	ind.KamaWithoutStorage, err = NewKamaWithoutStorage(timePeriod, func(dataItem float64, streamBarIndex int) {
 		ind.Data = append(ind.Data, dataItem)
 	})
@@ -85,7 +92,7 @@ func NewDefaultKama() (indicator *Kama, err error) {
 }
 
 // NewKamaWithSrcLen creates a Kaufman Adaptive Moving Average Indicator (Kama) for offline usage
-func NewKamaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Kama, err error) {
+func NewKamaWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Kama, err error) {
 	ind, err := NewKama(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -109,7 +116,7 @@ func NewDefaultKamaWithSrcLen(sourceLength uint) (indicator *Kama, err error) {
 }
 
 // NewKamaForStream creates a Kaufman Adaptive Moving Average Indicator (Kama) for online usage with a source data stream
-func NewKamaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Kama, err error) {
+func NewKamaForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Kama, err error) {
 	ind, err := NewKama(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -123,7 +130,7 @@ func NewDefaultKamaForStream(priceStream gotrade.DOHLCVStreamSubscriber) (indica
 }
 
 // NewKamaForStreamWithSrcLen creates a Kaufman Adaptive Moving Average Indicator (Kama) for offline usage with a source data stream
-func NewKamaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *Kama, err error) {
+func NewKamaForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *Kama, err error) {
 	ind, err := NewKamaWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

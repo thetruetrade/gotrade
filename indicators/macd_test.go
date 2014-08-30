@@ -75,6 +75,17 @@ var _ = Describe("when creating a macd", func() {
 			Expect(indicator).To(BeNil())
 		})
 	})
+
+	Context("and the indicator was given a nil data selection func", func() {
+		BeforeEach(func() {
+			indicator, indicatorError = indicators.NewMacd(fastTimePeriod, slowTimePeriod, signalTimePeriod, nil)
+		})
+
+		It("the indicator should not be created and return the appropriate error message", func() {
+			Expect(indicator).To(BeNil())
+			Expect(indicatorError).To(Equal(indicators.ErrDOHLCVDataSelectFuncIsNil))
+		})
+	})
 })
 
 var _ = Describe("when calculating a moving average convergence divergence (macd) with DOHLCV source data", func() {

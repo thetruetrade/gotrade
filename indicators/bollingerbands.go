@@ -60,7 +60,7 @@ func NewBollingerBandsWithoutStorage(timePeriod int, valueAvailableAction ValueA
 // A Bollinger Band Indicator
 type BollingerBands struct {
 	*BollingerBandsWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	UpperBand  []float64
@@ -69,8 +69,15 @@ type BollingerBands struct {
 }
 
 // NewBollingerBands creates a Bollinger Band Indicator (BollingerBand) for online usage
-func NewBollingerBands(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
-	ind := BollingerBands{selectData: selectData}
+func NewBollingerBands(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *BollingerBands, err error) {
+
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := BollingerBands{
+		selectData: selectData,
+	}
 
 	ind.BollingerBandsWithoutStorage, err = NewBollingerBandsWithoutStorage(
 		timePeriod,
@@ -92,7 +99,7 @@ func NewDefaultBollingerBands() (indicator *BollingerBands, err error) {
 }
 
 // NewBollingerBandsWithSrcLen creates a Bollinger Band Indicator (BollingerBand) for offline usage
-func NewBollingerBandsWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+func NewBollingerBandsWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *BollingerBands, err error) {
 	ind, err := NewBollingerBands(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -120,7 +127,7 @@ func NewDefaultBollingerBandsWithSrcLen(sourceLength uint) (indicator *Bollinger
 }
 
 // NewBollingerBandsForStream creates a Bollinger Bands Indicator (BollingerBand) for online usage with a source data stream
-func NewBollingerBandsForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+func NewBollingerBandsForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *BollingerBands, err error) {
 	ind, err := NewBollingerBands(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -134,7 +141,7 @@ func NewDefaultBollingerBandsForStream(priceStream gotrade.DOHLCVStreamSubscribe
 }
 
 // NewBollingerBandsForStreamWithSrcLen creates a Bollinger Bands Indicator (BollingerBand) for online usage with a source data stream
-func NewBollingerBandsForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *BollingerBands, err error) {
+func NewBollingerBandsForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *BollingerBands, err error) {
 	ind, err := NewBollingerBandsWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err

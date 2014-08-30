@@ -52,15 +52,22 @@ func NewHhvBarsWithoutStorage(timePeriod int, valueAvailableAction ValueAvailabl
 // A Highest High Value Bars Indicator (HhvBars)
 type HhvBars struct {
 	*HhvBarsWithoutStorage
-	selectData gotrade.DataSelectionFunc
+	selectData gotrade.DOHLCVDataSelectionFunc
 
 	// public variables
 	Data []int64
 }
 
 // NewHhvBars creates a Highest High Value Bars Indicator (HhvBars) for online usage
-func NewHhvBars(timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HhvBars, err error) {
-	ind := HhvBars{selectData: selectData}
+func NewHhvBars(timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *HhvBars, err error) {
+	if selectData == nil {
+		return nil, ErrDOHLCVDataSelectFuncIsNil
+	}
+
+	ind := HhvBars{
+		selectData: selectData,
+	}
+
 	ind.HhvBarsWithoutStorage, err = NewHhvBarsWithoutStorage(timePeriod, func(dataItem int64, streamBarIndex int) {
 		ind.Data = append(ind.Data, dataItem)
 	})
@@ -76,7 +83,7 @@ func NewDefaultHhvBars() (indicator *HhvBars, err error) {
 }
 
 // NewHhvBarsWithSrcLen creates a Highest High Value Indicator (HhvBars)for offline usage
-func NewHhvBarsWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HhvBars, err error) {
+func NewHhvBarsWithSrcLen(sourceLength uint, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *HhvBars, err error) {
 	ind, err := NewHhvBars(timePeriod, selectData)
 
 	// only initialise the storage if there is enough source data to require it
@@ -100,7 +107,7 @@ func NewDefaultHhvBarsWithSrcLen(sourceLength uint) (indicator *HhvBars, err err
 }
 
 // NewHhvBarsForStream creates a Highest High Value Indicator (HhvBars)for online usage with a source data stream
-func NewHhvBarsForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HhvBars, err error) {
+func NewHhvBarsForStream(priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *HhvBars, err error) {
 	ind, err := NewHhvBars(timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
@@ -114,7 +121,7 @@ func NewDefaultHhvBarsForStream(priceStream gotrade.DOHLCVStreamSubscriber) (ind
 }
 
 // NewHhvBarsForStreamWithSrcLen creates a Highest High Value Indicator (HhvBars)for offline usage with a source data stream
-func NewHhvBarsForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DataSelectionFunc) (indicator *HhvBars, err error) {
+func NewHhvBarsForStreamWithSrcLen(sourceLength uint, priceStream gotrade.DOHLCVStreamSubscriber, timePeriod int, selectData gotrade.DOHLCVDataSelectionFunc) (indicator *HhvBars, err error) {
 	ind, err := NewHhvBarsWithSrcLen(sourceLength, timePeriod, selectData)
 	priceStream.AddTickSubscription(ind)
 	return ind, err
