@@ -88,7 +88,7 @@ var _ = Describe("when calculating a stochastic relative strength (stochrsi) wit
 	var (
 		indicator *indicators.StochRsi
 		inputs    IndicatorWithFloatBoundsSharedSpecInputs
-		//stream    *fakeDOHLCVStreamSubscriber
+		stream    *fakeDOHLCVStreamSubscriber
 	)
 
 	Context("given the indicator is created via the standard constructor", func() {
@@ -162,280 +162,280 @@ var _ = Describe("when calculating a stochastic relative strength (stochrsi) wit
 		})
 	})
 
-	// 	Context("given the indicator is created via the constructor with defaulted parameters", func() {
-	// 		BeforeEach(func() {
-	// 			indicator, _ = indicators.NewDefaultStochRsi()
-	// 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
-	// 				func() float64 {
-	// 					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
-	// 				},
-	// 				func() float64 {
-	// 					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
-	// 				})
-	// 		})
+	Context("given the indicator is created via the constructor with defaulted parameters", func() {
+		BeforeEach(func() {
+			indicator, _ = indicators.NewDefaultStochRsi()
+			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+				func() float64 {
+					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
+				},
+				func() float64 {
+					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
+				})
+		})
 
-	// 		Context("and the indicator has not yet received any ticks", func() {
-	// 			ShouldBeAnInitialisedIndicator(&inputs)
+		Context("and the indicator has not yet received any ticks", func() {
+			ShouldBeAnInitialisedIndicator(&inputs)
 
-	// 			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
-	// 		})
+			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
+		})
 
-	// 		Context("and the indicator has recieved all of its ticks", func() {
-	// 			BeforeEach(func() {
-	// 				for i := 0; i < len(sourceDOHLCVData); i++ {
-	// 					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
-	// 				}
-	// 			})
+		Context("and the indicator has recieved all of its ticks", func() {
+			BeforeEach(func() {
+				for i := 0; i < len(sourceDOHLCVData); i++ {
+					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+				}
+			})
 
-	// 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
-	// 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
-	// 		})
-	// 	})
+			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+		})
+	})
 
-	// 	Context("given the indicator is created via the constructor with fixed source length", func() {
-	// 		BeforeEach(func() {
-	// 			indicator, _ = indicators.NewStochRsiWithSrcLen(uint(len(sourceDOHLCVData)), 8, 5, 3)
-	// 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
-	// 				func() float64 {
-	// 					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
-	// 				},
-	// 				func() float64 {
-	// 					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
-	// 				})
-	// 		})
+	Context("given the indicator is created via the constructor with fixed source length", func() {
+		BeforeEach(func() {
+			indicator, _ = indicators.NewStochRsiWithSrcLen(uint(len(sourceDOHLCVData)), 8, 5, 3)
+			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+				func() float64 {
+					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
+				},
+				func() float64 {
+					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
+				})
+		})
 
-	// 		It("should have pre-allocated storge for the output data", func() {
-	// 			Expect(cap(indicator.SlowK)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
-	// 			Expect(cap(indicator.SlowD)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
-	// 		})
+		It("should have pre-allocated storge for the output data", func() {
+			Expect(cap(indicator.SlowK)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
+			Expect(cap(indicator.SlowD)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
+		})
 
-	// 		Context("and the indicator has not yet received any ticks", func() {
-	// 			ShouldBeAnInitialisedIndicator(&inputs)
+		Context("and the indicator has not yet received any ticks", func() {
+			ShouldBeAnInitialisedIndicator(&inputs)
 
-	// 			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
-	// 		})
+			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
+		})
 
-	// 		Context("and the indicator has recieved all of its ticks", func() {
-	// 			BeforeEach(func() {
-	// 				for i := 0; i < len(sourceDOHLCVData); i++ {
-	// 					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
-	// 				}
-	// 			})
+		Context("and the indicator has recieved all of its ticks", func() {
+			BeforeEach(func() {
+				for i := 0; i < len(sourceDOHLCVData); i++ {
+					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+				}
+			})
 
-	// 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
-	// 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 
-	// 			It("no new storage capcity should have been allocated", func() {
-	// 				Expect(len(indicator.SlowK)).To(Equal(cap(indicator.SlowK)))
-	// 				Expect(len(indicator.SlowD)).To(Equal(cap(indicator.SlowD)))
-	// 			})
-	// 		})
-	// 	})
+			It("no new storage capcity should have been allocated", func() {
+				Expect(len(indicator.SlowK)).To(Equal(cap(indicator.SlowK)))
+				Expect(len(indicator.SlowD)).To(Equal(cap(indicator.SlowD)))
+			})
+		})
+	})
 
-	// 	Context("given the indicator is created via the constructor with defaulted parameters and fixed source length", func() {
-	// 		BeforeEach(func() {
-	// 			indicator, _ = indicators.NewDefaultStochRsiWithSrcLen(uint(len(sourceDOHLCVData)))
-	// 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
-	// 				func() float64 {
-	// 					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
-	// 				},
-	// 				func() float64 {
-	// 					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
-	// 				})
-	// 		})
+	Context("given the indicator is created via the constructor with defaulted parameters and fixed source length", func() {
+		BeforeEach(func() {
+			indicator, _ = indicators.NewDefaultStochRsiWithSrcLen(uint(len(sourceDOHLCVData)))
+			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+				func() float64 {
+					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
+				},
+				func() float64 {
+					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
+				})
+		})
 
-	// 		It("should have pre-allocated storge for the output data", func() {
-	// 			Expect(cap(indicator.SlowK)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
-	// 			Expect(cap(indicator.SlowD)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
-	// 		})
+		It("should have pre-allocated storge for the output data", func() {
+			Expect(cap(indicator.SlowK)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
+			Expect(cap(indicator.SlowD)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
+		})
 
-	// 		Context("and the indicator has not yet received any ticks", func() {
-	// 			ShouldBeAnInitialisedIndicator(&inputs)
+		Context("and the indicator has not yet received any ticks", func() {
+			ShouldBeAnInitialisedIndicator(&inputs)
 
-	// 			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
-	// 		})
+			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
+		})
 
-	// 		Context("and the indicator has recieved all of its ticks", func() {
-	// 			BeforeEach(func() {
-	// 				for i := 0; i < len(sourceDOHLCVData); i++ {
-	// 					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
-	// 				}
-	// 			})
+		Context("and the indicator has recieved all of its ticks", func() {
+			BeforeEach(func() {
+				for i := 0; i < len(sourceDOHLCVData); i++ {
+					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+				}
+			})
 
-	// 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
-	// 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 
-	// 			It("no new storage capcity should have been allocated", func() {
-	// 				Expect(len(indicator.SlowK)).To(Equal(cap(indicator.SlowK)))
-	// 				Expect(len(indicator.SlowD)).To(Equal(cap(indicator.SlowD)))
-	// 			})
-	// 		})
-	// 	})
+			It("no new storage capcity should have been allocated", func() {
+				Expect(len(indicator.SlowK)).To(Equal(cap(indicator.SlowK)))
+				Expect(len(indicator.SlowD)).To(Equal(cap(indicator.SlowD)))
+			})
+		})
+	})
 
-	// 	Context("given the indicator is created via the constructor for use with a price stream", func() {
-	// 		BeforeEach(func() {
-	// 			stream = newFakeDOHLCVStreamSubscriber()
-	// 			indicator, _ = indicators.NewStochRsiForStream(stream, 8, 5, 3)
-	// 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
-	// 				func() float64 {
-	// 					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
-	// 				},
-	// 				func() float64 {
-	// 					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
-	// 				})
-	// 		})
+	Context("given the indicator is created via the constructor for use with a price stream", func() {
+		BeforeEach(func() {
+			stream = newFakeDOHLCVStreamSubscriber()
+			indicator, _ = indicators.NewStochRsiForStream(stream, 8, 5, 3)
+			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+				func() float64 {
+					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
+				},
+				func() float64 {
+					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
+				})
+		})
 
-	// 		It("should have requested to be attached to the stream", func() {
-	// 			Expect(stream.lastCallToAddTickSubscriptionArg).To(Equal(indicator))
-	// 		})
+		It("should have requested to be attached to the stream", func() {
+			Expect(stream.lastCallToAddTickSubscriptionArg).To(Equal(indicator))
+		})
 
-	// 		Context("and the indicator has not yet received any ticks", func() {
-	// 			ShouldBeAnInitialisedIndicator(&inputs)
+		Context("and the indicator has not yet received any ticks", func() {
+			ShouldBeAnInitialisedIndicator(&inputs)
 
-	// 			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
-	// 		})
+			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
+		})
 
-	// 		Context("and the indicator has recieved all of its ticks", func() {
-	// 			BeforeEach(func() {
-	// 				for i := 0; i < len(sourceDOHLCVData); i++ {
-	// 					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
-	// 				}
-	// 			})
+		Context("and the indicator has recieved all of its ticks", func() {
+			BeforeEach(func() {
+				for i := 0; i < len(sourceDOHLCVData); i++ {
+					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+				}
+			})
 
-	// 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
-	// 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
-	// 		})
-	// 	})
+			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+		})
+	})
 
-	// 	Context("given the indicator is created via the constructor for use with a price stream with defaulted parameters", func() {
-	// 		BeforeEach(func() {
-	// 			stream = newFakeDOHLCVStreamSubscriber()
-	// 			indicator, _ = indicators.NewDefaultStochRsiForStream(stream)
-	// 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
-	// 				func() float64 {
-	// 					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
-	// 				},
-	// 				func() float64 {
-	// 					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
-	// 				})
-	// 		})
+	Context("given the indicator is created via the constructor for use with a price stream with defaulted parameters", func() {
+		BeforeEach(func() {
+			stream = newFakeDOHLCVStreamSubscriber()
+			indicator, _ = indicators.NewDefaultStochRsiForStream(stream)
+			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+				func() float64 {
+					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
+				},
+				func() float64 {
+					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
+				})
+		})
 
-	// 		It("should have requested to be attached to the stream", func() {
-	// 			Expect(stream.lastCallToAddTickSubscriptionArg).To(Equal(indicator))
-	// 		})
+		It("should have requested to be attached to the stream", func() {
+			Expect(stream.lastCallToAddTickSubscriptionArg).To(Equal(indicator))
+		})
 
-	// 		Context("and the indicator has not yet received any ticks", func() {
-	// 			ShouldBeAnInitialisedIndicator(&inputs)
+		Context("and the indicator has not yet received any ticks", func() {
+			ShouldBeAnInitialisedIndicator(&inputs)
 
-	// 			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
-	// 		})
+			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
+		})
 
-	// 		Context("and the indicator has recieved all of its ticks", func() {
-	// 			BeforeEach(func() {
-	// 				for i := 0; i < len(sourceDOHLCVData); i++ {
-	// 					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
-	// 				}
-	// 			})
+		Context("and the indicator has recieved all of its ticks", func() {
+			BeforeEach(func() {
+				for i := 0; i < len(sourceDOHLCVData); i++ {
+					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+				}
+			})
 
-	// 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
-	// 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
-	// 		})
-	// 	})
+			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+		})
+	})
 
-	// 	Context("given the indicator is created via the constructor for use with a price stream with fixed source length", func() {
-	// 		BeforeEach(func() {
-	// 			stream = newFakeDOHLCVStreamSubscriber()
-	// 			indicator, _ = indicators.NewStochRsiForStreamWithSrcLen(uint(len(sourceDOHLCVData)), stream, 8, 5, 3)
-	// 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
-	// 				func() float64 {
-	// 					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
-	// 				},
-	// 				func() float64 {
-	// 					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
-	// 				})
-	// 		})
+	Context("given the indicator is created via the constructor for use with a price stream with fixed source length", func() {
+		BeforeEach(func() {
+			stream = newFakeDOHLCVStreamSubscriber()
+			indicator, _ = indicators.NewStochRsiForStreamWithSrcLen(uint(len(sourceDOHLCVData)), stream, 8, 5, 3)
+			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+				func() float64 {
+					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
+				},
+				func() float64 {
+					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
+				})
+		})
 
-	// 		It("should have pre-allocated storge for the output data", func() {
-	// 			Expect(cap(indicator.SlowK)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
-	// 			Expect(cap(indicator.SlowD)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
-	// 		})
+		It("should have pre-allocated storge for the output data", func() {
+			Expect(cap(indicator.SlowK)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
+			Expect(cap(indicator.SlowD)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
+		})
 
-	// 		It("should have requested to be attached to the stream", func() {
-	// 			Expect(stream.lastCallToAddTickSubscriptionArg).To(Equal(indicator))
-	// 		})
+		It("should have requested to be attached to the stream", func() {
+			Expect(stream.lastCallToAddTickSubscriptionArg).To(Equal(indicator))
+		})
 
-	// 		Context("and the indicator has not yet received any ticks", func() {
-	// 			ShouldBeAnInitialisedIndicator(&inputs)
+		Context("and the indicator has not yet received any ticks", func() {
+			ShouldBeAnInitialisedIndicator(&inputs)
 
-	// 			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
-	// 		})
+			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
+		})
 
-	// 		Context("and the indicator has recieved all of its ticks", func() {
-	// 			BeforeEach(func() {
-	// 				for i := 0; i < len(sourceDOHLCVData); i++ {
-	// 					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
-	// 				}
-	// 			})
+		Context("and the indicator has recieved all of its ticks", func() {
+			BeforeEach(func() {
+				for i := 0; i < len(sourceDOHLCVData); i++ {
+					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+				}
+			})
 
-	// 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
-	// 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 
-	// 			It("no new storage capcity should have been allocated", func() {
-	// 				Expect(len(indicator.SlowK)).To(Equal(cap(indicator.SlowK)))
-	// 				Expect(len(indicator.SlowD)).To(Equal(cap(indicator.SlowD)))
-	// 			})
-	// 		})
-	// 	})
+			It("no new storage capcity should have been allocated", func() {
+				Expect(len(indicator.SlowK)).To(Equal(cap(indicator.SlowK)))
+				Expect(len(indicator.SlowD)).To(Equal(cap(indicator.SlowD)))
+			})
+		})
+	})
 
-	// 	Context("given the indicator is created via the constructor for use with a price stream with fixed source length with defaulted parmeters", func() {
-	// 		BeforeEach(func() {
-	// 			stream = newFakeDOHLCVStreamSubscriber()
-	// 			indicator, _ = indicators.NewDefaultStochRsiForStreamWithSrcLen(uint(len(sourceDOHLCVData)), stream)
-	// 			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
-	// 				func() float64 {
-	// 					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
-	// 				},
-	// 				func() float64 {
-	// 					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
-	// 				})
-	// 		})
+	Context("given the indicator is created via the constructor for use with a price stream with fixed source length with defaulted parmeters", func() {
+		BeforeEach(func() {
+			stream = newFakeDOHLCVStreamSubscriber()
+			indicator, _ = indicators.NewDefaultStochRsiForStreamWithSrcLen(uint(len(sourceDOHLCVData)), stream)
+			inputs = NewIndicatorWithFloatBoundsSharedSpecInputs(indicator, len(sourceDOHLCVData), indicator,
+				func() float64 {
+					return GetDataMaxStoch(indicator.SlowK, indicator.SlowD)
+				},
+				func() float64 {
+					return GetDataMinStoch(indicator.SlowK, indicator.SlowD)
+				})
+		})
 
-	// 		It("should have pre-allocated storge for the output data", func() {
-	// 			Expect(cap(indicator.SlowK)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
-	// 			Expect(cap(indicator.SlowD)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
-	// 		})
+		It("should have pre-allocated storge for the output data", func() {
+			Expect(cap(indicator.SlowK)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
+			Expect(cap(indicator.SlowD)).To(Equal(len(sourceDOHLCVData) - indicator.GetLookbackPeriod()))
+		})
 
-	// 		It("should have requested to be attached to the stream", func() {
-	// 			Expect(stream.lastCallToAddTickSubscriptionArg).To(Equal(indicator))
-	// 		})
+		It("should have requested to be attached to the stream", func() {
+			Expect(stream.lastCallToAddTickSubscriptionArg).To(Equal(indicator))
+		})
 
-	// 		Context("and the indicator has not yet received any ticks", func() {
-	// 			ShouldBeAnInitialisedIndicator(&inputs)
+		Context("and the indicator has not yet received any ticks", func() {
+			ShouldBeAnInitialisedIndicator(&inputs)
 
-	// 			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
-	// 		})
+			ShouldNotHaveAnyFloatBoundsSetYet(&inputs)
+		})
 
-	// 		Context("and the indicator has recieved all of its ticks", func() {
-	// 			BeforeEach(func() {
-	// 				for i := 0; i < len(sourceDOHLCVData); i++ {
-	// 					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
-	// 				}
-	// 			})
+		Context("and the indicator has recieved all of its ticks", func() {
+			BeforeEach(func() {
+				for i := 0; i < len(sourceDOHLCVData); i++ {
+					indicator.ReceiveDOHLCVTick(sourceDOHLCVData[i], i+1)
+				}
+			})
 
-	// 			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
+			ShouldBeAnIndicatorThatHasReceivedAllOfItsTicks(&inputs)
 
-	// 			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
+			ShouldHaveFloatBoundsSetToMinMaxOfResults(&inputs)
 
-	// 			It("no new storage capcity should have been allocated", func() {
-	// 				Expect(len(indicator.SlowK)).To(Equal(cap(indicator.SlowK)))
-	// 				Expect(len(indicator.SlowD)).To(Equal(cap(indicator.SlowD)))
-	// 			})
-	// 		})
-	// 	})
+			It("no new storage capcity should have been allocated", func() {
+				Expect(len(indicator.SlowK)).To(Equal(cap(indicator.SlowK)))
+				Expect(len(indicator.SlowD)).To(Equal(cap(indicator.SlowD)))
+			})
+		})
+	})
 })
