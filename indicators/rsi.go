@@ -32,6 +32,7 @@ func NewRsiWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableAct
 
 	// check the maximum timeperiod
 	if timePeriod > MaximumLookbackPeriod {
+
 		return nil, errors.New("timePeriod is greater than the maximum (100000)")
 	}
 

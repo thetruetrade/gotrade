@@ -1789,45 +1789,45 @@ var _ = Describe("when executing the gotrade stochastic oscillator with a years 
 	})
 })
 
-// var _ = Describe("when executing the gotrade stochastic rsi oscillator with a years data and known output", func() {
-// 	var (
-// 		stoch           *indicators.StochasticRSI
-// 		expectedResults []StochData
-// 		err             error
-// 		priceStream     *gotrade.InterDayDOHLCVStream
-// 	)
+var _ = Describe("when executing the gotrade stochastic rsi oscillator with a years data and known output", func() {
+	var (
+		stoch           *indicators.StochRsi
+		expectedResults []StochData
+		err             error
+		priceStream     *gotrade.InterDayDOHLCVStream
+	)
 
-// 	BeforeEach(func() {
-// 		// load the expected results data
-// 		expectedResults, _ = LoadCSVStochPriceDataFromFile("stochrsi_14_5_3_expectedresult.data")
-// 		priceStream = gotrade.NewDailyDOHLCVStream()
-// 	})
+	BeforeEach(func() {
+		// load the expected results data
+		expectedResults, _ = LoadCSVStochPriceDataFromFile("stochrsi_14_5_3_expectedresult.data")
+		priceStream = gotrade.NewDailyDOHLCVStream()
+	})
 
-// 	Describe("using a lookback periods of 14,5,3", func() {
+	Describe("using a lookback periods of 14,5,3", func() {
 
-// 		BeforeEach(func() {
-// 			stoch, err = indicators.NewStochasticRSI(14, 5, 3)
-// 			priceStream.AddTickSubscription(stoch)
-// 			csvFeed.FillDOHLCVStream(priceStream)
-// 		})
+		BeforeEach(func() {
+			stoch, err = indicators.NewStochRsi(14, 5, 3)
+			priceStream.AddTickSubscription(stoch)
+			csvFeed.FillDOHLCVStream(priceStream)
+		})
 
-// 		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
-// 			Expect(stoch.Length()).To(Equal(len(priceStream.Data) - stoch.GetLookbackPeriod()))
-// 		})
+		It("the result set should have a length equal to the source data length less the lookbackperiod", func() {
+			Expect(stoch.Length()).To(Equal(len(priceStream.Data) - stoch.GetLookbackPeriod()))
+		})
 
-// 		It("it should have correctly calculated the stoch rsi fastk for each item in the result set accurate to two decimal places", func() {
-// 			for k := range expectedResults {
-// 				Expect(expectedResults[k].K()).To(BeNumerically("~", stoch.SlowK[k], 0.01))
-// 			}
-// 		})
+		It("it should have correctly calculated the stoch rsi fastk for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k].K()).To(BeNumerically("~", stoch.SlowK[k], 0.01))
+			}
+		})
 
-// 		It("it should have correctly calculated the stoch rsi fastd for each item in the result set accurate to two decimal places", func() {
-// 			for k := range expectedResults {
-// 				Expect(expectedResults[k].D()).To(BeNumerically("~", stoch.SlowD[k], 0.01))
-// 			}
-// 		})
-// 	})
-// })
+		It("it should have correctly calculated the stoch rsi fastd for each item in the result set accurate to two decimal places", func() {
+			for k := range expectedResults {
+				Expect(expectedResults[k].D()).To(BeNumerically("~", stoch.SlowD[k], 0.01))
+			}
+		})
+	})
+})
 
 var _ = Describe("when executing the gotrade commodity channel index (Cci) with a years data and known output", func() {
 	var (

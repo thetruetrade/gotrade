@@ -18,7 +18,7 @@ type HhvWithoutStorage struct {
 	timePeriod       int
 }
 
-// NewHhvWithoutStorage creates a Highest High Value Indicator Indicator (Hhv) without storage
+// NewHhvWithoutStorage creates a Highest High Value Indicator (Hhv) without storage
 func NewHhvWithoutStorage(timePeriod int, valueAvailableAction ValueAvailableActionFloat) (indicator *HhvWithoutStorage, err error) {
 
 	// an indicator without storage MUST have a value available action
